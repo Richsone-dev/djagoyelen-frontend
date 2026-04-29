@@ -1,15 +1,15 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import react from '@vitejs/react-swc'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  css: {
-    // On force l'utilisation de PostCSS pour éviter les erreurs de syntaxe CSS
-    transformer: 'postcss',
-  },
   build: {
-    // On utilise esbuild pour la minification du CSS au lieu de lightningcss
-    cssMinifier: 'esbuild',
+    // On force esbuild et on désactive lightningcss explicitement
+    cssMinifier: 'esbuild', 
+    minify: 'esbuild',
+  },
+  css: {
+    transformer: 'postcss',
+    lightningcss: false // On lui dit explicitement de ne PAS l'utiliser
   }
 })
