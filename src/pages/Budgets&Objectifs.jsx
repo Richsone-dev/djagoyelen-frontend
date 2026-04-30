@@ -121,7 +121,7 @@ const Budgets = () => {
     };
 
     return (
-        <div className="container-fluid px-0 px-md-1 py-3 position-relative">
+        <div className="container-fluid px-0 px-md-1 py-3 position-relative mb-5" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
             {notification.show && (
                 <div className={`alert alert-${notification.type} border-0 shadow-lg position-fixed top-0 start-50 translate-middle-x mt-4`} 
                      style={{ zIndex: 9999, borderRadius: '50px', padding: '10px 25px' }}>
@@ -281,7 +281,7 @@ const Budgets = () => {
                                             <div className="mt-3 p-2 rounded-3 bg-light d-flex align-items-center">
                                                 <i className={`bi bi-${isOver ? 'exclamation-circle-fill text-danger' : 'check-circle-fill text-success'} me-2`}></i>
                                                 <span className="small fw-medium">
-                                                    {isOver ? 'Limite dépassée !' : `Encore ${Number(budget.amount_limit - budget.current_spent).toLocaleString()} F disponible`}
+                                                    {isOver ? 'Budget limite atteint !' : `Encore ${Number(budget.amount_limit - budget.current_spent).toLocaleString()} F disponible`}
                                                 </span>
                                             </div>
                                         </div>
