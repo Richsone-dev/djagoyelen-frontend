@@ -254,7 +254,7 @@ const MainLayout = () => {
                             height: '70px', 
                             zIndex: 1040, 
                             backgroundColor: colors.darkGreen, 
-                            paddingTop: '10rem',
+                            paddingTop: '50px',
                             borderRadius: '20px 20px 0 0' 
                         }}>
                         <div className="position-relative d-flex align-items-center justify-content-center" style={{ display: 'flex', flexDirection: 'column', color: location.pathname === '/transactions' ? colors.orange : 'rgba(255,255,255,0.6)' }}>
