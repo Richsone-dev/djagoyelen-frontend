@@ -174,10 +174,10 @@ const MainLayout = () => {
                             </h5>
                         </div>
                         <div className="d-flex align-items-center ms-auto">
-                            <div className="position-relative me-3 me-md-4">
+                            {/*<div className="position-relative me-3 me-md-4">
                                 <i className="bi bi-bell fs-4" style={{ color: 'white' }}></i>
                                 <span className="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger" style={{ fontSize: '0.6rem' }}>2</span>
-                            </div>
+                            </div>*/}
                             <Link to="/profil" className="text-decoration-none d-flex align-items-center p-1 pe-2 pe-md-3 rounded-pill border-0" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
                                 <div className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-2" style={{ width: '32px', height: '32px', backgroundColor: colors.orange }}>
                                     {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
