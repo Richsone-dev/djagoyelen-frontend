@@ -5,7 +5,7 @@ import img2 from '../assets/img2.png';
 import probleme from '../assets/probleme.svg';
 import solution from '../assets/solution.svg';
 import solution1 from '../assets/solution1.png';
-import karimProfil from '../assets/karim-profil.jpg';
+import karimProfil from '../assets/karimProfil.jpg';
 
 /* HOOK SCROLL ANIMATION */
 const useScrollAnimation = () => {
