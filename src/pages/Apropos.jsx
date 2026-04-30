@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import img2 from '../assets/img2.png';
+import probleme from '../assets/probleme.svg';
+import solution from '../assets/solution.svg';
 
 /* HOOK SCROLL ANIMATION */
 const useScrollAnimation = () => {
@@ -135,12 +137,14 @@ const ProblemSolution = ({ colors, cardStyle }) => {
             <div className="row g-4">
                 <div className="col-md-6">
                     <div className="p-4 rounded-4 shadow border-start border-danger border-4 glass premium-card" style={cardStyle}>
+                        <img src={probleme} alt="Problème" className="mb-3" style={{ width: '40px', height: '40px' }} />
                         <h5 className="text-danger fw-bold">Problème</h5>
                         <p>Les entreprises utilisent encore des outils dispersés et inefficaces.</p>
                     </div>
                 </div>
                 <div className="col-md-6">
                     <div className="p-4 rounded-4 shadow border-start border-success border-4 glass premium-card" style={cardStyle}>
+                        <img src={solution} alt="Solution" className="mb-3" style={{ width: '40px', height: '40px' }} />
                         <h5 className="text-success fw-bold">Solution</h5>
                         <p>Une plateforme centralisée pour une gestion intelligente et moderne.</p>
                     </div>

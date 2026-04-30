@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import api from '../api/axios';
 import logo from '../assets/djago-logo.jpeg';
 
+
 const MainLayout = () => {
     const navigate = useNavigate();
     const location = useLocation();
