@@ -67,12 +67,12 @@ const Register = () => {
                                    style={{ borderRadius: '12px' }} />
                         </div>
                         {/* Téléphone */}
-                        <div className="col-12 mb-3">
+                        {/*<div className="col-12 mb-3">
                             <label className="form-label fw-bold text-muted small ps-1">Numéro de téléphone</label>
                             <input name="telephone" type="tel" className="form-control form-control-lg" 
                                    placeholder="06 12 34 56 78" onChange={handleChange} required 
                                    style={{ borderRadius: '12px' }} />
-                        </div>
+                        </div>*/}
                         {/* Mot de passe */}
                         <div className="col-12 col-md-6 mb-3">
                             <label className="form-label fw-bold text-muted small ps-1">Mot de passe </label>
