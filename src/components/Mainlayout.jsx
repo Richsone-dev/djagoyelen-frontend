@@ -183,6 +183,8 @@ const MainLayout = () => {
                         height: headerHeight,
                         zIndex: 1000,
                         transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        borderBottom: isMobile ? `2px solid ${colors.orange}` : 'none',
+                        borderRadius: isMobile ? '0 0 20px 20px' : '0',
                         backgroundColor: colors.darkGreen // Applique le bleu ici
                     }}
                 >
