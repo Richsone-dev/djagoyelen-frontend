@@ -54,28 +54,28 @@ const Register = () => {
                     <div className="row" style={{textAlign: 'left'}}>
                         {/* Nom */}
                         <div className="col-12 mb-3">
-                            <label className="form-label fw-bold text-muted small ps-1">Nom complet <span className="text-danger">*</span></label>
+                            <label className="form-label fw-bold text-muted small ps-1">Nom complet</label>
                             <input name="name" type="text" className="form-control form-control-lg" 
                                    placeholder="Jean Dupont" onChange={handleChange} required 
                                    style={{ borderRadius: '12px' }} />
                         </div>
                         {/* Email */}
                         <div className="col-12 mb-3">
-                            <label className="form-label fw-bold text-muted small ps-1">Adresse Email <span className="text-danger">*</span></label>
+                            <label className="form-label fw-bold text-muted small ps-1">Adresse Email</label>
                             <input name="email" type="email" className="form-control form-control-lg" 
                                    placeholder="exemple@mail.com" onChange={handleChange} required 
                                    style={{ borderRadius: '12px' }} />
                         </div>
                         {/* Mot de passe */}
                         <div className="col-12 col-md-6 mb-3">
-                            <label className="form-label fw-bold text-muted small ps-1">Mot de passe <span className="text-danger">*</span></label>
+                            <label className="form-label fw-bold text-muted small ps-1">Mot de passe </label>
                             <input name="password" type="password" className="form-control form-control-lg" 
                                    placeholder="**********" onChange={handleChange} required 
                                    style={{ borderRadius: '12px' }} />
                         </div>
                         {/* Confirmation */}
                         <div className="col-12 col-md-6 mb-4">
-                            <label className="form-label fw-bold text-muted small ps-1">Confirmation <span className="text-danger">*</span></label>
+                            <label className="form-label fw-bold text-muted small ps-1">Confirmation</label>
                             <input name="password_confirmation" type="password" className="form-control form-control-lg" 
                                    placeholder="**********" onChange={handleChange} required 
                                    style={{ borderRadius: '12px' }} />
