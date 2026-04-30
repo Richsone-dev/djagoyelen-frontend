@@ -17,17 +17,23 @@ const Login = () => {
         e.preventDefault();
         setError('');
         setLoading(true);
+
         try {
             const { data } = await api.post('/login', credentials);
+
+            // Stockage
             localStorage.setItem('token', data.token);
-            if(data.user) localStorage.setItem('user', JSON.stringify(data.user));
-            
-            setTimeout(() => {
-                window.location.href = '/dashboard';
-            }, 300);
+            if (data.user) {
+                localStorage.setItem('user', JSON.stringify(data.user));
+            }
+
+            // ✅ IMPORTANT : navigation React (PAS window.location)
+            navigate('/dashboard');
+
         } catch (err) {
             const errorMessage = err.response?.data?.message || 'Email ou mot de passe incorrect.';
             setError(errorMessage);
+        } finally {
             setLoading(false);
         }
     };
@@ -43,7 +49,6 @@ const Login = () => {
         <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center py-4" 
              style={{ backgroundColor: '#f8f9fa' }}>
             
-            {/* Suppression de 'shadow' ici */}
             <div className="card border-0 p-3 p-md-5 mx-2" 
                  style={{ 
                      maxWidth: '450px', 
@@ -100,13 +105,12 @@ const Login = () => {
                             required 
                         />
                         <div className="text-end mt-2">
-                            <Link to="/forgot-password" virtual="true" className="fw-bold text-decoration-none small" style={{ color: colors.successGreen }}>
+                            <Link to="/forgot-password" className="fw-bold text-decoration-none small" style={{ color: colors.successGreen }}>
                                 Mot de passe oublié ?
                             </Link>
                         </div>
                     </div>
 
-                    {/* Suppression de 'shadow-sm' ici */}
                     <button 
                         type="submit" 
                         disabled={loading} 
@@ -115,14 +119,13 @@ const Login = () => {
                             backgroundColor: colors.orange, 
                             border: 'none', 
                             borderRadius: '10px',
-                            transition: 'background-color 0.3s ease',
                             height: '52px',
                             opacity: loading ? 0.8 : 1
                         }}
                     >
                         {loading ? (
                             <>
-                                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                <span className="spinner-border spinner-border-sm me-2"></span>
                                 Connexion...
                             </>
                         ) : (
