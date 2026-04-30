@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
-import img2 from '../assets/img2.png';
+import img2 from '/assets/img2.png';
 
 /* HOOK SCROLL ANIMATION */
 const useScrollAnimation = () => {
@@ -53,7 +53,7 @@ const AproposDetails = () => {
                     </p>
 
                     <img
-                        src="src/assets/img2.png"
+                        src={img2}
                         className="img-fluid rounded-5 shadow-lg mt-4"
                         style={{ maxHeight: '420px', objectFit: 'cover' }}
                         alt=""
@@ -64,7 +64,7 @@ const AproposDetails = () => {
             {/* VISION */}
             <Section
                 title="Notre Vision"
-                img="https://chatgpt.com/s/cb_69f3b3136a588191abaf02a133da5270"
+                img={img2}
                 text="DjagoYelen vise à transformer la gestion financière en Afrique en apportant clarté, transparence et performance aux entreprises."
                 colors={colors}
             />
