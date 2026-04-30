@@ -264,14 +264,14 @@ const MainLayout = () => {
                         <Link to="/transactions" className="text-center text-decoration-none" style={{ color: location.pathname === '/transactions' ? colors.orange : 'rgba(255,255,255,0.6)' }}>
                             <i className="bi bi-cash-stack fs-3"></i>
                         </Link>
-                            <small style={{color: colors.white, fontSize: '6px', color: location.pathname === '/transactions' ? colors.orange : 'rgba(255,255,255,0.6)'}}>Transactions</small>
+                            <small style={{color: colors.white, fontSize: '8px', color: location.pathname === '/transactions' ? colors.orange : 'rgba(255,255,255,0.6)'}}>Transactions</small>
 
                         </div>
                         <div className="position-relative d-flex align-items-center justify-content-center" style={{ display: 'flex', flexDirection: 'column', color: location.pathname === '/budgets' ? colors.orange : 'rgba(255,255,255,0.6)' }}>
                         <Link to="/budgets" className="text-center text-decoration-none" style={{ color: location.pathname === '/budgets' ? colors.orange : 'rgba(255,255,255,0.6)' }}>
                             <i className="bi bi-piggy-bank fs-3"></i>
                         </Link>
-                            <small style={{color: colors.white, fontSize: '6px', color: location.pathname === '/budgets' ? colors.orange : 'rgba(255,255,255,0.6)'}}>Budget</small>
+                            <small style={{color: colors.white, fontSize: '8px', color: location.pathname === '/budgets' ? colors.orange : 'rgba(255,255,255,0.6)'}}>Budget</small>
                             
                         </div>
                         
@@ -281,20 +281,20 @@ const MainLayout = () => {
                                 <i className="bi bi-house-door-fill fs-3">
                                 </i>
                             </Link>
-                                   <small style={{color: colors.white, fontSize: '6px', color: location.pathname === '/dashboard' ? colors.orange : 'rgba(255,255,255,0.6)'}}>Tableau de bord</small>
+                                   <small style={{color: colors.white, fontSize: '8px', color: location.pathname === '/dashboard' ? colors.orange : 'rgba(255,255,255,0.6)'}}>Tableau de bord</small>
                         </div>
                         <div className="position-relative d-flex align-items-center justify-content-center" style={{ display: 'flex', flexDirection: 'column'}}>
                         <Link to="/rapports" className="text-center text-decoration-none" style={{ color: location.pathname === '/rapports' ? colors.orange : 'rgba(255,255,255,0.6)' }}>
                             <i className="bi bi-file-earmark-bar-graph fs-3"></i>
                         </Link>
-                                   <small style={{color: colors.white, fontSize: '6px', color: location.pathname === '/rapports' ? colors.orange : 'rgba(255,255,255,0.6)'}}>Rapports</small>
+                                   <small style={{color: colors.white, fontSize: '8px', color: location.pathname === '/rapports' ? colors.orange : 'rgba(255,255,255,0.6)'}}>Rapports</small>
                         
                         </div>
                         <div className="position-relative d-flex align-items-center justify-content-center" style={{ display: 'flex', flexDirection: 'column'}}>
                         <Link to="/profil" className="text-center text-decoration-none" style={{ color: location.pathname === '/profil' ? colors.orange : 'rgba(255,255,255,0.6)' }}>
                             <i className="bi bi-person-fill fs-3"></i>
                         </Link>
-                                   <small style={{color: colors.white, fontSize: '6px', color: location.pathname === '/profil' ? colors.orange : 'rgba(255,255,255,0.6)'}}>Profil</small>
+                                   <small style={{color: colors.white, fontSize: '8px', color: location.pathname === '/profil' ? colors.orange : 'rgba(255,255,255,0.6)'}}>Profil</small>
 
                         </div>
                     </div>
