@@ -274,7 +274,7 @@ const MainLayout = () => {
                         
                         <div className="position-relative" style={{ top: '-25px',  display: 'flex', flexDirection: 'column' }}>
                             <Link to="/dashboard" className="btn rounded-circle shadow-lg d-flex align-items-center justify-content-center" 
-                                style={{ backgroundColor: colors.darkGreen, color: 'white', width: '55px', height: '55px', border: `4px solid ${colors.white}`, color: location.pathname === '/dashboard' ? colors.orange : 'rgba(255,255,255,0.6)', borderColor: location.pathname === '/dashboard' ? colors.orange : 'rgba(255,255,255,0.6)' }}>
+                                style={{ backgroundColor: colors.darkGreen, color: 'white', width: '55px', height: '55px', border: `4px solid ${colors.white}`, color: location.pathname === '/dashboard' ? colors.orange : 'rgba(255,255,255,0.6)', borderColor: location.pathname === '/dashboard' ? colors.orange : 'rgba(255,255,255,1)' }}>
                                 <i className="bi bi-house-door-fill fs-3">
                                 </i>
                             </Link>
