@@ -47,7 +47,7 @@ const AproposDetails = () => {
                         DjagoYelen
                     </h1>
 
-                    <p className="lead col-md-7 mx-auto opacity-75">
+                    <p className="lead col-md-7 mx-auto opacity-75" style={{ fontSize: '1.25rem', textAlign: 'justify' }}>
                         Une plateforme intelligente de gestion financière conçue pour moderniser les PME africaines. Libérez le potentiel de votre entreprise grâce à notre plateforme intelligente. Conçue spécifiquement pour les PME africaines, elle transforme vos données comptables en décisions stratégiques claires, accessibles en quelques clics, partout et tout le temps.
                         <span className="fw-bold"> Clarté, performance et croissance au bout des doigts.</span>
                     </p>
