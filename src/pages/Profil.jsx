@@ -246,7 +246,7 @@ const handleLogout = async () => {
                         </div>
 
                         {/* Liste des Clients */}
-                        <div className="card border-0 shadow-sm rounded-4">
+                        <div className="card border-0 shadow-sm rounded-4 mb-4">
                             <div className="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
                                 <h5 className="mb-0 fw-bold" style={{ color: theme.darkGreen }}>Mes Clients</h5>
                                 <button className="btn btn-sm px-3 text-white fw-bold rounded-pill" style={{ backgroundColor: theme.darkGreen }} onClick={() => openClientModal()}>
