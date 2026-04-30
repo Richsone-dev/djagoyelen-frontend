@@ -236,9 +236,9 @@ const handleLogout = async () => {
                                         </div>
                                         <div className="col-md-6" style={{ textAlign: 'left' }}>
                                             <label className="form-label small text-muted fw-bold">Téléphone</label>
-                                            <input type="email" className={`form-control border-0 bg-light ${isEditing ? 'bg-white border-bottom' : ''}`} 
-                                                value={formData.email} readOnly={!isEditing}
-                                                onChange={(e) => setFormData({...formData, email: e.target.value})} required />
+                                            <input type="tel" className={`form-control border-0 bg-light ${isEditing ? 'bg-white border-bottom' : ''}`} 
+                                                value={formData.telephone} readOnly={!isEditing}
+                                                onChange={(e) => setFormData({...formData, telephone: e.target.value})} required />
                                         </div>
                                         {isEditing && (
                                             <div className="col-12 mt-3 d-flex gap-2">
