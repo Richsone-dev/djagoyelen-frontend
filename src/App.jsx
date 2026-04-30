@@ -46,7 +46,6 @@ function App() {
           <Route path="/parametres" element={<Parametres />} />
           <Route path="/apropos" element={<Apropos />} />
           <Route path="/notifications" element={<Notifications />} />
-          <Route path="/aide" element={<Aide />} />
         </Route>
 
         {/* --- REDIRECTIONS --- */}
