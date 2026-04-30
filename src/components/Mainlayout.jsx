@@ -15,6 +15,7 @@ const MainLayout = () => {
     const colors = {
         darkGreen: '#0A3B2F',
         orange: '#E97223',
+        red: '#dc3545',
         white: '#ffffff',
         successGreen: '#198754',
         accentPurple: '#6f42c1',
@@ -131,9 +132,9 @@ const MainLayout = () => {
                                 {section.links.map((link) => (
                                     <li className="nav-item mb-1" key={link.path}>
                                         {link.disabled ? (
-                                            <span className="nav-link text-white d-flex align-items-center p-2" style={{ borderRadius: '10px', transition: '0.3s', cursor: 'not-allowed', backgroundColor: 'rgba(255, 200, 255, 0.1)', color: link.color || 'rgba(255,255,255,0.6)' }} title={link.tooltip || "Indisponible"}>
+                                            <span className="nav-link text-white d-flex align-items-center p-2" style={{ borderRadius: '10px', transition: '0.3s', cursor: 'not-allowed', backgroundColor: 'rgba(220, 53, 69, 0.5)', color: link.color || 'rgba(255,255,255,0.6)' }} title={link.tooltip || "Indisponible"}>
                                                 <i className={`bi bi-${link.icon} fs-5`} style={{ color: colors.successGreen, marginRight: (isCollapsed && !isMobile) ? '0' : '15px' }}></i>
-                                                {(!isCollapsed || isMobile) && <span style={{ fontSize: '0.9rem', whiteSpace: 'nowrap' }}>{link.tooltip}</span>}
+                                                {(!isCollapsed || isMobile) && <span style={{ fontSize: '0.9rem', whiteSpace: 'nowrap', color: colors.successGreen }}>{link.tooltip}</span>}
                                             </span>
                                         ) : (
                                             <Link 
