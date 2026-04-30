@@ -5,6 +5,7 @@ import img2 from '../assets/img2.png';
 import probleme from '../assets/probleme.svg';
 import solution from '../assets/solution.svg';
 import solution1 from '../assets/solution1.png';
+import karimProfil from '../assets/karim-profil.jpg';
 
 /* HOOK SCROLL ANIMATION */
 const useScrollAnimation = () => {
@@ -190,8 +191,49 @@ const Team = ({ colors, cardStyle }) => {
     const [ref, visible] = useScrollAnimation();
     return (
         <section ref={ref} className={`text-center mb-5 fade ${visible ? 'show' : ''}`}>
-            <h2 className="fw-bold mb-4" style={{ color: colors.darkGreen }}>Équipe</h2>
-            <div className="p-5 rounded-4 glass premium-card" style={cardStyle}><h4>Karim Sanou</h4><p>Développeur Fullstack</p></div>
+            <h2 className="fw-bold mb-5" style={{ color: colors.darkGreen }}>
+                L'Équipe Technique
+            </h2>
+
+            <div className="row justify-content-center">
+                <div className="col-md-6 col-lg-4">
+                    <div className="p-4 rounded-4 glass premium-card" style={cardStyle}>
+                        {/* PHOTO DE PROFIL */}
+                        <div className="mb-4">
+                            <img 
+                                src={karimProfil} 
+                                alt="Karim Sanou" 
+                                className="rounded-circle shadow-sm border border-3"
+                                style={{ 
+                                    width: '150px', 
+                                    height: '150px', 
+                                    objectFit: 'cover',
+                                    borderColor: colors.orange 
+                                }} 
+                            />
+                        </div>
+
+                        {/* INFORMATIONS */}
+                        <h4 className="fw-bold mb-1">Karim Sanou</h4>
+                        <p className="text-uppercase small mb-3" style={{ color: colors.orange, letterSpacing: '2px' }}>
+                            Développeur Fullstack
+                        </p>
+                        <p className="opacity-75 mb-4">
+                            Passionné par l'innovation numérique et la création de solutions financières robustes pour les PME.
+                        </p>
+
+                        {/* LIENS SOCIAUX */}
+                        <div className="d-flex justify-content-center gap-3">
+                            <a href="#" className="text-decoration-none" style={{ color: colors.textColor }}>
+                                <i className="bi bi-github fs-4"></i>
+                            </a>
+                            <a href="#" className="text-decoration-none" style={{ color: colors.textColor }}>
+                                <i className="bi bi-linkedin fs-4"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
     );
 };
