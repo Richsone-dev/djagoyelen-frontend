@@ -63,7 +63,7 @@ const AproposDetails = () => {
             {/* VISION */}
             <Section
                 title="Notre Vision"
-                img="src/assets/img3.png"
+                img="https://chatgpt.com/s/cb_69f3b3136a588191abaf02a133da5270"
                 text="DjagoYelen vise à transformer la gestion financière en Afrique en apportant clarté, transparence et performance aux entreprises."
                 colors={colors}
             />
