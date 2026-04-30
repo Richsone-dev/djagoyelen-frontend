@@ -225,6 +225,14 @@ const Transactions = () => {
                                         </div>
                                     )}
 
+                                    {/* --- ALERTE SOLDE --- */}
+                                    {isSubmitDisabled && (
+                                        <div className="alert alert-warning border-0 small py-2 mt-4 mb-0 rounded-3 shadow-sm">
+                                            <i className="bi bi-exclamation-circle-fill me-2"></i>
+                                            Solde insuffisant pour cette dépense.
+                                        </div>
+                                    )}
+
                                     <div className="row g-3">
                                         <div className="col-12 col-md-6">
                                             <label className="form-label small fw-bold text-muted">TYPE</label>
@@ -278,13 +286,7 @@ const Transactions = () => {
                                         </div>
                                     </div>
 
-                                    {/* --- ALERTE SOLDE --- */}
-                                    {isSubmitDisabled && (
-                                        <div className="alert alert-warning border-0 small py-2 mt-4 mb-0 rounded-3 shadow-sm">
-                                            <i className="bi bi-exclamation-circle-fill me-2"></i>
-                                            Solde insuffisant pour cette dépense.
-                                        </div>
-                                    )}
+                                    
 
                                     <div className="d-flex gap-2 mt-4">
                                         <button type="button" className="btn btn-light flex-grow-1 fw-bold py-2 rounded-pill" onClick={() => setShowModal(false)}>Annuler</button>
