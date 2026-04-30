@@ -229,7 +229,7 @@ const MainLayout = () => {
                         marginBottom: isMobile ? '70px' : '0'
                     }}
                 >
-                    <div className="container-fluid py-0 py-md-2">
+                    <div className="container-fluid py-3 py-md-2">
                         <Outlet />
                     </div>
                 </main>
