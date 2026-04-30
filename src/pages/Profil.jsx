@@ -234,14 +234,14 @@ const handleLogout = async () => {
                                                 value={formData.email} readOnly={!isEditing}
                                                 onChange={(e) => setFormData({...formData, email: e.target.value})} required />
                                         </div>
-                                        {/*isEditing && (
+                                        isEditing && (
                                             <div className="col-md-6" style={{ textAlign: 'left' }}>
                                                 <label className="form-label small text-muted fw-bold">Téléphone</label>
                                                 <input type="tel" className={`form-control border-0 bg-light ${isEditing ? 'bg-white border-bottom' : ''}`} 
                                                     value={formData.phone} readOnly={!isEditing}
                                                     onChange={(e) => setFormData({...formData, phone: e.target.value})} required />
                                             </div>
-                                        )*/}
+                                        )
                                         {isEditing && (
                                             <div className="col-12 mt-3 d-flex gap-2">
                                                 <button type="submit" className="btn btn-sm px-4 text-white fw-bold shadow-sm" style={{ backgroundColor: theme.orange }}>Sauvegarder</button>
