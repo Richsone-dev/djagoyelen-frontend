@@ -44,6 +44,7 @@ function App() {
         {/* --- REDIRECTIONS --- */}
         <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
         <Route path="*" element={<Navigate to="/" />} />
+        <Route path="*" element={<h1>Page introuvable</h1>} />
       </Routes>
     </Router>
   );
