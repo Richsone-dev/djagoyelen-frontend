@@ -14,6 +14,7 @@ import MainLayout from './components/Mainlayout';
 import Parametres from './pages/Parametres';
 import Apropos from './pages/Apropos';
 import Notifications from './pages/Notifications';
+import Aide from './pages/Aide';
 
 function App() {
   const isAuthenticated = !!localStorage.getItem('token');
@@ -38,14 +39,15 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/budgets" element={<Budgets />} />
-          <Route path="/dettes" element={<Dettes />} />
+          {/*<Route path="/dettes" element={<Dettes />} />*/}
           <Route path="/rapports" element={<Rapports />} />
-          <Route path="/factures" element={<Facture />} />
+          {/*<Route path="/factures" element={<Facture />} />*/}
           <Route path="/profil" element={<Profil />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/parametres" element={<Parametres />} />
           <Route path="/apropos" element={<Apropos />} />
-          <Route path="/notifications" element={<Notifications />} />
+          {/*<Route path="/notifications" element={<Notifications />} />*/}
+          {/*<Route path="/aide" element={<Aide />} />*/}
         </Route>
 
         {/* --- REDIRECTIONS --- */}
