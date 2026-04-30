@@ -119,7 +119,7 @@ const MainLayout = () => {
 
                     {isMobile && (
                         <button className="btn text-white p-0 border-0" onClick={() => setIsSidebarOpen(false)}>
-                            <i className="bi bi-x-lg fs-4"></i>
+                            <i className="bi bi-x-lg fs-4" style={{border: colors.orange, borderRadius: '50px'}}></i>
                         </button>
                     )}
                 </div>
