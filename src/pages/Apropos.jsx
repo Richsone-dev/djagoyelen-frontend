@@ -4,6 +4,7 @@ import { useTheme } from '../context/ThemeContext';
 import img2 from '../assets/img2.png';
 import probleme from '../assets/probleme.svg';
 import solution from '../assets/solution.svg';
+import solution1 from '../assets/solution1.png';
 
 /* HOOK SCROLL ANIMATION */
 const useScrollAnimation = () => {
@@ -124,7 +125,7 @@ const ProblemSolution = ({ colors, cardStyle }) => {
                 </div>
                 <div className="col-md-6">
                     <div className="p-4 rounded-4 shadow border-start border-success border-4 glass premium-card" style={cardStyle}>
-                        <img src={solution} alt="Solution" className="mb-3" style={{ width: '40px', height: '40px' }} />
+                        <img src={solution1} alt="Solution" className="mb-3" style={{ width: '40px', height: '40px' }} />
                         <h5 className="text-success fw-bold">Solution</h5>
                         <p>Une plateforme centralisée pour une gestion intelligente et moderne.</p>
                     </div>
