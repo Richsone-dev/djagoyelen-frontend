@@ -67,6 +67,7 @@ const AproposDetails = () => {
                 img={img2}
                 text="DjagoYelen vise à transformer la gestion financière en Afrique en apportant clarté, transparence et performance aux entreprises."
                 colors={colors}
+                textAlign="justify"
             />
 
             {/* PROBLEME / SOLUTION */}
