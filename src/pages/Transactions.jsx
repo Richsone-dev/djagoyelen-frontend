@@ -191,24 +191,11 @@ const Transactions = () => {
         setErrorMsg('');
         setShowModal(true);
     };
-    const [isLoading, setIsLoading] = useState(false);
-
-    const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true); // Démarrage du chargement
-    try {
-        // ... votre logique api.post ou api.put ...
-    } catch (error) {
-        alert("Erreur");
-    } finally {
-        setIsLoading(false); // Arrêt du chargement même en cas d'erreur
-    }
-};
 
     const isSubmitDisabled = formData.type === 'depense' && soldeActuel < Number(formData.montant) && !formData.id;
 
     return (
-        <div className="container-fluid px-2 px-md-4 py-4 mb-5">
+        <div className="container-fluid px-2 px-md-4 py-4">
             
             {/* --- MODAL AJOUT/EDIT --- */}
             {showModal && (
@@ -235,14 +222,6 @@ const Transactions = () => {
                                         <div className="alert alert-danger border-0 small py-2 mb-3 rounded-3 d-flex align-items-center">
                                             <i className="bi bi-exclamation-triangle-fill me-2"></i>
                                             <div>{errorMsg}</div>
-                                        </div>
-                                    )}
-
-                                    {/* --- ALERTE SOLDE --- */}
-                                    {isSubmitDisabled && (
-                                        <div className="alert alert-warning border-0 small py-2 mt-4 mb-0 rounded-3 shadow-sm" style={{color: colors.dangerRed}}>
-                                            <i className="bi bi-exclamation-circle-fill me-2"></i>
-                                            Solde insuffisant pour cette dépense.
                                         </div>
                                     )}
 
@@ -299,26 +278,23 @@ const Transactions = () => {
                                         </div>
                                     </div>
 
-                                    
+                                    {/* --- ALERTE SOLDE --- */}
+                                    {isSubmitDisabled && (
+                                        <div className="alert alert-warning border-0 small py-2 mt-4 mb-0 rounded-3 shadow-sm">
+                                            <i className="bi bi-exclamation-circle-fill me-2"></i>
+                                            Solde insuffisant pour cette dépense.
+                                        </div>
+                                    )}
 
                                     <div className="d-flex gap-2 mt-4">
                                         <button type="button" className="btn btn-light flex-grow-1 fw-bold py-2 rounded-pill" onClick={() => setShowModal(false)}>Annuler</button>
                                         <button 
                                             type="submit" 
-                                            disabled={isSubmitDisabled || isLoading}
+                                            disabled={isSubmitDisabled}
                                             className="btn flex-grow-1 text-white fw-bold py-2 shadow rounded-pill" 
-                                            style={{ backgroundColor: (isSubmitDisabled || isLoading) ? '#ccc' : colors.orange, border: 'none' }}
+                                            style={{ backgroundColor: isSubmitDisabled ? '#ccc' : colors.orange, border: 'none' }}
                                         >
-                                            {isLoading ? (
-                                                <>
-                                                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                                    Patientez...
-                                                </>
-                                            ) : isSubmitDisabled ? (
-                                                'Solde insuffisant' 
-                                            ) : (
-                                                formData.id ? 'Mettre à jour' : 'Valider la transaction'
-                                            )}
+                                            {isSubmitDisabled ? 'Solde insuffisant' : (formData.id ? 'Mettre à jour' : 'Valider la transaction')}
                                         </button>
                                     </div>
                                 </form>
