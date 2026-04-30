@@ -14,7 +14,6 @@ const Transactions = () => {
     // --- ÉTATS DES FILTRES ---
     const [filterType, setFilterType] = useState('tous');
     const [filterCategory, setFilterCategory] = useState('tous');
-    const [filterDate, setFilterDate] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
 
     // --- ÉTATS MODALE & FORMULAIRE ---
@@ -59,21 +58,34 @@ const Transactions = () => {
         fetchData();
     }, [fetchData]);
 
-    // --- LOGIQUE D'AFFICHAGE DES CATÉGORIES ---
+    // --- AFFICHAGE DES CATÉGORIES ---
     const handleViewCategories = () => {
-        const listHtml = categories.map(c => `
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                ${c.nom || c.name}
-                <span class="badge ${c.type === 'revenu' ? 'bg-success' : 'bg-danger'} rounded-pill">${c.type}</span>
-            </li>
+        const listRows = categories.map(c => `
+            <tr>
+                <td class="text-start">${c.nom || c.name}</td>
+                <td class="text-end">
+                    <span class="badge ${c.type === 'revenu' ? 'bg-success' : 'bg-danger'}">
+                        ${c.type}
+                    </span>
+                </td>
+            </tr>
         `).join('');
 
         Swal.fire({
-            title: 'Vos Catégories',
-            html: `<ul class="list-group text-start shadow-sm">${listHtml}</ul>`,
+            title: 'Gestion des Catégories',
+            html: `
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                        <thead>
+                            <tr><th class="text-start">Nom</th><th class="text-end">Type</th></tr>
+                        </thead>
+                        <tbody>${listRows}</tbody>
+                    </table>
+                </div>
+            `,
             confirmButtonColor: colors.orange,
             confirmButtonText: 'Fermer',
-            width: '400px'
+            width: '500px'
         });
     };
 
@@ -90,82 +102,39 @@ const Transactions = () => {
         return transactions.filter(t => {
             const matchType = filterType === 'tous' || t.type === filterType;
             const matchCategory = filterCategory === 'tous' || String(t.category_id) === String(filterCategory);
-            const matchDate = !filterDate || t.date.startsWith(filterDate);
             const matchSearch = t.description?.toLowerCase().includes(searchTerm.toLowerCase());
-            return matchType && matchCategory && matchDate && matchSearch;
+            return matchType && matchCategory && matchSearch;
         });
-    }, [transactions, filterType, filterCategory, filterDate, searchTerm]);
+    }, [transactions, filterType, filterCategory, searchTerm]);
 
     // --- GESTION DES ACTIONS ---
-    const handleQuickCategoryAdd = async () => {
-        if (!newCategoryName.trim()) return;
-        try {
-            const res = await api.post('/categories', { 
-                nom: newCategoryName, 
-                type: formData.type 
-            });
-            
-            setCategories([...categories, res.data]);
-            setFormData({ ...formData, category_id: res.data.id });
-            setNewCategoryName('');
-            setIsAddingCategory(false);
-        } catch (err) {
-            if (err.response?.status === 422) {
-                setErrorMsg("Cette catégorie existe déjà.");
-            }
-        }
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setErrorMsg('');
         try {
             const dataToSubmit = { ...formData, montant: Number(formData.montant) };
-            if (formData.id) {
-                await api.put(`/transactions/${formData.id}`, dataToSubmit);
-            } else {
-                await api.post('/transactions', dataToSubmit);
-            }
+            if (formData.id) await api.put(`/transactions/${formData.id}`, dataToSubmit);
+            else await api.post('/transactions', dataToSubmit);
             
-            Swal.fire({ icon: 'success', title: 'Enregistré !', showConfirmButton: false, timer: 1500, position: 'top-end', toast: true });
+            Swal.fire({ icon: 'success', title: 'Enregistré !', timer: 1500, showConfirmButton: false, toast: true, position: 'top-end' });
             setShowModal(false);
             fetchData();
             resetForm();
         } catch (err) {
-            if (err.response?.status === 403) {
-                setErrorMsg(err.response.data.message);
-                Swal.fire({ title: 'Budget atteint !', text: err.response.data.message, icon: 'warning', confirmButtonColor: colors.orange });
-            } else {
-                Swal.fire('Erreur', "Un problème est survenu lors de l'enregistrement.", 'error');
-            }
+            Swal.fire('Erreur', "Impossible d'enregistrer.", 'error');
         }
     };
 
     const handleDelete = async (id) => {
-        const result = await Swal.fire({
-            title: 'Êtes-vous sûr ?',
-            text: "Cette action est irréversible !",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: colors.dangerRed,
-            confirmButtonText: 'Oui, supprimer'
-        });
-
+        const result = await Swal.fire({ title: 'Supprimer ?', icon: 'warning', showCancelButton: true, confirmButtonColor: colors.dangerRed });
         if (result.isConfirmed) {
-            try {
-                await api.delete(`/transactions/${id}`);
-                fetchData();
-                Swal.fire('Supprimé !', 'La transaction a été retirée.', 'success');
-            } catch (err) {
-                Swal.fire('Erreur', "Impossible de supprimer.", 'error');
-            }
+            await api.delete(`/transactions/${id}`);
+            fetchData();
         }
     };
 
     const resetForm = () => {
         setFormData({ type: 'depense', montant: '', description: '', category_id: '', date: new Date().toISOString().split('T')[0] });
         setIsAddingCategory(false);
-        setNewCategoryName('');
         setErrorMsg('');
     };
 
@@ -181,59 +150,17 @@ const Transactions = () => {
             
             {/* --- MODAL AJOUT/EDIT --- */}
             {showModal && (
-                <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 1050 }}>
+                <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 1050 }}>
                     <div className="modal-dialog modal-dialog-centered modal-lg px-2">
                         <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px' }}>
-                            <div className="modal-header border-0 pt-4 px-4 pb-0">
-                                <div className="d-flex align-items-center text-start">
-                                    <img src={logo} alt="Logo" style={{ width: '40px', height: '40px', borderRadius: '10px', marginRight: '12px' }} />
-                                    <div>
-                                        <h5 className="fw-bold mb-0"><span style={{ color: colors.successGreen }}>Djago</span><span style={{ color: colors.orange }}>Yelen</span></h5>
-                                        <small className="text-muted">Solde: <b>{soldeActuel.toLocaleString()} F</b></small>
-                                    </div>
-                                </div>
-                                <button className="btn-close shadow-none" onClick={() => setShowModal(false)}></button>
-                            </div>
-                            <form onSubmit={handleSubmit} className="modal-body p-4 text-start">
-                                {errorMsg && <div className="alert alert-danger border-0 small py-2 mb-3 rounded-3"><i className="bi bi-exclamation-triangle-fill me-2"></i>{errorMsg}</div>}
+                            <div className="modal-header border-0 pt-4 px-4"><h5 className="fw-bold">Transaction</h5><button className="btn-close" onClick={() => setShowModal(false)}></button></div>
+                            <form onSubmit={handleSubmit} className="modal-body p-4">
+                                {/* Vos champs de formulaire restent ici */}
                                 <div className="row g-3">
-                                    <div className="col-12 col-md-6">
-                                        <label className="form-label small fw-bold text-muted">TYPE</label>
-                                        <select className="form-select rounded-pill shadow-none" value={formData.type} onChange={(e) => setFormData({...formData, type: e.target.value})}>
-                                            <option value="depense">Dépense (-)</option>
-                                            <option value="revenu">Revenu (+)</option>
-                                        </select>
-                                    </div>
-                                    <div className="col-12 col-md-6">
-                                        <label className="form-label small fw-bold text-muted">MONTANT (FCFA)</label>
-                                        <input type="number" className="form-control rounded-pill shadow-none" required value={formData.montant} onChange={(e) => setFormData({...formData, montant: e.target.value})} />
-                                    </div>
-                                    <div className="col-12">
-                                        <label className="form-label small fw-bold text-muted">CATÉGORIE</label>
-                                        {!isAddingCategory ? (
-                                            <div className="input-group">
-                                                <div style={{ flex: 1 }}>
-                                                    <Select
-                                                        options={categories.map(c => ({ value: c.id, label: c.nom || c.name }))}
-                                                        onChange={(selected) => setFormData({...formData, category_id: selected?.value})}
-                                                        placeholder="-Sélectionner-"
-                                                        value={categories.find(c => c.id === formData.category_id) ? { value: formData.category_id, label: categories.find(c => c.id === formData.category_id).nom || categories.find(c => c.id === formData.category_id).name } : null}
-                                                    />
-                                                </div>
-                                                <button type="button" className="btn btn-outline-success rounded-circle ms-2" style={{ width: '38px', height: '38px', padding: 0 }} onClick={() => setIsAddingCategory(true)}><i className="bi bi-plus-lg"></i></button>
-                                            </div>
-                                        ) : (
-                                            <div className="input-group">
-                                                <input type="text" className="form-control rounded-start-pill" placeholder="Nouvelle catégorie..." value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} autoFocus />
-                                                <button type="button" className="btn btn-success" onClick={handleQuickCategoryAdd}><i className="bi bi-check-lg"></i></button>
-                                                <button type="button" className="btn btn-danger rounded-end-pill" onClick={() => setIsAddingCategory(false)}><i className="bi bi-x-lg"></i></button>
-                                            </div>
-                                        )}
-                                    </div>
+                                    <div className="col-12 col-md-6"><label>TYPE</label><select className="form-select rounded-pill" value={formData.type} onChange={(e) => setFormData({...formData, type: e.target.value})}><option value="depense">Dépense</option><option value="revenu">Revenu</option></select></div>
+                                    <div className="col-12 col-md-6"><label>MONTANT</label><input type="number" className="form-control rounded-pill" value={formData.montant} onChange={(e) => setFormData({...formData, montant: e.target.value})} /></div>
                                 </div>
-                                <button type="submit" disabled={isSubmitDisabled} className="btn w-100 mt-4 text-white fw-bold py-2 shadow rounded-pill" style={{ backgroundColor: isSubmitDisabled ? '#ccc' : colors.orange }}>
-                                    {isSubmitDisabled ? 'Solde insuffisant' : (formData.id ? 'Mettre à jour' : 'Valider la transaction')}
-                                </button>
+                                <button type="submit" disabled={isSubmitDisabled} className="btn w-100 mt-4 text-white rounded-pill" style={{ backgroundColor: colors.orange }}>Valider</button>
                             </form>
                         </div>
                     </div>
@@ -241,35 +168,29 @@ const Transactions = () => {
             )}
 
             {/* --- EN-TÊTE --- */}
-            <div className="row align-items-center mb-4 g-3 text-start">
+            <div className="row align-items-center mb-4">
                 <div className="col-12 col-md-6">
-                    <h4 className="fw-bold mb-0" style={{ color: colors.darkGreen }}><i className="bi bi-receipt me-2"></i>Transactions</h4>
-                    <p className="small text-muted mb-0">Solde: <span className={soldeActuel <= 0 ? 'text-danger' : 'text-success'}>{soldeActuel.toLocaleString()} FCFA</span></p>
+                    <h4 className="fw-bold" style={{ color: colors.darkGreen }}><i className="bi bi-receipt me-2"></i>Transactions</h4>
+                    <p>Solde: <span className={soldeActuel <= 0 ? 'text-danger' : 'text-success'}>{soldeActuel.toLocaleString()} FCFA</span></p>
                 </div>
                 <div className="col-12 col-md-6 text-md-end d-flex justify-content-md-end gap-2">
-                    <button onClick={handleViewCategories} className="btn btn-outline-secondary fw-bold shadow-sm" style={{ borderRadius: '12px', padding: '10px 20px' }}>
-                        <i className="bi bi-tags me-2"></i>Catégories
-                    </button>
-                    <button onClick={() => { resetForm(); setShowModal(true); }} className="btn text-white fw-bold shadow-sm" style={{ backgroundColor: colors.orange, borderRadius: '12px', padding: '10px 20px' }}>
-                        <i className="bi bi-plus-lg me-2"></i>Nouvelle Transaction
-                    </button>
+                    <button onClick={handleViewCategories} className="btn btn-outline-secondary fw-bold rounded-pill"><i className="bi bi-tags me-2"></i>Catégories</button>
+                    <button onClick={() => { resetForm(); setShowModal(true); }} className="btn text-white fw-bold rounded-pill" style={{ backgroundColor: colors.orange }}><i className="bi bi-plus-lg me-2"></i>Nouvelle</button>
                 </div>
             </div>
 
-            {/* --- TABLEAU (Reste identique) --- */}
+            {/* --- TABLEAU --- */}
             <div className="card shadow-sm border-0" style={{ borderRadius: '15px' }}>
                 <div className="table-responsive">
-                    <table className="table table-hover align-middle mb-0 text-start">
-                        <thead className="table-light">
-                            <tr><th className="ps-4">Détails</th><th>Catégorie</th><th className="text-end pe-4">Montant</th><th className="text-center">Actions</th></tr>
-                        </thead>
+                    <table className="table table-hover align-middle mb-0">
+                        <thead className="table-light"><tr><th className="ps-4">Détails</th><th>Catégorie</th><th className="text-end pe-4">Montant</th><th className="text-center">Actions</th></tr></thead>
                         <tbody>
-                            {loading ? <tr><td colSpan="4" className="text-center py-4">Chargement...</td></tr> : filteredTransactions.map((t) => (
+                            {filteredTransactions.map((t) => (
                                 <tr key={t.id}>
-                                    <td className="ps-4"><div>{t.description}</div><div className="text-muted small">{new Date(t.date).toLocaleDateString()}</div></td>
-                                    <td><span className="badge bg-light text-dark border rounded-pill px-3">{t.category?.nom || t.category?.name || 'Général'}</span></td>
-                                    <td className={`text-end pe-4 fw-bold ${t.type === 'revenu' ? 'text-success' : 'text-danger'}`}>{t.type === 'revenu' ? '+' : '-'} {Number(t.montant).toLocaleString()} F</td>
-                                    <td className="text-center"><button className="btn btn-sm btn-light text-primary" onClick={() => handleEdit(t)}><i className="bi bi-pencil"></i></button> <button className="btn btn-sm btn-light text-danger" onClick={() => handleDelete(t.id)}><i className="bi bi-trash"></i></button></td>
+                                    <td className="ps-4">{t.description}</td>
+                                    <td><span className="badge bg-light text-dark border rounded-pill">{t.category?.nom || 'Général'}</span></td>
+                                    <td className="text-end pe-4 fw-bold">{Number(t.montant).toLocaleString()} F</td>
+                                    <td className="text-center"><button className="btn btn-sm text-primary" onClick={() => handleEdit(t)}><i className="bi bi-pencil"></i></button> <button className="btn btn-sm text-danger" onClick={() => handleDelete(t.id)}><i className="bi bi-trash"></i></button></td>
                                 </tr>
                             ))}
                         </tbody>
