@@ -70,14 +70,14 @@ const Register = () => {
                         <div className="col-12 col-md-6 mb-3">
                             <label className="form-label fw-bold text-muted small ps-1">Mot de passe</label>
                             <input name="password" type="password" className="form-control form-control-lg" 
-                                   placeholder="*******" onChange={handleChange} required 
+                                   placeholder="**********" onChange={handleChange} required 
                                    style={{ borderRadius: '12px' }} />
                         </div>
                         {/* Confirmation */}
                         <div className="col-12 col-md-6 mb-4">
                             <label className="form-label fw-bold text-muted small ps-1">Confirmation</label>
                             <input name="password_confirmation" type="password" className="form-control form-control-lg" 
-                                   placeholder="*******" onChange={handleChange} required 
+                                   placeholder="**********" onChange={handleChange} required 
                                    style={{ borderRadius: '12px' }} />
                         </div>
                     </div>

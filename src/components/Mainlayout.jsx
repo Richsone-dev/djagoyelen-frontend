@@ -160,7 +160,7 @@ const MainLayout = () => {
                 <header className="shadow px-3 px-md-4 d-flex align-items-center" style={{ position: 'fixed', top: 0, right: 0, left: sidebarWidth, height: headerHeight, zIndex: 1000, transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)', borderBottom: isMobile ? `2px solid ${colors.orange}` : 'none', borderRadius: isMobile ? '0 0 20px 20px' : '0', boxShadow: isMobile ? '0 4px 12px rgba(0,0,0,0.1)' : '0 2px 4px rgba(0,0,0,0.1)', backgroundColor: colors.darkGreen }}>
                     <div className="d-flex justify-content-between align-items-center w-100">
                         <div className="d-flex align-items-center">
-                            <button className="btn d-md-none me-2 shadow-sm" style={{backgroundColor: colors.orange, color: 'white', padding: '0.5rem'}} onClick={() => setIsSidebarOpen(true)}>
+                            <button className="btn d-md-none me-2 shadow-sm" style={{backgroundColor: colors.orange, color: 'white', padding: '0.5rem 0.5rem'}} onClick={() => setIsSidebarOpen(true)}>
                                 <i className="bi bi-list fs-3"></i>
                             </button>
                             {isMobile && (

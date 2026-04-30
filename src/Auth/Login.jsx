@@ -73,7 +73,7 @@ const Login = () => {
 
                     <div className="mb-3 text-start">
                         <label className="form-label small fw-bold text-muted">Mot de passe</label>
-                        <input name="password" type="password" className="form-control" placeholder="*******"
+                        <input name="password" type="password" className="form-control" placeholder="**********"
                                onChange={handleChange} required />
                     </div>
 
