@@ -51,7 +51,7 @@ const Register = () => {
                 )}
 
                 <form onSubmit={handleRegister}>
-                    <div className="row" text-start>
+                    <div className="row" style={{textAlign: 'left'}}>
                         {/* Nom */}
                         <div className="col-12 mb-3">
                             <label className="form-label fw-bold text-muted small ps-1">Nom complet</label>
