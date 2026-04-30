@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
+import img2 from '../assets/img2.png';
 
 /* HOOK SCROLL ANIMATION */
 const useScrollAnimation = () => {
