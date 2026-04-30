@@ -4,22 +4,25 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { QRCodeSVG } from 'qrcode.react';
 import logo from '../assets/djago-logo.jpeg';
-import Select from 'react-select'; // Importation nécessaire
+import Select from 'react-select';
 
 const Facture = () => {
-    // --- ÉTATS ---
+
+    // ------------------ STATES ------------------
     const [factures, setFactures] = useState([]);
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [view, setView] = useState('list'); 
-    const [showClientModal, setShowClientModal] = useState(false);
-    const [showDetailsModal, setShowDetailsModal] = useState(false);
-    const [selectedFacture, setSelectedFacture] = useState(null);
+    const [view, setView] = useState('list');
     const [isEditing, setIsEditing] = useState(false);
-    const [newClient, setNewClient] = useState({ nom: '', email: '', telephone: '', adresse: '' });
     const [searchTerm, setSearchTerm] = useState('');
 
-    const colors = { darkGreen: '#0A3B2F', successGreen: '#198754', orange: '#E97223', lightBg: '#f4f7f6' };
+    const [selectedFacture, setSelectedFacture] = useState(null);
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
+    const [showClientModal, setShowClientModal] = useState(false);
+
+    const [newClient, setNewClient] = useState({
+        nom: '', email: '', telephone: '', adresse: ''
+    });
 
     const initialFormState = {
         id: null,
@@ -33,87 +36,274 @@ const Facture = () => {
 
     const [formData, setFormData] = useState(initialFormState);
 
-    // --- CHARGEMENT ---
+    // ------------------ FETCH DATA ------------------
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
-            const [resFactures, resClients] = await Promise.all([api.get('/factures'), api.get('/clients')]);
-            setFactures(Array.isArray(resFactures.data) ? resFactures.data : []);
-            setClients(Array.isArray(resClients.data) ? resClients.data : []);
-        } catch (error) { console.error("Erreur:", error); } 
-        finally { setLoading(false); }
+            const [resFactures, resClients] = await Promise.all([
+                api.get('/factures'),
+                api.get('/clients')
+            ]);
+
+            setFactures(resFactures.data?.data || resFactures.data || []);
+            setClients(resClients.data?.data || resClients.data || []);
+
+        } catch (error) {
+            console.error("Erreur API :", error.response || error);
+        } finally {
+            setLoading(false);
+        }
     }, []);
 
-    useEffect(() => { fetchData(); }, [fetchData]);
-
-    // --- CALCULS & LOGIQUE ---
     useEffect(() => {
-        const ht = formData.items.reduce((sum, item) => sum + (Number(item.quantite || 0) * Number(item.prix_unitaire || 0)), 0);
+        fetchData();
+    }, [fetchData]);
+
+    // ------------------ CLIENT OPTIONS ------------------
+    const clientOptions = clients.map(c => ({
+        value: c.id,
+        label: `${c.nom} (${c.telephone})`
+    }));
+
+    // ------------------ FILTER ------------------
+    const filteredFactures = factures.filter(f => {
+        const search = searchTerm.toLowerCase();
+        return (
+            f.client?.nom?.toLowerCase().includes(search) ||
+            f.client?.telephone?.toLowerCase().includes(search)
+        );
+    });
+
+    // ------------------ CALCUL ------------------
+    useEffect(() => {
+        const ht = formData.items.reduce(
+            (sum, item) =>
+                sum + Number(item.quantite || 0) * Number(item.prix_unitaire || 0),
+            0
+        );
+
         const tva = ht * (Number(formData.tva_taux) / 100);
-        setFormData(prev => ({ ...prev, total_ht: ht, total_ttc: ht + tva }));
+
+        setFormData(prev => ({
+            ...prev,
+            total_ht: ht,
+            total_ttc: ht + tva
+        }));
     }, [formData.items, formData.tva_taux]);
 
-    const formatPrix = (prix) => Number(prix).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    const formatPrix = (prix) =>
+        Number(prix).toLocaleString('fr-FR');
 
-    const generatePDF = (facture) => { /* Votre logique existante inchangée */ };
+    // ------------------ CRUD ------------------
+    const handleEdit = (facture) => {
+        setIsEditing(true);
+
+        setFormData({
+            ...facture,
+            client_id: facture.client_id || facture.client?.id,
+            items: facture.items || facture.lignes || []
+        });
+
+        setView('form');
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
         try {
-            if (isEditing) await api.put(`/factures/${formData.id}`, formData);
-            else await api.post('/factures', formData);
+            if (isEditing) {
+                await api.put(`/factures/${formData.id}`, formData);
+            } else {
+                await api.post('/factures', formData);
+            }
+
             setView('list');
             setFormData(initialFormState);
             fetchData();
-        } catch (error) { alert("Erreur d'enregistrement"); }
+
+        } catch (error) {
+            console.error(error);
+            alert("Erreur lors de l'enregistrement");
+        }
     };
 
-    const handleItemChange = (idx, field, val) => {
+    const handleDelete = async (id) => {
+        if (window.confirm("Supprimer cette facture ?")) {
+            try {
+                await api.delete(`/factures/${id}`);
+                fetchData();
+            } catch {
+                alert("Erreur suppression");
+            }
+        }
+    };
+
+    const handleItemChange = (idx, field, value) => {
         const newItems = [...formData.items];
-        newItems[idx][field] = field === 'designation' ? val : (val === '' ? 0 : Number(val));
+        newItems[idx][field] =
+            field === 'designation' ? value : Number(value);
+
         setFormData({ ...formData, items: newItems });
     };
 
-    // --- RENDU ---
-    if (loading) return <div className="text-center mt-5"><div className="spinner-border text-success"></div></div>;
+    const handleQuickAddClient = async (e) => {
+        e.preventDefault();
 
+        try {
+            const res = await api.post('/clients', newClient);
+
+            setClients(prev => [...prev, res.data]);
+            setFormData({ ...formData, client_id: res.data.id });
+
+            setShowClientModal(false);
+            setNewClient({ nom: '', email: '', telephone: '', adresse: '' });
+
+        } catch {
+            alert("Erreur ajout client");
+        }
+    };
+
+    // ------------------ PDF ------------------
+    const generatePDF = (facture) => {
+        const doc = new jsPDF();
+
+        doc.text(`Facture N° ${facture.num_facture}`, 10, 10);
+        doc.text(`Client: ${facture.client?.nom}`, 10, 20);
+
+        autoTable(doc, {
+            startY: 30,
+            head: [['Désignation', 'Qté', 'Prix', 'Total']],
+            body: (facture.items || []).map(i => [
+                i.designation,
+                i.quantite,
+                i.prix_unitaire,
+                i.quantite * i.prix_unitaire
+            ])
+        });
+
+        doc.save(`facture_${facture.num_facture}.pdf`);
+    };
+
+    // ------------------ LOADING ------------------
+    if (loading) {
+        return <div className="text-center mt-5">Chargement...</div>;
+    }
+
+    // ------------------ UI ------------------
     return (
-        <div className="p-2 p-md-4" style={{ backgroundColor: colors.lightBg, minHeight: '100vh' }}>
-            <div className="container-fluid">
-                {view === 'list' ? (
-                    /* Votre liste existante */
-                    <div className="card shadow-sm p-3">
-                        <button className="btn btn-primary" onClick={() => setView('form')}>+ Créer</button>
-                        {/* Votre tableau ici */}
-                    </div>
-                ) : (
-                    <div className="card shadow p-4">
-                        <h3>{isEditing ? 'Modifier' : 'Nouvelle'} Facture</h3>
-                        <form onSubmit={handleSubmit}>
-                            <div className="mb-3">
-                                <label className="fw-bold">Client</label>
-                                <div className="d-flex gap-2">
-                                    <div style={{ flexGrow: 1 }}>
-                                        {/* CORRECTION : Remplacement du select par Select */}
-                                        <Select
-                                            options={clients.map(c => ({ value: c.id, label: c.nom }))}
-                                            value={clients.find(c => c.id === formData.client_id) ? 
-                                                { value: formData.client_id, label: clients.find(c => c.id === formData.client_id).nom } : null}
-                                            onChange={(selected) => setFormData({ ...formData, client_id: selected?.value })}
-                                            placeholder="-- Sélectionnez un client --"
-                                            isSearchable
-                                            required
-                                        />
-                                    </div>
-                                    <button type="button" className="btn btn-dark" onClick={() => setShowClientModal(true)}>+</button>
-                                </div>
+        <div className="container py-4">
+
+            {view === 'list' ? (
+                <>
+                    <h3>Factures</h3>
+
+                    <input
+                        className="form-control mb-3"
+                        placeholder="Recherche client..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+
+                    <button
+                        className="btn btn-success mb-3"
+                        onClick={() => {
+                            setIsEditing(false);
+                            setFormData(initialFormState);
+                            setView('form');
+                        }}
+                    >
+                        + Nouvelle facture
+                    </button>
+
+                    <table className="table">
+                        <thead>
+                            <tr>
+                                <th>N°</th>
+                                <th>Client</th>
+                                <th>Total</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {filteredFactures.map(f => (
+                                <tr key={f.id}>
+                                    <td>{f.num_facture}</td>
+                                    <td>{f.client?.nom}</td>
+                                    <td>{formatPrix(f.total_ttc)}</td>
+                                    <td>
+                                        <button onClick={() => handleEdit(f)}>✏️</button>
+                                        <button onClick={() => handleDelete(f.id)}>🗑</button>
+                                        <button onClick={() => generatePDF(f)}>📄</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </>
+            ) : (
+                <form onSubmit={handleSubmit}>
+                    <h3>{isEditing ? 'Modifier' : 'Créer'} Facture</h3>
+
+                    <Select
+                        options={clientOptions}
+                        value={clientOptions.find(c => c.value === formData.client_id)}
+                        onChange={(selected) =>
+                            setFormData({ ...formData, client_id: selected.value })
+                        }
+                    />
+
+                    <input
+                        type="date"
+                        className="form-control my-2"
+                        value={formData.date_emission}
+                        onChange={(e) =>
+                            setFormData({ ...formData, date_emission: e.target.value })
+                        }
+                    />
+
+                    {formData.items.map((item, i) => (
+                        <div key={i} className="row mb-2">
+                            <div className="col">
+                                <input
+                                    className="form-control"
+                                    placeholder="Désignation"
+                                    value={item.designation}
+                                    onChange={(e) =>
+                                        handleItemChange(i, 'designation', e.target.value)
+                                    }
+                                />
                             </div>
-                            {/* Reste de votre formulaire existant intact */}
-                            <button type="submit" className="btn btn-success w-100 mt-3">ENREGISTRER</button>
-                        </form>
-                    </div>
-                )}
-            </div>
-            {/* Vos modales restent inchangées */}
+                            <div className="col">
+                                <input
+                                    type="number"
+                                    className="form-control"
+                                    value={item.quantite}
+                                    onChange={(e) =>
+                                        handleItemChange(i, 'quantite', e.target.value)
+                                    }
+                                />
+                            </div>
+                            <div className="col">
+                                <input
+                                    type="number"
+                                    className="form-control"
+                                    value={item.prix_unitaire}
+                                    onChange={(e) =>
+                                        handleItemChange(i, 'prix_unitaire', e.target.value)
+                                    }
+                                />
+                            </div>
+                        </div>
+                    ))}
+
+                    <h4>Total: {formatPrix(formData.total_ttc)}</h4>
+
+                    <button className="btn btn-primary mt-3">
+                        Enregistrer
+                    </button>
+                </form>
+            )}
         </div>
     );
 };
