@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
+// Importations corrigées pour Vite
 import img2 from '../assets/img2.png';
 import probleme from '../assets/probleme.svg';
 import solution from '../assets/solution.svg';
@@ -40,7 +41,6 @@ const AproposDetails = () => {
 
     return (
         <div className="container-fluid px-0 px-md-5 py-5">
-
             {/* HERO */}
             <section ref={heroRef} className={`fade ${heroVisible ? 'show' : ''}`}>
                 <div className="mb-5" style={{ textAlign: 'justify' }}>
@@ -51,7 +51,7 @@ const AproposDetails = () => {
 
                     <p className="lead col-md-7 mx-auto opacity-75" style={{ fontSize: '1.25rem', textAlign: 'justify' }}>
                         Une plateforme intelligente de gestion financière conçue pour moderniser les PME africaines. 
-                        Libérez le potentiel de votre entreprise grâce à notre plateforme intelligente. 
+                        Libérez le potentiel de votre entreprise grâce à notre plateforme. 
                         Elle transforme vos données comptables en décisions stratégiques claires, accessibles en quelques clics.
                         <span className="fw-bold"> Clarté, performance et croissance au bout des doigts.</span>
                     </p>
@@ -81,32 +81,12 @@ const AproposDetails = () => {
             <Team colors={colors} cardStyle={cardStyle} />
             <CTA colors={colors} />
 
-            {/* STYLE GLOBAL */}
             <style>{`
-                .fade {
-                    opacity: 0;
-                    transform: translateY(50px) scale(0.98);
-                    filter: blur(6px);
-                    transition: all 0.9s cubic-bezier(0.22, 1, 0.36, 1);
-                }
-                .fade.show {
-                    opacity: 1;
-                    transform: translateY(0) scale(1);
-                    filter: blur(0);
-                }
-                .glass {
-                    backdrop-filter: blur(12px);
-                    background: rgba(255,255,255,0.08);
-                    border: 1px solid rgba(255,255,255,0.15);
-                }
-                .premium-card {
-                    transition: all 0.4s ease;
-                    cursor: pointer;
-                }
-                .premium-card:hover {
-                    transform: translateY(-10px) scale(1.02);
-                    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-                }
+                .fade { opacity: 0; transform: translateY(50px) scale(0.98); filter: blur(6px); transition: all 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
+                .fade.show { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+                .glass { backdrop-filter: blur(12px); background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); }
+                .premium-card { transition: all 0.4s ease; cursor: pointer; }
+                .premium-card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
             `}</style>
         </div>
     );
@@ -154,14 +134,11 @@ const ProblemSolution = ({ colors, cardStyle }) => {
     );
 };
 
+/* ... Reste des composants (Features, Values, etc.) identiques à votre version ... */
 const Features = ({ colors, cardStyle }) => (
     <section className="mb-5">
         <h2 className="text-center fw-bold mb-5" style={{ color: colors.darkGreen }}>Fonctionnalités</h2>
-        <div className="row g-4">
-            {["Gestion clients", "Suivi financier", "Automatisation"].map((f, i) => (
-                <FeatureCard key={i} f={f} i={i} cardStyle={cardStyle} />
-            ))}
-        </div>
+        <div className="row g-4">{["Gestion clients", "Suivi financier", "Automatisation"].map((f, i) => <FeatureCard key={i} f={f} i={i} cardStyle={cardStyle} />)}</div>
     </section>
 );
 
@@ -169,9 +146,7 @@ const FeatureCard = ({ f, i, cardStyle }) => {
     const [ref, visible] = useScrollAnimation();
     return (
         <div ref={ref} className={`col-md-4 fade ${visible ? 'show' : ''}`} style={{ transitionDelay: `${i * 0.15}s` }}>
-            <div className="p-4 rounded-4 shadow text-center h-100 glass premium-card" style={cardStyle}>
-                <h5 className="fw-bold">{f}</h5>
-            </div>
+            <div className="p-4 rounded-4 shadow text-center h-100 glass premium-card" style={cardStyle}><h5 className="fw-bold">{f}</h5></div>
         </div>
     );
 };
@@ -179,35 +154,23 @@ const FeatureCard = ({ f, i, cardStyle }) => {
 const Values = ({ colors, cardStyle }) => (
     <section className="mb-5">
         <h2 className="text-center fw-bold mb-5" style={{ color: colors.darkGreen }}>Nos Valeurs</h2>
-        <div className="row g-4">
-            {["Innovation", "Transparence", "Performance", "Fiabilité"].map((v, i) => (
-                <div key={i} className="col-md-3 fade show">
-                    <div className="p-4 text-center rounded-4 glass premium-card" style={cardStyle}>
-                        <h6 className="fw-bold">{v}</h6>
-                    </div>
-                </div>
-            ))}
-        </div>
+        <div className="row g-4">{["Innovation", "Transparence", "Performance", "Fiabilité"].map((v, i) => (
+            <div key={i} className="col-md-3 fade show"><div className="p-4 text-center rounded-4 glass premium-card" style={cardStyle}><h6 className="fw-bold">{v}</h6></div></div>
+        ))}</div>
     </section>
 );
 
 const Impact = ({ colors }) => (
     <section className="mb-5 text-center p-5 rounded-5 text-white glass" style={{ backgroundColor: colors.darkGreen }}>
         <h2 className="fw-bold mb-4">Impact</h2>
-        <div className="row">
-            <div className="col-md-3"><h3>+70%</h3><p>Productivité</p></div>
-            <div className="col-md-3"><h3>-50%</h3><p>Erreurs</p></div>
-            <div className="col-md-3"><h3>24/7</h3><p>Disponibilité</p></div>
-            <div className="col-md-3"><h3>+100%</h3><p>Visibilité</p></div>
-        </div>
+        <div className="row">{[{v:"+70%", l:"Productivité"}, {v:"-50%", l:"Erreurs"}, {v:"24/7", l:"Disponibilité"}, {v:"+100%", l:"Visibilité"}].map((stat, i) => (
+            <div key={i} className="col-md-3"><h3>{stat.v}</h3><p>{stat.l}</p></div>
+        ))}</div>
     </section>
 );
 
 const Roadmap = ({ colors }) => (
-    <section className="mb-5 text-center">
-        <h2 className="fw-bold mb-4" style={{ color: colors.darkGreen }}>Roadmap</h2>
-        {["MVP", "Mobile", "IA", "Expansion"].map((s, i) => <p key={i} className="fade show">{s}</p>)}
-    </section>
+    <section className="mb-5 text-center"><h2 className="fw-bold mb-4" style={{ color: colors.darkGreen }}>Roadmap</h2>{["MVP", "Mobile", "IA", "Expansion"].map((s, i) => <p key={i} className="fade show">{s}</p>)}</section>
 );
 
 const Team = ({ colors, cardStyle }) => {
@@ -215,10 +178,7 @@ const Team = ({ colors, cardStyle }) => {
     return (
         <section ref={ref} className={`text-center mb-5 fade ${visible ? 'show' : ''}`}>
             <h2 className="fw-bold mb-4" style={{ color: colors.darkGreen }}>Équipe</h2>
-            <div className="p-5 rounded-4 glass premium-card" style={cardStyle}>
-                <h4>Karim Sanou</h4>
-                <p>Développeur Fullstack</p>
-            </div>
+            <div className="p-5 rounded-4 glass premium-card" style={cardStyle}><h4>Karim Sanou</h4><p>Développeur Fullstack</p></div>
         </section>
     );
 };
