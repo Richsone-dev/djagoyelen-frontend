@@ -7,6 +7,7 @@ export default defineConfig({
     // On force esbuild et on désactive lightningcss explicitement
     cssMinifier: 'esbuild', 
     minify: 'esbuild',
+    outDir: 'dist'
   },
   css: {
     transformer: 'postcss',
