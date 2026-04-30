@@ -131,7 +131,7 @@ const MainLayout = () => {
                                 {section.links.map((link) => (
                                     <li className="nav-item mb-1" key={link.path}>
                                         {link.disabled ? (
-                                            <span className="nav-link text-white d-flex align-items-center p-2" style={{ borderRadius: '10px', transition: '0.3s' }}>
+                                            <span className="nav-link text-white d-flex align-items-center p-2" style={{ borderRadius: '10px', transition: '0.3s', cursor: 'not-allowed', backgroundColor: 'rgba(255,255,255,0.1)' }} title={link.tooltip}>
                                                 <i className={`bi bi-${link.icon} fs-5`} style={{ color: colors.successGreen, marginRight: (isCollapsed && !isMobile) ? '0' : '15px' }}></i>
                                                 {(!isCollapsed || isMobile) && <span style={{ fontSize: '0.9rem', whiteSpace: 'nowrap' }}>{link.label}</span>}
                                             </span>
