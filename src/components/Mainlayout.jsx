@@ -45,16 +45,26 @@ const MainLayout = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    const handleLogout = async () => {
-        try {
-            await api.post('/logout');
-            localStorage.clear();
-            window.location.href = '/login';
-        } catch (error) {
-            localStorage.clear();
-            window.location.href = '/login';
-        }
-    };
+    const navigate = useNavigate();
+
+        const handleLogout = async () => {
+            try {
+                await api.post('/logout');
+            } catch (error) {
+                // même si erreur, on déconnecte quand même côté frontend
+            } finally {
+                // 🔐 nettoyage
+                localStorage.clear();
+
+                // ✅ navigation React
+                navigate('/login', { replace: true });
+
+                // ⚠️ force React à relire localStorage
+                setTimeout(() => {
+                    window.location.reload();
+                }, 100);
+            }
+        };
 
     const menuSections = [
         {
