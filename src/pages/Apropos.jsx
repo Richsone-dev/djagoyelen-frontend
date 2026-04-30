@@ -54,9 +54,9 @@ const AproposDetails = () => {
 
                     <img
                         src={img2}
-                        className="img-fluid rounded-5 shadow-lg mt-4"
-                        style={{ maxHeight: '420px', objectFit: 'cover' }}
-                        alt=""
+                        className="img-fluid shadow-lg mt-0"
+                        style={{ maxHeight: '500px', objectFit: 'cover' }}
+                        alt="Visuel 1 représentant la plateforme DjagoYelen, avec des éléments graphiques modernes et dynamiques."
                     />
                 </div>
             </section>
