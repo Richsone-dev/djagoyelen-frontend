@@ -33,6 +33,12 @@ const AproposDetails = () => {
         color: colors.textColor,
         border: 'none'
     };
+    
+    const colors = {
+        darkGreen: '#0A3B2F',
+        orange: '#E97223',
+        successGreen: '#198754'
+    };
 
     const [heroRef, heroVisible] = useScrollAnimation();
 
@@ -44,7 +50,7 @@ const AproposDetails = () => {
                 <div className="text-left mb-5">
 
                     <h1 className="display-3 fw-bold" style={{ color: colors.darkGreen }}>
-                        DjagoYelen
+                        Djago<span style={{color: colors.orange}}>Yelen</span>
                     </h1>
 
                     <p className="lead col-md-7 mx-auto opacity-75" style={{ fontSize: '1.25rem', textAlign: 'justify' }}>
