@@ -20,26 +20,13 @@ const Login = () => {
 
         try {
             const { data } = await api.post('/login', credentials);
-
-            // 🔐 stockage
             localStorage.setItem('token', data.token);
-            if (data.user) {
-                localStorage.setItem('user', JSON.stringify(data.user));
-            }
-
-            // ✅ navigation + refresh (solution adaptée à ton App actuel)
+            if (data.user) localStorage.setItem('user', JSON.stringify(data.user));
+            
             navigate('/dashboard', { replace: true });
-
-            // ⚠️ force React à relire localStorage
-            setTimeout(() => {
-                window.location.reload();
-            }, 100);
-
+            setTimeout(() => window.location.reload(), 100);
         } catch (err) {
-            const errorMessage =
-                err.response?.data?.message ||
-                'Email ou mot de passe incorrect.';
-            setError(errorMessage);
+            setError(err.response?.data?.message || 'Email ou mot de passe incorrect.');
         } finally {
             setLoading(false);
         }
@@ -52,103 +39,58 @@ const Login = () => {
     };
 
     return (
-        <div
-            className="container-fluid min-vh-100 d-flex align-items-center justify-content-center py-4"
-            style={{ backgroundColor: '#f8f9fa' }}
-        >
-            <div
-                className="card border-0 p-3 p-md-5 mx-2"
-                style={{
-                    maxWidth: '450px',
-                    width: '100%',
-                    borderRadius: '15px',
-                    backgroundColor: '#ffffff'
-                }}
-            >
+        <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center p-3" 
+             style={{ backgroundColor: '#f0f2f5' }}>
+            
+            <div className="card border-0 shadow-lg p-4 p-md-5" 
+                 style={{ maxWidth: '420px', width: '100%', borderRadius: '20px' }}>
+                
+                {/* Header Section */}
                 <div className="text-center mb-4">
-                    <div className="d-flex align-items-center justify-content-center mb-3">
-                        <img
-                            src={logo}
-                            alt="Logo"
-                            style={{
-                                width: '50px',
-                                height: '50px',
-                                marginRight: '12px'
-                            }}
-                        />
-                        <h2 className="fw-bold mb-0">
-                            <span style={{ color: colors.successGreen }}>
-                                Djago
-                            </span>
-                            <span style={{ color: colors.orange }}>
-                                Yelen
-                            </span>
-                        </h2>
-                    </div>
-                    <p className="text-muted small">
-                        Connectez-vous à votre espace financier
-                    </p>
+                    <img src={logo} alt="Logo" className="mb-3" 
+                         style={{ width: '60px', height: '60px', borderRadius: '15px', objectFit: 'cover' }} />
+                    <h2 className="fw-bold mb-1">
+                        <span style={{ color: colors.successGreen }}>Djago</span>
+                        <span style={{ color: colors.orange }}>Yelen</span>
+                    </h2>
+                    <p className="text-muted">Connectez-vous à votre espace</p>
                 </div>
 
+                {/* Error Alert */}
                 {error && (
-                    <div className="alert alert-danger text-center small">
+                    <div className="alert alert-danger py-2 text-center small rounded-pill">
                         {error}
                     </div>
                 )}
 
+                {/* Form Section */}
                 <form onSubmit={handleLogin}>
                     <div className="mb-3">
-                        <label className="form-label small fw-bold text-muted">
-                            Email
-                        </label>
-                        <input
-                            name="email"
-                            type="email"
-                            className="form-control"
-                            onChange={handleChange}
-                            required
-                        />
+                        <label className="form-label fw-bold small text-muted ms-1">Email</label>
+                        <input name="email" type="email" className="form-control form-control-lg" 
+                               placeholder="exemple@mail.com" onChange={handleChange} required
+                               style={{ borderRadius: '12px', fontSize: '1rem' }} />
                     </div>
 
-                    <div className="mb-3">
-                        <label className="form-label small fw-bold text-muted">
-                            Mot de passe
-                        </label>
-                        <input
-                            name="password"
-                            type="password"
-                            className="form-control"
-                            onChange={handleChange}
-                            required
-                        />
+                    <div className="mb-4">
+                        <label className="form-label fw-bold small text-muted ms-1">Mot de passe</label>
+                        <input name="password" type="password" className="form-control form-control-lg" 
+                               placeholder="••••••••" onChange={handleChange} required
+                               style={{ borderRadius: '12px', fontSize: '1rem' }} />
                     </div>
 
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="btn w-100 text-white fw-bold"
-                        style={{
-                            backgroundColor: colors.orange,
-                            borderRadius: '10px',
-                            height: '50px'
-                        }}
-                    >
-                        {loading ? 'Connexion...' : 'Se connecter'}
+                    <button type="submit" disabled={loading} 
+                            className="btn btn-lg w-100 text-white fw-bold shadow-sm"
+                            style={{ backgroundColor: colors.orange, borderRadius: '12px', transition: '0.3s' }}>
+                        {loading ? 'Chargement...' : 'Se connecter'}
                     </button>
-
-                    <div className="text-center mt-3 small">
-                        <span className="text-muted">
-                            Pas de compte ?
-                        </span>{' '}
-                        <Link
-                            to="/register"
-                            className="fw-bold text-decoration-none"
-                            style={{ color: colors.successGreen }}
-                        >
-                            Créer un compte
-                        </Link>
-                    </div>
                 </form>
+
+                <div className="text-center mt-4">
+                    <span className="text-muted small">Pas de compte ? </span>
+                    <Link to="/register" className="fw-bold text-decoration-none" 
+                          style={{ color: colors.successGreen }}>Créer un compte</Link>
+                </div>
             </div>
         </div>
     );
