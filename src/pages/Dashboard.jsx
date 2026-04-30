@@ -176,7 +176,7 @@ const Dashboard = () => {
             {/* --- CARTES DE RÉSUMÉ --- */}
             <div className="row g-3 mb-4">
                 <div className="col-12 col-md-4" >
-                    <div className="card shadow-sm border-0 p-1 text-white h-100" style={{ borderLeft: `10px solid ${colors.orange}`,backgroundColor: colors.darkGreen, borderRadius: '15px' }}>
+                    <div className="card shadow-sm border-0 p-3 text-white h-100" style={{ borderLeft: `10px solid ${colors.orange}`,backgroundColor: colors.darkGreen, borderRadius: '15px' }}>
                         <div className="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 className="text-uppercase small fw-bold opacity-75">Solde Total</h6>
