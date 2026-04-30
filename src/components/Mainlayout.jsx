@@ -68,13 +68,13 @@ const MainLayout = () => {
                 { path: 'budgets', label: 'Budgets', icon: 'piggy-bank' },
                 { path: 'dettes', label: 'Dettes', icon: 'person-dash' },
                 { path: 'rapports', label: 'Rapports', icon: 'file-earmark-bar-graph' },
-                { path: 'factures', label: 'Factures', icon: 'receipt', disabled: true , tooltip: "Bientôt disponible", color: colors.accentPurple },
+                { path: 'factures', label: 'Factures bientôt disponible', icon: 'receipt', disabled: true , tooltip: "Bientôt disponible", color: colors.accentPurple },
                 { path: 'clients', label: 'Clients', icon: 'people' },
                 { path: 'profil', label: 'Profil', icon: 'person' },
                 { path: 'parametres', label: 'Paramètres', icon: 'gear' },
                 { path: 'apropos', label: 'À propos', icon: 'info-circle' },
-                { path: 'notifications', label: 'Notifications', icon: 'bell', disabled: true , tooltip: "Bientôt disponible"},
-                { path: 'aide', label: 'Aide', icon: 'question-circle', disabled: true, tooltip: "Bientôt disponible"},
+                { path: 'notifications', label: 'Notifications bientôt disponible', icon: 'bell', disabled: true , tooltip: "Bientôt disponible", color: colors.accentPurple },
+                { path: 'aide', label: 'Aide bientôt disponible', icon: 'question-circle', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple},
             ]
         }
     ];
