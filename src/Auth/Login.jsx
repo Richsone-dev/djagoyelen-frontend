@@ -94,11 +94,11 @@ const Login = () => {
                             required 
                         />
                         {/* Utilisation de text-end au lieu de text-right (Bootstrap 5) */}
-                        <div className="text-end mt-2">
+                        {/* <div className="text-end mt-2">
                             <Link to="/forgot-password" size="small" className="fw-bold text-decoration-none small" style={{ color: colors.successGreen }}>
                                 Mot de passe oublié ?
                             </Link>
-                        </div>
+                        </div> */}
                     </div>
 
                     <button 

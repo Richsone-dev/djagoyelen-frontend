@@ -174,7 +174,7 @@ const MainLayout = () => {
             >
                 {/* HEADER : TOUJOURS BLEU SUR TOUS LES ÉCRANS */}
                 <header 
-                    className="shadow-sm px-3 px-md-4 d-flex align-items-center"
+                    className="shadow px-3 px-md-4 d-flex align-items-center"
                     style={{ 
                         position: 'fixed',
                         top: 0,
