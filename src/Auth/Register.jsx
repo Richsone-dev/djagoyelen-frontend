@@ -42,7 +42,7 @@ const Register = () => {
                 {/* En-tête */}
                 <div className="text-center mb-4">
                     <img src={logo} alt="Logo" style={{ width: '70px', height: '70px', borderRadius: '15px', objectFit: 'cover' }} />
-                    <h2 className="fw-bold mt-3 mb-1">Rejoignez DjagoYelen</h2>
+                    <h2 className="fw-bold mt-3 mb-1">Créez votre compte</h2>
                     <p className="text-muted small">Créez votre compte pour commencer</p>
                 </div>
 
@@ -51,7 +51,7 @@ const Register = () => {
                 )}
 
                 <form onSubmit={handleRegister}>
-                    <div className="row">
+                    <div className="row" text-start>
                         {/* Nom */}
                         <div className="col-12 mb-3">
                             <label className="form-label fw-bold text-muted small ps-1">Nom complet</label>
@@ -70,14 +70,14 @@ const Register = () => {
                         <div className="col-12 col-md-6 mb-3">
                             <label className="form-label fw-bold text-muted small ps-1">Mot de passe</label>
                             <input name="password" type="password" className="form-control form-control-lg" 
-                                   placeholder="••••••••" onChange={handleChange} required 
+                                   placeholder="*******" onChange={handleChange} required 
                                    style={{ borderRadius: '12px' }} />
                         </div>
                         {/* Confirmation */}
                         <div className="col-12 col-md-6 mb-4">
                             <label className="form-label fw-bold text-muted small ps-1">Confirmation</label>
                             <input name="password_confirmation" type="password" className="form-control form-control-lg" 
-                                   placeholder="••••••••" onChange={handleChange} required 
+                                   placeholder="*******" onChange={handleChange} required 
                                    style={{ borderRadius: '12px' }} />
                         </div>
                     </div>
@@ -90,7 +90,7 @@ const Register = () => {
                 </form>
 
                 <div className="text-center mt-4">
-                    <span className="text-muted small">Déjà membre ? </span>
+                    <span className="text-muted small">Vous avez déjà un compte ? </span>
                     <Link to="/login" className="fw-bold text-decoration-none" style={{ color: '#E97223' }}>
                         Se connecter
                     </Link>
