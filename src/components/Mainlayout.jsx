@@ -130,7 +130,7 @@ const MainLayout = () => {
                             <ul className="nav flex-column">
                                 {section.links.map((link) => (
                                     <li className="nav-item mb-1" key={link.path}>
-                                        {link.disabled ? (
+                                        {link.disabled ? link.color : colors.successGreen (
                                             <span className="nav-link text-white d-flex align-items-center p-2" style={{ borderRadius: '10px', transition: '0.3s' }}>
                                                 <i className={`bi bi-${link.icon} fs-5`} style={{ color: '#ffffff', marginRight: (isCollapsed && !isMobile) ? '0' : '15px' }}></i>
                                                 {(!isCollapsed || isMobile) && <span style={{ fontSize: '0.9rem', whiteSpace: 'nowrap' }}>{link.label}</span>}
