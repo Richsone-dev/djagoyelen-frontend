@@ -222,17 +222,23 @@ const handleLogout = async () => {
                             <div className="card-body p-4">
                                 <form onSubmit={handleUpdateProfile}>
                                     <div className="row g-3">
-                                        <div className="col-md-6">
+                                        <div className="col-md-6" style={{ textAlign: 'left' }}>
                                             <label className="form-label small text-muted fw-bold">Nom complet</label>
                                             <input type="text" className={`form-control border-0 bg-light ${isEditing ? 'bg-white border-bottom' : ''}`} 
                                                 value={formData.name} readOnly={!isEditing} 
                                                 onChange={(e) => setFormData({...formData, name: e.target.value})} required />
                                         </div>
-                                        <div className="col-md-6">
+                                        <div className="col-md-6" style={{ textAlign: 'left' }}>
                                             <label className="form-label small text-muted fw-bold">Email</label>
                                             <input type="email" className={`form-control border-0 bg-light ${isEditing ? 'bg-white border-bottom' : ''}`} 
                                                 value={formData.email} readOnly={!isEditing}
                                                 onChange={(e) => setFormData({...formData, email: e.target.value})} required />
+                                        </div>
+                                        <div className="col-md-6" style={{ textAlign: 'left' }}>
+                                            <label className="form-label small text-muted fw-bold">Téléphone</label>
+                                            <input type="tel" className={`form-control border-0 bg-light ${isEditing ? 'bg-white border-bottom' : ''}`} 
+                                                value={formData.phone} readOnly={!isEditing}
+                                                onChange={(e) => setFormData({...formData, phone: e.target.value})} required />
                                         </div>
                                         {isEditing && (
                                             <div className="col-12 mt-3 d-flex gap-2">
