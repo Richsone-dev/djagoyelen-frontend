@@ -37,11 +37,11 @@ const AproposDetails = () => {
     const [heroRef, heroVisible] = useScrollAnimation();
 
     return (
-        <div className="container-fluid px-3 px-md-5 py-5">
+        <div className="container-fluid px-0 px-md-5 py-5">
 
             {/* HERO */}
             <section ref={heroRef} className={`fade ${heroVisible ? 'show' : ''}`}>
-                <div className="text-center mb-5">
+                <div className="text-left mb-5">
 
                     <h1 className="display-3 fw-bold" style={{ color: colors.darkGreen }}>
                         DjagoYelen
