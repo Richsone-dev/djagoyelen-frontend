@@ -68,7 +68,7 @@ const MainLayout = () => {
                 { path: 'budgets', label: 'Budgets', icon: 'piggy-bank' },
                 { path: 'dettes', label: 'Dettes', icon: 'person-dash' },
                 { path: 'rapports', label: 'Rapports', icon: 'file-earmark-bar-graph' },
-                { path: 'factures', label: 'Factures', icon: 'receipt', disabled: true , tooltip: "Bientôt disponible"},
+                { path: 'factures', label: 'Factures', icon: 'receipt', disabled: true , tooltip: "Bientôt disponible", colors: { disabledIcon: '#6c757d', disabledText: '#6c757d' } },
                 { path: 'clients', label: 'Clients', icon: 'people' },
                 { path: 'profil', label: 'Profil', icon: 'person' },
                 { path: 'parametres', label: 'Paramètres', icon: 'gear' },
