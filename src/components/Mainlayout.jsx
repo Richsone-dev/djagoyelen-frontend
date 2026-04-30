@@ -185,6 +185,7 @@ const MainLayout = () => {
                         transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                         borderBottom: isMobile ? `2px solid ${colors.orange}` : 'none',
                         borderRadius: isMobile ? '0 0 20px 20px' : '0',
+                        boxShadow: isMobile ? '0 4px 12px rgba(0,0,0,0.1)' : '0 2px 4px rgba(0,0,0,0.1)',
                         backgroundColor: colors.darkGreen // Applique le bleu ici
                     }}
                 >
