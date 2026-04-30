@@ -54,8 +54,8 @@ const Login = () => {
                             style={{ width: '60px', height: '60px', objectFit: 'contain', marginRight: '15px' }} 
                         />
                         <h2 className="fw-bold mb-0" style={{ fontSize: '1.5rem' }}>
-                            <span style={{ color: colors.successGreen }}>Djago</span>
-                            <span style={{ color: colors.orange }}>Yelen</span>        
+                            <span style={{ color: colors.successGreen }}>CONNE</span>
+                            <span style={{ color: colors.orange }}>XION</span>        
                         </h2>
                     </div>
                     <p className="text-muted small">Connectez-vous à votre espace financier</p>
@@ -69,7 +69,7 @@ const Login = () => {
                 )}
 
                 <form onSubmit={handleLogin}>
-                    <div className="mb-3">
+                    <div className="mb-3" text-align="left">
                         <label className="form-label small fw-bold text-muted">Adresse Email</label>
                         <input 
                             name="email" 
