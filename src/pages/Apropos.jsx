@@ -47,7 +47,7 @@ const AproposDetails = () => {
 
             {/* HERO */}
             <section ref={heroRef} className={`fade ${heroVisible ? 'show' : ''}`}>
-                <div className="text-left mb-5">
+                <div className=" mb-5" style={{ textAlign: 'justify'}}>
 
                     <h1 className="display-3 fw-bold" >
                        <span style={{ color: colors.darkGreen }}>Djago</span> <span style={{color: colors.orange}}>Yelen</span>
