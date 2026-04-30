@@ -49,8 +49,8 @@ const AproposDetails = () => {
             <section ref={heroRef} className={`fade ${heroVisible ? 'show' : ''}`}>
                 <div className="text-left mb-5">
 
-                    <h1 className="display-3 fw-bold" style={{ color: colors.darkGreen }}>
-                        Djago<span style={{color: colors.orange}}>Yelen</span>
+                    <h1 className="display-3 fw-bold" >
+                       <span style={{ color: colors.darkGreen }}>Djago</span> <span style={{color: colors.orange}}>Yelen</span>
                     </h1>
 
                     <p className="lead col-md-7 mx-auto opacity-75" style={{ fontSize: '1.25rem', textAlign: 'justify' }}>
