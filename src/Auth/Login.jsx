@@ -67,13 +67,13 @@ const Login = () => {
                     {/* Utilisation de text-start pour aligner les labels à gauche */}
                     <div className="mb-3 text-start">
                         <label className="form-label small fw-bold text-muted">Email</label>
-                        <input name="email" type="email" className="form-control" 
+                        <input name="email" type="email" className="form-control" placeholder="exemple@mail.com"
                                onChange={handleChange} required />
                     </div>
 
                     <div className="mb-3 text-start">
                         <label className="form-label small fw-bold text-muted">Mot de passe</label>
-                        <input name="password" type="password" className="form-control" 
+                        <input name="password" type="password" className="form-control" placeholder="*******"
                                onChange={handleChange} required />
                     </div>
 
