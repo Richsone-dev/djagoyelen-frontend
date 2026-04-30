@@ -119,26 +119,15 @@ const ProblemSolution = ({ colors, cardStyle }) => {
             <div className="row g-4">
                 <div className="col-md-6">
                     <div className="p-4 rounded-4 shadow border-start border-danger border-4 glass premium-card" style={cardStyle}>
-                        <img src={probleme} alt="Problème" className="mb-3" style={{ width: '40px', height: '40px' }} />
+                        <img src={probleme} alt="Problème" className="mb-3" style={{ width: '60px', height: '60px' }} />
                         <h5 className="text-danger fw-bold">Problème</h5>
                         <p>Les entreprises utilisent encore des outils dispersés et inefficaces.</p>
                     </div>
                 </div>
                 <div className="col-md-6">
                     <div className="p-4 rounded-4 shadow border-start border-success border-4 glass premium-card" style={cardStyle}>
-                        <img src={solution1} alt="Solution" className="mb-3" style={{ width: '40px', height: '40px' }} />
-                        <img
-                        src={img2}
-                        className="img-fluid shadow-lg mt-0"
-                        style={{ maxHeight: '500px', objectFit: 'cover', width: '100%' }}
-                        alt="DjagoYelen Interface"
-                    />
-                    <img
-                        src={solution1}
-                        className="img-fluid shadow-lg mt-0"
-                        style={{ maxHeight: '500px', objectFit: 'cover', width: '100%' }}
-                        alt="DjagoYelen Interface"
-                    />
+                        <img src={solution1} alt="Solution" className="mb-3" style={{ width: '60px', height: '60px' }} />
+                        
                         <h5 className="text-success fw-bold">Solution</h5>
                         <p>Une plateforme centralisée pour une gestion intelligente et moderne.</p>
                     </div>
