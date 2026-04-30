@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+
 import Login from './Auth/Login';
 import Register from './Auth/Register';
 import Dashboard from './pages/Dashboard';
@@ -21,11 +22,17 @@ function App() {
     <Router>
       <Routes>
         {/* --- ROUTES PUBLIQUES --- */}
-        <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login />} />
-        <Route path="/register" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Register />} />
+        <Route
+          path="/login"
+          element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login />}
+        />
+        <Route
+          path="/register"
+          element={isAuthenticated ? <Navigate to="/dashboard" /> : <Register />}
+        />
 
         {/* --- ROUTES PROTÉGÉES AVEC LAYOUT --- */}
-        <Route 
+        <Route
           element={isAuthenticated ? <MainLayout /> : <Navigate to="/login" />}
         >
           <Route path="/dashboard" element={<Dashboard />} />
@@ -42,9 +49,11 @@ function App() {
         </Route>
 
         {/* --- REDIRECTIONS --- */}
-        <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
+        <Route
+          path="/"
+          element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />}
+        />
         <Route path="*" element={<Navigate to="/" />} />
-        <Route path="*" element={<h1>Page introuvable</h1>} />
       </Routes>
     </Router>
   );
