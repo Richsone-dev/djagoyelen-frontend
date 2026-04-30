@@ -73,7 +73,7 @@ const MainLayout = () => {
                 { path: 'profil', label: 'Profil', icon: 'person' },
                 { path: 'parametres', label: 'Paramètres', icon: 'gear' },
                 { path: 'apropos', label: 'À propos', icon: 'info-circle' },
-                { path: 'notifications', label: 'Notifications', icon: 'bell' },
+                { path: 'notifications', label: 'Notifications', icon: 'bell', disabled: true },
                 { path: 'aide', label: 'Aide', icon: 'question-circle' },
             ]
         }
@@ -130,15 +130,22 @@ const MainLayout = () => {
                             <ul className="nav flex-column">
                                 {section.links.map((link) => (
                                     <li className="nav-item mb-1" key={link.path}>
-                                        <Link 
-                                            to={`/${link.path}`} 
-                                            className={`nav-link text-white d-flex align-items-center ${isCollapsed && !isMobile ? 'justify-content-center' : ''} p-2 ${location.pathname === `/${link.path}` ? 'bg-white bg-opacity-10 shadow-sm' : ''}`}
-                                            onClick={() => isMobile && setIsSidebarOpen(false)}
-                                            style={{ borderRadius: '10px', transition: '0.3s' }}
-                                        >
-                                            <i className={`bi bi-${link.icon} fs-5`} style={{ color: '#ffffff', marginRight: (isCollapsed && !isMobile) ? '0' : '15px' }}></i>
-                                            {(!isCollapsed || isMobile) && <span style={{ fontSize: '0.9rem', whiteSpace: 'nowrap' }}>{link.label}</span>}
-                                        </Link>
+                                        {link.disabled ? (
+                                            <span className="nav-link text-white d-flex align-items-center p-2" style={{ borderRadius: '10px', transition: '0.3s' }}>
+                                                <i className={`bi bi-${link.icon} fs-5`} style={{ color: '#ffffff', marginRight: (isCollapsed && !isMobile) ? '0' : '15px' }}></i>
+                                                {(!isCollapsed || isMobile) && <span style={{ fontSize: '0.9rem', whiteSpace: 'nowrap' }}>{link.label}</span>}
+                                            </span>
+                                        ) : (
+                                            <Link 
+                                                to={`/${link.path}`} 
+                                                className={`nav-link text-white d-flex align-items-center ${isCollapsed && !isMobile ? 'justify-content-center' : ''} p-2 ${location.pathname === `/${link.path}` ? 'bg-white bg-opacity-10 shadow-sm' : ''}`}
+                                                onClick={() => isMobile && setIsSidebarOpen(false)}
+                                                style={{ borderRadius: '10px', transition: '0.3s' }}
+                                            >
+                                                <i className={`bi bi-${link.icon} fs-5`} style={{ color: '#ffffff', marginRight: (isCollapsed && !isMobile) ? '0' : '15px' }}></i>
+                                                {(!isCollapsed || isMobile) && <span style={{ fontSize: '0.9rem', whiteSpace: 'nowrap' }}>{link.label}</span>}
+                                            </Link>
+                                        )}
                                     </li>
                                 ))}
                             </ul>
