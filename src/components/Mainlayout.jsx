@@ -264,7 +264,7 @@ const MainLayout = () => {
                         <Link to="/transactions" className="text-center text-decoration-none" style={{ color: location.pathname === '/transactions' ? colors.orange : 'rgba(255,255,255,0.6)' }}>
                             <i className="bi bi-cash-stack fs-3"></i>
                         </Link>
-                            <small className='mt-5' style={{color: colors.white, fontSize: '8px', color: location.pathname === '/transactions' ? colors.orange : 'rgba(255,255,255,0.6)'}}>Transactions</small>
+                            <small style={{color: colors.white, fontSize: '8px', color: location.pathname === '/transactions' ? colors.orange : 'rgba(255,255,255,0.6)'}}>Transactions</small>
 
                         </div>
                         <div className="position-relative d-flex align-items-center justify-content-center" style={{ display: 'flex', flexDirection: 'column', color: location.pathname === '/budgets' ? colors.orange : 'rgba(255,255,255,0.6)' }}>
@@ -281,7 +281,7 @@ const MainLayout = () => {
                                 <i className="bi bi-house-door-fill fs-3">
                                 </i>
                             </Link>
-                                   <small style={{color: colors.white, fontSize: '8px', color: location.pathname === '/dashboard' ? colors.orange : 'rgba(255,255,255,0.6)'}}>Tableau de bord</small>
+                                   <small className='mt-1' style={{color: colors.white, fontSize: '8px', color: location.pathname === '/dashboard' ? colors.orange : 'rgba(255,255,255,0.6)'}}>Tableau de bord</small>
                         </div>
                         <div className="position-relative d-flex align-items-center justify-content-center" style={{ display: 'flex', flexDirection: 'column'}}>
                         <Link to="/rapports" className="text-center text-decoration-none" style={{ color: location.pathname === '/rapports' ? colors.orange : 'rgba(255,255,255,0.6)' }}>
