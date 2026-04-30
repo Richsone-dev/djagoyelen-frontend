@@ -191,6 +191,19 @@ const Transactions = () => {
         setErrorMsg('');
         setShowModal(true);
     };
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true); // Démarrage du chargement
+    try {
+        // ... votre logique api.post ou api.put ...
+    } catch (error) {
+        alert("Erreur");
+    } finally {
+        setIsLoading(false); // Arrêt du chargement même en cas d'erreur
+    }
+};
 
     const isSubmitDisabled = formData.type === 'depense' && soldeActuel < Number(formData.montant) && !formData.id;
 
@@ -227,7 +240,7 @@ const Transactions = () => {
 
                                     {/* --- ALERTE SOLDE --- */}
                                     {isSubmitDisabled && (
-                                        <div className="alert alert-warning border-0 small py-2 mt-4 mb-0 rounded-3 shadow-sm">
+                                        <div className="alert alert-warning border-0 small py-2 mt-4 mb-0 rounded-3 shadow-sm" style={{color: colors.dangerRed}}>
                                             <i className="bi bi-exclamation-circle-fill me-2"></i>
                                             Solde insuffisant pour cette dépense.
                                         </div>
@@ -292,11 +305,20 @@ const Transactions = () => {
                                         <button type="button" className="btn btn-light flex-grow-1 fw-bold py-2 rounded-pill" onClick={() => setShowModal(false)}>Annuler</button>
                                         <button 
                                             type="submit" 
-                                            disabled={isSubmitDisabled}
+                                            disabled={isSubmitDisabled || isLoading}
                                             className="btn flex-grow-1 text-white fw-bold py-2 shadow rounded-pill" 
-                                            style={{ backgroundColor: isSubmitDisabled ? '#ccc' : colors.orange, border: 'none' }}
+                                            style={{ backgroundColor: (isSubmitDisabled || isLoading) ? '#ccc' : colors.orange, border: 'none' }}
                                         >
-                                            {isSubmitDisabled ? 'Solde insuffisant' : (formData.id ? 'Mettre à jour' : 'Valider la transaction')}
+                                            {isLoading ? (
+                                                <>
+                                                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                                    Patientez...
+                                                </>
+                                            ) : isSubmitDisabled ? (
+                                                'Solde insuffisant' 
+                                            ) : (
+                                                formData.id ? 'Mettre à jour' : 'Valider la transaction'
+                                            )}
                                         </button>
                                     </div>
                                 </form>
