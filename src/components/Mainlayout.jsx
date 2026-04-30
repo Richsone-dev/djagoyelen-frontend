@@ -190,7 +190,7 @@ const MainLayout = () => {
                                 <div className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-2" style={{ width: '32px', height: '32px', backgroundColor: colors.orange }}>
                                     {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
                                 </div>
-                                <span className="small d-none d-sm-block fw-bold text-white">{user?.name || 'Utilisateur'}</span>
+                                <span className="small d-none d-sm-block fw-bold text-white">{user?.name || 'Chargement...'}</span>
                             </Link>
                         </div>
                     </div>
