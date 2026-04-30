@@ -47,11 +47,12 @@ const AproposDetails = () => {
                     </h1>
 
                     <p className="lead col-md-7 mx-auto opacity-75">
-                        Une plateforme intelligente de gestion financière conçue pour moderniser les PME africaines.
+                        Une plateforme intelligente de gestion financière conçue pour moderniser les PME africaines. Libérez le potentiel de votre entreprise grâce à notre plateforme intelligente. Conçue spécifiquement pour les PME africaines, elle transforme vos données comptables en décisions stratégiques claires, accessibles en quelques clics, partout et tout le temps.
+                        <span className="fw-bold"> Clarté, performance et croissance au bout des doigts.</span>
                     </p>
 
                     <img
-                        src="https://images.unsplash.com/photo-1554224155-6726b3ff858f"
+                        src="src/assets/img2.png"
                         className="img-fluid rounded-5 shadow-lg mt-4"
                         style={{ maxHeight: '420px', objectFit: 'cover' }}
                         alt=""
@@ -62,7 +63,7 @@ const AproposDetails = () => {
             {/* VISION */}
             <Section
                 title="Notre Vision"
-                img="https://images.unsplash.com/photo-1460925895917-afdab827c52f"
+                img="src/assets/img3.png"
                 text="DjagoYelen vise à transformer la gestion financière en Afrique en apportant clarté, transparence et performance aux entreprises."
                 colors={colors}
             />
