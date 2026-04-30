@@ -126,6 +126,12 @@ const ProblemSolution = ({ colors, cardStyle }) => {
                 <div className="col-md-6">
                     <div className="p-4 rounded-4 shadow border-start border-success border-4 glass premium-card" style={cardStyle}>
                         <img src={solution1} alt="Solution" className="mb-3" style={{ width: '40px', height: '40px' }} />
+                        <img
+                        src={solution1}
+                        className="img-fluid shadow-lg mt-0"
+                        style={{ maxHeight: '500px', objectFit: 'cover', width: '100%' }}
+                        alt="DjagoYelen Interface"
+                    />
                         <h5 className="text-success fw-bold">Solution</h5>
                         <p>Une plateforme centralisée pour une gestion intelligente et moderne.</p>
                     </div>
