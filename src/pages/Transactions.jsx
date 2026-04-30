@@ -195,7 +195,7 @@ const Transactions = () => {
     const isSubmitDisabled = formData.type === 'depense' && soldeActuel < Number(formData.montant) && !formData.id;
 
     return (
-        <div className="container-fluid px-2 px-md-4 py-4">
+        <div className="container-fluid px-2 px-md-4 py-4 mb-5">
             
             {/* --- MODAL AJOUT/EDIT --- */}
             {showModal && (
