@@ -200,7 +200,7 @@ const Transactions = () => {
             {/* --- MODAL AJOUT/EDIT --- */}
             {showModal && (
                 <>
-                    <div className="modal-backdrop fade show" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 1050 }}></div>
+                    <div className="modal-backdrop mb-5 fade show" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 1050 }}></div>
                     <div className="modal fade show d-block" tabIndex="-1" style={{ zIndex: 1051, overflowY: 'auto' }}>
                         <div className="modal-dialog modal-dialog-centered modal-lg px-2">
                             <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px' }}>
