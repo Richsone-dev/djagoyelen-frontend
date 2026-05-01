@@ -1,10 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../api/axios';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import { QRCodeSVG } from 'qrcode.react';
-import logo from '../assets/djago-logo.jpeg';
-import Select from 'react-select'; // Import corrigé
+import Select from 'react-select';
 
 const Facture = () => {
     // --- ÉTATS ---
@@ -52,14 +48,6 @@ const Facture = () => {
 
     useEffect(() => { fetchData(); }, [fetchData]);
 
-    // --- LOGIQUE DE FILTRAGE ---
-    const filteredFactures = factures.filter(f => {
-        const clientNom = f.client?.nom?.toLowerCase() || "";
-        const clientTel = f.client?.telephone?.toLowerCase() || "";
-        const search = searchTerm.toLowerCase();
-        return clientNom.includes(search) || clientTel.includes(search);
-    });
-
     // --- CALCULS AUTOMATIQUES ---
     useEffect(() => {
         const ht = formData.items.reduce((sum, item) => sum + (Number(item.quantite || 0) * Number(item.prix_unitaire || 0)), 0);
@@ -67,7 +55,7 @@ const Facture = () => {
         setFormData(prev => ({ ...prev, total_ht: ht, total_ttc: ht + tva }));
     }, [formData.items, formData.tva_taux]);
 
-    const formatPrix = (prix) => Number(prix).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    const formatPrix = (prix) => Number(prix).toLocaleString('fr-FR');
 
     // --- ACTIONS ---
     const handleSubmit = async (e) => {
@@ -75,10 +63,14 @@ const Facture = () => {
         try {
             if (isEditing) await api.put(`/factures/${formData.id}`, formData);
             else await api.post('/factures', formData);
+            
             setView('list');
             setFormData(initialFormState);
             fetchData();
-        } catch (error) { alert("Erreur lors de l'enregistrement"); }
+        } catch (error) { 
+            console.error(error);
+            alert("Erreur lors de l'enregistrement"); 
+        }
     };
 
     const handleItemChange = (idx, field, val) => {
@@ -110,12 +102,11 @@ const Facture = () => {
         setFormData({
             ...facture,
             client_id: facture.client_id || facture.client?.id,
-            items: facture.items || facture.lignes || []
+            items: facture.items || []
         });
         setView('form');
     };
 
-    // --- RENDER ---
     if (loading) return <div className="text-center mt-5"><div className="spinner-border text-success"></div></div>;
 
     return (
@@ -132,13 +123,12 @@ const Facture = () => {
                             <table className="table table-hover">
                                 <thead><tr><th>N°</th><th>Client</th><th>Montant</th><th>Actions</th></tr></thead>
                                 <tbody>
-                                    {filteredFactures.map(f => (
+                                    {factures.filter(f => f.client?.nom?.toLowerCase().includes(searchTerm.toLowerCase())).map(f => (
                                         <tr key={f.id}>
-                                            <td>#{f.num_facture}</td>
+                                            <td>#{f.id}</td>
                                             <td>{f.client?.nom}</td>
                                             <td>{formatPrix(f.total_ttc)} F</td>
                                             <td>
-                                                <button className="btn btn-sm" onClick={() => { setSelectedFacture(f); setShowDetailsModal(true); }}>Voir</button>
                                                 <button className="btn btn-sm text-primary" onClick={() => handleEdit(f)}>Éditer</button>
                                                 <button className="btn btn-sm text-danger" onClick={() => handleDelete(f.id)}>Supprimer</button>
                                             </td>
@@ -152,7 +142,7 @@ const Facture = () => {
                     <div className="card p-4">
                         <h3>{isEditing ? 'Modifier' : 'Nouvelle'} Facture</h3>
                         <form onSubmit={handleSubmit}>
-                            <label>Client</label>
+                            <label className="mb-2">Client</label>
                             <Select
                                 options={clients.map(c => ({ value: c.id, label: c.nom }))}
                                 value={clients.find(c => c.id === formData.client_id) ? { value: formData.client_id, label: clients.find(c => c.id === formData.client_id).nom } : null}
@@ -161,21 +151,25 @@ const Facture = () => {
                             />
                             <button type="button" className="btn btn-sm btn-dark mt-2" onClick={() => setShowClientModal(true)}>+ Ajouter Client</button>
                             
-                            {formData.items.map((item, idx) => (
-                                <div key={idx} className="row mt-2">
-                                    <div className="col-6"><input className="form-control" placeholder="Désignation" value={item.designation} onChange={(e) => handleItemChange(idx, 'designation', e.target.value)} /></div>
-                                    <div className="col-3"><input className="form-control" type="number" placeholder="Qté" value={item.quantite} onChange={(e) => handleItemChange(idx, 'quantite', e.target.value)} /></div>
-                                    <div className="col-3"><input className="form-control" type="number" placeholder="PU" value={item.prix_unitaire} onChange={(e) => handleItemChange(idx, 'prix_unitaire', e.target.value)} /></div>
-                                </div>
-                            ))}
+                            <div className="mt-4">
+                                {formData.items.map((item, idx) => (
+                                    <div key={idx} className="row mt-2">
+                                        <div className="col-6"><input className="form-control" placeholder="Désignation" value={item.designation} onChange={(e) => handleItemChange(idx, 'designation', e.target.value)} required /></div>
+                                        <div className="col-3"><input className="form-control" type="number" placeholder="Qté" value={item.quantite} onChange={(e) => handleItemChange(idx, 'quantite', e.target.value)} required /></div>
+                                        <div className="col-3"><input className="form-control" type="number" placeholder="PU" value={item.prix_unitaire} onChange={(e) => handleItemChange(idx, 'prix_unitaire', e.target.value)} required /></div>
+                                    </div>
+                                ))}
+                            </div>
                             <button type="button" className="btn btn-link" onClick={() => setFormData({...formData, items: [...formData.items, { designation: '', quantite: 1, prix_unitaire: 0 }]})}>+ Ajouter ligne</button>
-                            <div className="h4 text-end">Total TTC: {formatPrix(formData.total_ttc)} F</div>
+                            <div className="h4 text-end mt-3">Total TTC: {formatPrix(formData.total_ttc)} F</div>
                             <button type="submit" className="btn btn-success mt-3">ENREGISTRER</button>
                             <button type="button" className="btn btn-secondary mt-3 ms-2" onClick={() => setView('list')}>Retour</button>
                         </form>
                     </div>
                 )}
             </div>
+
+            {/* MODAL CLIENT */}
             {showClientModal && (
                 <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog"><div className="modal-content p-4">
@@ -184,7 +178,7 @@ const Facture = () => {
                             <input className="form-control mb-2" placeholder="Nom" onChange={(e) => setNewClient({...newClient, nom: e.target.value})} required />
                             <input className="form-control mb-2" placeholder="Téléphone" onChange={(e) => setNewClient({...newClient, telephone: e.target.value})} />
                             <button type="submit" className="btn btn-success">Valider</button>
-                            <button type="button" className="btn btn-light" onClick={() => setShowClientModal(false)}>Annuler</button>
+                            <button type="button" className="btn btn-light ms-2" onClick={() => setShowClientModal(false)}>Annuler</button>
                         </form>
                     </div></div>
                 </div>
