@@ -222,10 +222,10 @@ const Team = ({ colors, cardStyle }) => {
                             <p className="opacity-75 mb-4">
                                 {member.profil}
                             </p>
-                            <div className="d-flex justify-content-center gap-3">
+                            {/* <div className="d-flex justify-content-center gap-3">
                                 <a href="#" style={{ color: colors.textColor }}><i className="bi bi-github fs-4"></i></a>
                                 <a href="#" style={{ color: colors.textColor }}><i className="bi bi-linkedin fs-4"></i></a>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
                 ))}
