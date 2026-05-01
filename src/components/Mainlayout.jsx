@@ -62,24 +62,38 @@ const MainLayout = () => {
     };
 
     const menuSections = [
-        {
-            title: "Menu Principal",
-            links: [
-                { path: 'dashboard', label: 'Tableau de bord', icon: 'speedometer2' },
-                { path: 'transactions', label: 'Transactions', icon: 'cash-stack' },
-                { path: 'budgets', label: 'Budgets', icon: 'piggy-bank' },
-                { path: 'rapports', label: 'Rapports', icon: 'file-earmark-bar-graph' },
-                { path: 'clients', label: 'Clients', icon: 'people' },
-                { path: 'profil', label: 'Profil', icon: 'person' },
-                { path: 'parametres', label: 'Paramètres', icon: 'gear' },
-                { path: 'apropos', label: 'À propos', icon: 'info-circle' },
-                { path: 'dettes', label: 'Dettes', icon: 'person-dash', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
-                { path: 'factures', label: 'Factures bientôt disponible', icon: 'receipt', disabled: true , tooltip: "Bientôt disponible", color: colors.accentPurple },
-                { path: 'notifications', label: 'Notifications bientôt disponible', icon: 'bell', disabled: true , tooltip: "Bientôt disponible", color: colors.accentPurple },
-                { path: 'aide', label: 'Aide bientôt disponible', icon: 'question-circle', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple},
-            ]
-        }
-    ];
+    {
+        title: "Menu Principal",
+        links: [
+            { path: 'dashboard', label: 'Tableau de bord', icon: 'speedometer2' },
+            { path: 'transactions', label: 'Transactions', icon: 'cash-stack' },
+            { path: 'budgets', label: 'Budgets', icon: 'piggy-bank' },
+            { path: 'rapports', label: 'Rapports', icon: 'file-earmark-bar-graph' },
+            { path: 'clients', label: 'Clients', icon: 'people' },
+            { path: 'profil', label: 'Profil', icon: 'person' },
+            { path: 'parametres', label: 'Paramètres', icon: 'gear' },
+            { path: 'apropos', label: 'À propos', icon: 'info-circle' },
+            { path: 'dettes', label: 'Dettes', icon: 'person-dash', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
+            { path: 'factures', label: 'Factures', icon: 'receipt', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
+            { path: 'notifications', label: 'Notifications', icon: 'bell', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
+            { path: 'aide', label: 'Aide', icon: 'question-circle', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
+        ]
+    },
+    // Injection conditionnelle pour Admin
+    ...(user?.role === 'admin' ? [{
+        title: "Administration",
+        links: [
+            { path: 'admin', label: 'Espace Admin', icon: 'shield-lock', color: colors.orange }
+        ]
+    }] : []),
+    // Injection conditionnelle pour Manager
+    ...(user?.role === 'manager' ? [{
+        title: "Gestion",
+        links: [
+            { path: 'gestion', label: 'Panneau de Gestion', icon: 'briefcase', color: colors.primaryBlue }
+        ]
+    }] : [])
+];
 
     const sidebarWidth = isMobile ? '0px' : (isCollapsed ? '70px' : '250px');
     const headerHeight = '72px';
