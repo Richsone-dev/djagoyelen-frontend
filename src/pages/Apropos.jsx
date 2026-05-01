@@ -179,7 +179,7 @@ const Roadmap = ({ colors }) => (
 const Team = ({ colors, cardStyle }) => {
     const [ref, visible] = useScrollAnimation();
     return (
-        <section ref={ref} className={`text-center mb-5 fade ${visible ? 'show' : ''}`}>
+        <section ref={ref} className={`text-center d-flex flex-column mb-5 fade ${visible ? 'show' : ''}`}>
             <h2 className="fw-bold mb-5" style={{ color: colors.darkGreen }}>
                 L'Équipe Technique
             </h2>
