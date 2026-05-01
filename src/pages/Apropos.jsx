@@ -223,6 +223,45 @@ const Team = ({ colors, cardStyle }) => {
                     </div>
                 </div>
             </div>
+            <div className="row justify-content-center">
+                <div className="col-md-6 col-lg-4">
+                    <div className="p-4 rounded-4 glass premium-card" style={cardStyle}>
+                        {/* PHOTO DE PROFIL */}
+                        <div className="mb-4">
+                            <img 
+                                src={karimProfil} 
+                                alt="Karim Sanou" 
+                                className="rounded-circle shadow-sm border border-3"
+                                style={{ 
+                                    width: '150px', 
+                                    height: '150px', 
+                                    objectFit: 'cover',
+                                    borderColor: colors.orange 
+                                }} 
+                            />
+                        </div>
+
+                        {/* INFORMATIONS */}
+                        <h4 className="fw-bold mb-1">Karim Sanou</h4>
+                        <p className="text-uppercase small mb-3" style={{ color: colors.orange, letterSpacing: '2px' }}>
+                            Développeur Fullstack
+                        </p>
+                        <p className="opacity-75 mb-4">
+                            Passionné par l'innovation numérique et la création de solutions financières robustes pour les PME.
+                        </p>
+
+                        {/* LIENS SOCIAUX */}
+                        <div className="d-flex justify-content-center gap-3">
+                            <a href="#" className="text-decoration-none" style={{ color: colors.textColor }}>
+                                <i className="bi bi-github fs-4"></i>
+                            </a>
+                            <a href="#" className="text-decoration-none" style={{ color: colors.textColor }}>
+                                <i className="bi bi-linkedin fs-4"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
     );
 };
