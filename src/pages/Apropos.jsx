@@ -45,25 +45,31 @@ const AproposDetails = () => {
         <div className="container-fluid px-0 px-md-5 py-5">
             {/* HERO */}
             <section ref={heroRef} className={`fade ${heroVisible ? 'show' : ''}`}>
-                <div className="mb-5" style={{ textAlign: 'justify' }}>
-                    <h1 className="display-3 fw-bold">
+                <div className="mb-5 text-center">
+                    {/* Titre : un peu plus petit sur mobile avec display-4 */}
+                    <h1 className="display-4 display-md-3 fw-bold mb-4">
                         <span style={{ color: colors.darkGreen }}>Djago</span> 
                         <span style={{ color: colors.orange }}>Yelen</span>
                     </h1>
 
-                    <p className="lead col-md-7 mx-auto opacity-75" style={{ fontSize: '1.25rem', textAlign: 'justify' }}>
+                    {/* Texte : On utilise col-lg-8 pour que ça respire mieux sur PC, et on enlève la justification forcée sur mobile pour éviter les trous */}
+                    <p className="lead px-3 px-md-0 col-lg-8 mx-auto opacity-75" 
+                    style={{ fontSize: '1.1rem', lineHeight: '1.6' }}>
                         Une plateforme intelligente de gestion financière conçue pour moderniser les PME africaines. 
                         Libérez le potentiel de votre entreprise grâce à notre plateforme. 
                         Elle transforme vos données comptables en décisions stratégiques claires, accessibles en quelques clics.
-                        <span className="fw-bold"> Clarté, performance et croissance au bout des doigts.</span>
+                        <span className="fw-bold d-block mt-2">Clarté, performance et croissance au bout des doigts.</span>
                     </p>
 
-                    <img
-                        src={img2}
-                        className="img-fluid shadow-lg mt-0"
-                        style={{ maxHeight: '500px', objectFit: 'cover', width: '100%' }}
-                        alt="DjagoYelen Interface"
-                    />
+                    {/* Image : arrondie et avec une ombre plus douce */}
+                    <div className="mt-4 px-2 px-md-0">
+                        <img
+                            src={img2}
+                            className="img-fluid shadow rounded-4"
+                            style={{ maxHeight: '500px', objectFit: 'cover', width: '100%' }}
+                            alt="DjagoYelen Interface"
+                        />
+                    </div>
                 </div>
             </section>
 
@@ -176,91 +182,52 @@ const Roadmap = ({ colors }) => (
     <section className="mb-5 text-center"><h2 className="fw-bold mb-4" style={{ color: colors.darkGreen }}>Roadmap</h2>{["MVP", "Mobile", "IA", "Expansion"].map((s, i) => <p key={i} className="fade show">{s}</p>)}</section>
 );
 
+
 const Team = ({ colors, cardStyle }) => {
     const [ref, visible] = useScrollAnimation();
+
+    // On stocke les membres dans un tableau pour rendre le code lisible
+    const teamMembers = [
+        { name: "Karim SANOU", role: "Développeur Fullstack", img: karimProfil },
+        { name: "François Jessica SOW", role: "Développeuse Fullstack", img: karimProfil }
+    ];
+
     return (
-        <section ref={ref} className={`text-center d-flex flex-column mb-5 fade ${visible ? 'show' : ''}`}>
+        <section ref={ref} className={`text-center mb-5 fade ${visible ? 'show' : ''}`}>
             <h2 className="fw-bold mb-5" style={{ color: colors.darkGreen }}>
                 L'Équipe Technique
             </h2>
 
-            <div className="row justify-content-center">
-                <div className="col-md-6 col-lg-4">
-                    <div className="p-4 rounded-4 glass premium-card" style={cardStyle}>
-                        {/* PHOTO DE PROFIL */}
-                        <div className="mb-4">
-                            <img 
-                                src={karimProfil} 
-                                alt="Karim Sanou" 
-                                className="rounded-circle shadow-sm border border-3"
-                                style={{ 
-                                    width: '150px', 
-                                    height: '150px', 
-                                    objectFit: 'cover',
-                                    borderColor: colors.orange 
-                                }} 
-                            />
-                        </div>
-
-                        {/* INFORMATIONS */}
-                        <h4 className="fw-bold mb-1">Karim Sanou</h4>
-                        <p className="text-uppercase small mb-3" style={{ color: colors.orange, letterSpacing: '2px' }}>
-                            Développeur Fullstack
-                        </p>
-                        <p className="opacity-75 mb-4">
-                            Passionné par l'innovation numérique et la création de solutions financières robustes pour les PME.
-                        </p>
-
-                        {/* LIENS SOCIAUX */}
-                        <div className="d-flex justify-content-center gap-3">
-                            <a href="#" className="text-decoration-none" style={{ color: colors.textColor }}>
-                                <i className="bi bi-github fs-4"></i>
-                            </a>
-                            <a href="#" className="text-decoration-none" style={{ color: colors.textColor }}>
-                                <i className="bi bi-linkedin fs-4"></i>
-                            </a>
+            {/* LA ROW GÈRE L'ALIGNEMENT : FLEX-WRAP AUTOMATIQUE */}
+            <div className="row g-4 justify-content-center">
+                {teamMembers.map((member, index) => (
+                    <div key={index} className="col-12 col-md-6 col-lg-4">
+                        <div className="p-4 rounded-4 glass premium-card h-100" style={cardStyle}>
+                            <div className="mb-4">
+                                <img 
+                                    src={member.img} 
+                                    alt={member.name} 
+                                    className="rounded-circle shadow-sm border border-3"
+                                    style={{ 
+                                        width: '150px', height: '150px', 
+                                        objectFit: 'cover', borderColor: colors.orange 
+                                    }} 
+                                />
+                            </div>
+                            <h4 className="fw-bold mb-1">{member.name}</h4>
+                            <p className="text-uppercase small mb-3" style={{ color: colors.orange, letterSpacing: '2px' }}>
+                                {member.role}
+                            </p>
+                            <p className="opacity-75 mb-4">
+                                Passionnée par l'innovation numérique et la création de solutions financières robustes.
+                            </p>
+                            <div className="d-flex justify-content-center gap-3">
+                                <a href="#" style={{ color: colors.textColor }}><i className="bi bi-github fs-4"></i></a>
+                                <a href="#" style={{ color: colors.textColor }}><i className="bi bi-linkedin fs-4"></i></a>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div className="row justify-content-center">
-                <div className="col-md-6 col-lg-4">
-                    <div className="p-4 rounded-4 glass premium-card" style={cardStyle}>
-                        {/* PHOTO DE PROFIL */}
-                        <div className="mb-4">
-                            <img 
-                                src={karimProfil} 
-                                alt="Karim Sanou" 
-                                className="rounded-circle shadow-sm border border-3"
-                                style={{ 
-                                    width: '150px', 
-                                    height: '150px', 
-                                    objectFit: 'cover',
-                                    borderColor: colors.orange 
-                                }} 
-                            />
-                        </div>
-
-                        {/* INFORMATIONS */}
-                        <h4 className="fw-bold mb-1">Karim Sanou</h4>
-                        <p className="text-uppercase small mb-3" style={{ color: colors.orange, letterSpacing: '2px' }}>
-                            Développeur Fullstack
-                        </p>
-                        <p className="opacity-75 mb-4">
-                            Passionné par l'innovation numérique et la création de solutions financières robustes pour les PME.
-                        </p>
-
-                        {/* LIENS SOCIAUX */}
-                        <div className="d-flex justify-content-center gap-3">
-                            <a href="#" className="text-decoration-none" style={{ color: colors.textColor }}>
-                                <i className="bi bi-github fs-4"></i>
-                            </a>
-                            <a href="#" className="text-decoration-none" style={{ color: colors.textColor }}>
-                                <i className="bi bi-linkedin fs-4"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
+                ))}
             </div>
         </section>
     );
