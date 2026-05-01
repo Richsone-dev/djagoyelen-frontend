@@ -1,14 +1,33 @@
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import MainLayout from './components/MainLayout';
+import Dashboard from './pages/Dashboard';
+import Transactions from './pages/Transactions';
+import Budgets from './pages/Budgets&Objectifs';
+import Dettes from './pages/Dettes';
+import Rapports from './pages/Rapports';
+import Facture from './pages/Facture';
+import Profil from './pages/Profil';
+import Clients from './pages/Clients';
+import Parametres from './pages/Parametres';
+import Apropos from './pages/Apropos';
+import Notifications from './pages/Notifications';
+import AdminDashboard from './pages/AdminDashboard'; // Nouvelle page pour les admins
+import Login from './Auth/Login';
+import Register from './Auth/Register';
+
+
 function App() {
   const isAuthenticated = !!localStorage.getItem('token');
   // Supposons que vous stockiez le rôle dans le localStorage lors du login
   const userRole = localStorage.getItem('role'); 
 
   return (
-    <Router>
+    <BrowserRouter>
       <Routes>
         {/* --- ROUTES PUBLIQUES --- */}
-        <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login />} />
-        <Route path="/register" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Register />} />
+        <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login />} />
+        <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Register />} />
 
         {/* --- ROUTES PROTÉGÉES AVEC LAYOUT --- */}
         <Route element={isAuthenticated ? <MainLayout /> : <Navigate to="/login" />}>
@@ -29,11 +48,9 @@ function App() {
             userRole === 'admin' ? <AdminDashboard /> : <Navigate to="/dashboard" />
           } />
         </Route>
-
-        {/* --- REDIRECTIONS --- */}
-        <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
-        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
 }
+
+export default App;
