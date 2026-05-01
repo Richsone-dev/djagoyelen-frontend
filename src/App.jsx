@@ -26,8 +26,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* --- ROUTES PUBLIQUES --- */}
-        <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login />} />
-        <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Register />} />
+        <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login />} />
+        <Route path="/register" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Register />} />
 
         {/* --- ROUTES PROTÉGÉES AVEC LAYOUT --- */}
         <Route element={isAuthenticated ? <MainLayout /> : <Navigate to="/login" />}>
