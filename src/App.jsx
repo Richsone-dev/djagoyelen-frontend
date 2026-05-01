@@ -12,7 +12,6 @@ import Clients from './pages/Clients';
 import Parametres from './pages/Parametres';
 import Apropos from './pages/Apropos';
 import Notifications from './pages/Notifications';
-import AdminDashboard from './pages/AdminDashboard'; // Nouvelle page pour les admins
 import Login from './Auth/Login';
 import Register from './Auth/Register';
 
@@ -48,9 +47,7 @@ function App() {
           <Route path="notifications" element={<Notifications />} />
           
           {/* Admin protégée */}
-          <Route path="admin" element={
-            userRole === 'admin' ? <AdminDashboard /> : <Navigate to="/dashboard" />
-          } />
+          
         </Route>
 
         {/* Route de secours (404) */}
