@@ -188,8 +188,9 @@ const Team = ({ colors, cardStyle }) => {
 
     // On stocke les membres dans un tableau pour rendre le code lisible
     const teamMembers = [
-        { name: "Karim SANOU", role: "Développeur Fullstack", img: karimProfil },
-        { name: "François Jessica SOW", role: "Développeuse Fullstack", img: karimProfil }
+        { name: "Karim SANOU", title: "Développeur Fullstack", img: karimProfil, profil:"Passionné par l'innovation numérique et la création de solutions financières robustes." },
+        { name: "François Jessica SOW", title: "Développeuse Fullstack", profil:"Passionnée par l'innovation numérique et la création de solutions financières robustes." },
+        { name: "Dossi Wilfried Hyacinthe SANOU", title: "Agent d'Assurance Banque", profil:"Passionnée par l'innovation de comptabilité des entreprises Ouest Africaines." }
     ];
 
     return (
@@ -216,10 +217,10 @@ const Team = ({ colors, cardStyle }) => {
                             </div>
                             <h4 className="fw-bold mb-1">{member.name}</h4>
                             <p className="text-uppercase small mb-3" style={{ color: colors.orange, letterSpacing: '2px' }}>
-                                {member.role}
+                                {member.title}
                             </p>
                             <p className="opacity-75 mb-4">
-                                Passionnée par l'innovation numérique et la création de solutions financières robustes.
+                                {member.profil}
                             </p>
                             <div className="d-flex justify-content-center gap-3">
                                 <a href="#" style={{ color: colors.textColor }}><i className="bi bi-github fs-4"></i></a>
