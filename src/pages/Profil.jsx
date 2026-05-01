@@ -149,7 +149,7 @@ const handleLogout = async () => {
     );
 
     return (
-        <div className="py-4" mb-5 style={{ backgroundColor: theme.bgLight, minHeight: '100vh' }}>
+        <div className="py-4" style={{ backgroundColor: theme.bgLight, minHeight: '100vh', marginBottom: '5px' }}>
             <div className="container" style={{ maxWidth: '1100px' }}>
                 
                 {status.msg && (

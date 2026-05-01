@@ -149,7 +149,7 @@ const MainLayout = () => {
                     {menuSections.map((section, idx) => (
                         <div key={idx} className="mb-4">
                             {(!isCollapsed || isMobile) && (
-                                <small className="text-uppercase fw-bold text-muted mb-2 d-block" style={{ fontSize: '0.6rem', letterSpacing: '1px', opacity: 0.7 }}>
+                                <small className="text-uppercase fw-bold text-muted mb-2 d-block" style={{ fontSize: '0.6rem', letterSpacing: '1px', color: colors.white, opacity: 1, textTransform: 'uppercase'}}>
                                     {section.title}
                                 </small>
                             )}

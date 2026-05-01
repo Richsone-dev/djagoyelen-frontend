@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './components/MainLayout';
 import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
-import Budgets from './pages/Budgets&Objectifs';
+import Budgets from './pages/Budgets';
 import Dettes from './pages/Dettes';
 import Rapports from './pages/Rapports';
 import Facture from './pages/Facture';
