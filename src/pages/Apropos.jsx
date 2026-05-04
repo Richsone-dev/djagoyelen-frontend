@@ -132,8 +132,8 @@ const ProblemSolution = ({ colors, cardStyle }) => {
         <section ref={ref} className={`mb-5 fade ${visible ? 'show' : ''}`}>
             <div className="row g-4">
                 <div className="col-md-6">
-                    <div className="p-4 rounded-4 shadow border-start border-danger border-4 glass premium-card" style={cardStyle}>
                         <img src={probleme} alt="Problème" className="mb-3" style={{ width: '60px', height: '60px' }} />
+                    <div className="p-4 rounded-4 shadow border-start border-danger border-4 glass premium-card" style={cardStyle}>
                         <h5 className="text-danger fw-bold">Problème</h5>
                         <p>Les entreprises utilisent encore des outils dispersés et inefficaces.</p>
                     </div>
