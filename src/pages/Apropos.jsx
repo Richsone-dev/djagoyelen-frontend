@@ -6,6 +6,8 @@ import probleme from '../assets/probleme.svg';
 import solution from '../assets/solution.svg';
 import solution1 from '../assets/solution1.png';
 import karimProfil from '../assets/karimProfil.jpeg';
+import visuel2 from '../assets/visuel2.jpeg';
+import visuel3 from '../assets/visuel3.jpeg';
 
 /* HOOK SCROLL ANIMATION */
 const useScrollAnimation = () => {
@@ -76,7 +78,13 @@ const AproposDetails = () => {
             {/* VISION */}
             <Section
                 title="Notre Vision"
-                img={img2}
+                img={visuel2}
+                text="DjagoYelen vise à transformer la gestion financière en Afrique en apportant clarté, transparence et performance aux entreprises."
+                colors={colors}
+            />
+            <Section
+                title="Notre Vision"
+                img={visuel3}
                 text="DjagoYelen vise à transformer la gestion financière en Afrique en apportant clarté, transparence et performance aux entreprises."
                 colors={colors}
             />
