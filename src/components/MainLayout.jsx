@@ -63,7 +63,6 @@ const MainLayout = () => {
 
     const menuSections = [
     {
-        title: "Menu Principal",
         links: [
             { path: 'dashboard', label: 'Tableau de bord', icon: 'speedometer2' },
             { path: 'transactions', label: 'Transactions', icon: 'cash-stack' },
@@ -71,23 +70,14 @@ const MainLayout = () => {
             { path: 'rapports', label: 'Rapports', icon: 'file-earmark-bar-graph' },
             { path: 'profil', label: 'Profil', icon: 'person' },
             { path: 'apropos', label: 'À propos', icon: 'info-circle' },
+            { path: 'parametres', label: 'Paramètres', icon: 'gear' },
+            { path: 'clients', label: 'Clients', icon: 'people' },
+            
+            { path: 'factures', label: 'Factures', icon: 'receipt', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
             { path: 'aide', label: 'Aide', icon: 'question-circle', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
+            { path: 'notifications', label: 'Notifications', icon: 'bell', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
+            { path: 'dettes', label: 'Dettes', icon: 'person-dash', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
         ],
-    },
-    {
-        title: "Fonctionnalités",
-        links: [
-    { path: 'parametres', label: 'Paramètres', icon: 'gear' },
-    { path: 'notifications', label: 'Notifications', icon: 'bell', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
-        ],
-    },
-    {
-        title: "Espace Commercial",
-        links: [
-        { path: 'clients', label: 'Clients', icon: 'people' },
-        { path: 'dettes', label: 'Dettes', icon: 'person-dash', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
-        { path: 'factures', label: 'Factures', icon: 'receipt', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
-        ]
     },
     // Injection conditionnelle pour Admin
     ...(user?.role === 'admin' ? [{
@@ -149,7 +139,7 @@ const MainLayout = () => {
                     {menuSections.map((section, idx) => (
                         <div key={idx} className="mb-4">
                             {(!isCollapsed || isMobile) && (
-                                <small className="text-uppercase fw-bold text-muted mb-2 d-block" style={{ fontSize: '0.6rem', letterSpacing: '1px', color: colors.white, opacity: 1, textTransform: 'uppercase'}}>
+                                <small className="text-uppercase fw-bold text-muted mb-2 d-block color-primary" style={{ fontSize: '0.6rem', color: colors.white}}>
                                     {section.title}
                                 </small>
                             )}
@@ -221,7 +211,7 @@ const MainLayout = () => {
                     </div>
                 </header>
 
-                <main className="flex-grow-1 bg-light" style={{ marginTop: headerHeight, marginBottom: isMobile ? '70px' : '0' }}>
+                <main className="flex-grow-1 bg-light" style={{ marginTop: headerHeight, backgroundColor: colors.white, marginBottom: isMobile ? '70px' : '0' }}>
                     <div className="container-fluid py-3 py-md-2">
                         <Outlet />
                     </div>
