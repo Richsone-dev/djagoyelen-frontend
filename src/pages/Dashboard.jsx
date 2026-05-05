@@ -171,6 +171,18 @@ const Dashboard = () => {
         );
     }
 
+
+    // 1. On utilise useMemo pour trier les données une seule fois
+// Cela évite de recalculer le tri à chaque rendu inutile
+const sortedTransactions = React.useMemo(() => {
+  // On crée une copie pour ne pas altérer les données originales
+  return [...transactions].sort((a, b) => {
+    // Conversion des dates en millisecondes pour comparer
+    // (b - a) donne un ordre décroissant (plus récent en premier)
+    return new Date(b.date) - new Date(a.date);
+  });
+}, [transactions]);
+
     return (
         <div className="container-fluid px-1 py-4 bg-light min-vh-100">
             {/* --- CARTES DE RÉSUMÉ --- */}
@@ -286,26 +298,38 @@ const Dashboard = () => {
                     <table className="table table-hover align-middle">
                         <thead className="table-light">
                             <tr>
-                                <th>Date</th>
-                                <th>Description</th>
-                                <th>Type</th>
-                                <th className="text-end">Montant</th>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Type</th>
+                            <th className="text-end">Montant</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {transactions.map((t, index) => (
-                                <tr key={index}>
-                                    <td>{new Date(t.date).toLocaleDateString('fr-FR')}</td>
-                                    <td className="fw-medium">{t.description}</td>
-                                    <td>
-                                        <span className={`badge rounded-pill px-3 py-2 ${t.type === 'revenu' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'}`}>
-                                            {t.type === 'revenu' ? 'Entrée' : 'Sortie'}
-                                        </span>
-                                    </td>
-                                    <td className={`text-end fw-bold ${t.type === 'revenu' ? 'text-success' : 'text-danger'}`}>
-                                        {t.type === 'revenu' ? '+' : '-'} {parseFloat(t.montant).toLocaleString()} FCFA
-                                    </td>
-                                </tr>
+                            {/* On map sur notre tableau déjà trié */}
+                            {sortedTransactions.map((t, index) => (
+                            <tr key={t.id || index}> {/* Utiliser t.id est préférable si disponible */}
+                                
+                                {/* Affichage formaté de la date */}
+                                <td>{new Date(t.date).toLocaleDateString('fr-FR')}</td>
+                                
+                                {/* Description en gras */}
+                                <td className="fw-medium">{t.description}</td>
+                                
+                                {/* Badge coloré selon le type */}
+                                <td>
+                                <span className={`badge rounded-pill px-3 py-2 ${
+                                    t.type === 'revenu' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'
+                                }`}>
+                                    {t.type === 'revenu' ? 'Entrée' : 'Sortie'}
+                                </span>
+                                </td>
+                                
+                                {/* Montant avec signe + ou - et formatage monétaire */}
+                                <td className={`text-end fw-bold ${t.type === 'revenu' ? 'text-success' : 'text-danger'}`}>
+                                {t.type === 'revenu' ? '+' : '-'} {parseFloat(t.montant).toLocaleString()} FCFA
+                                </td>
+                                
+                            </tr>
                             ))}
                         </tbody>
                     </table>
