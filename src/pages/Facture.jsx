@@ -29,10 +29,10 @@ const Facture = () => {
         api.get('/factures'),
         api.get('/clients')
       ]);
-      setFactures(resFactures.data || []);
-      setClients(resClients.data || []);
+      setFactures(resFactures.data);
+      setClients(resClients.data);
     } catch (error) {
-      console.error("Erreur:", error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -48,16 +48,36 @@ const Facture = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.client_id) return alert("Veuillez sélectionner un client");
-    
+
+    if (!formData.client_id) {
+      alert("Veuillez sélectionner un client");
+      return;
+    }
+
+    const payload = {
+      client_id: formData.client_id,
+      date_emission: formData.date_emission,
+      tva_taux: formData.tva_taux,
+      total_ht: formData.total_ht,
+      total_ttc: formData.total_ttc,
+      lignes: formData.items
+    };
+
     try {
-      isEditing ? await api.put(`/factures/${formData.id}`, formData) : await api.post('/factures', formData);
-      alert("Enregistré avec succès ✅");
+      if (isEditing) {
+        await api.put(`/factures/${formData.id}`, payload);
+      } else {
+        await api.post('/factures', payload);
+      }
+
+      alert("Enregistré ✅");
       setFormData(initialFormState);
       setView('list');
       fetchData();
+
     } catch (error) {
-      alert("Erreur lors de la sauvegarde.");
+      console.error(error.response?.data);
+      alert("Erreur ❌");
     }
   };
 
@@ -67,73 +87,108 @@ const Facture = () => {
     setFormData({ ...formData, items });
   };
 
-  const addItem = () => setFormData({...formData, items: [...formData.items, { designation: '', quantite: 1, prix_unitaire: 0 }]});
+  const addItem = () => {
+    setFormData({
+      ...formData,
+      items: [...formData.items, { designation: '', quantite: 1, prix_unitaire: 0 }]
+    });
+  };
 
   return (
     <div className="container py-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="text-primary fw-bold">Gestion des Factures</h2>
-        {view === 'list' && (
-          <button className="btn btn-primary" onClick={() => { setIsEditing(false); setFormData(initialFormState); setView('form'); }}>
-            + Nouvelle Facture
-          </button>
-        )}
-      </div>
+      <h2>Factures</h2>
 
       {view === 'list' ? (
-        <div className="card shadow-sm p-3">
-          <input className="form-control mb-3" placeholder="🔍 Rechercher par client..." onChange={(e) => setSearchTerm(e.target.value)} />
-          <table className="table table-hover align-middle">
-            <thead className="table-light">
-              <tr><th>Numéro</th><th>Client</th><th>Total TTC</th><th>Actions</th></tr>
+        <>
+          <button className="btn btn-primary mb-3" onClick={() => {
+            setFormData(initialFormState);
+            setIsEditing(false);
+            setView('form');
+          }}>
+            Nouvelle facture
+          </button>
+
+          <input className="form-control mb-3" placeholder="Recherche..." onChange={(e) => setSearchTerm(e.target.value)} />
+
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>Total TTC</th>
+                <th>Actions</th>
+              </tr>
             </thead>
             <tbody>
-              {factures.filter(f => f.client?.nom?.toLowerCase().includes(searchTerm.toLowerCase())).map(f => (
-                <tr key={f.id}>
-                  <td><strong>{f.num_facture}</strong></td>
-                  <td>{f.client?.nom}</td>
-                  <td className="fw-bold">{parseFloat(f.total_ttc).toLocaleString()} FCFA</td>
-                  <td>
-                    <button className="btn btn-sm btn-outline-primary me-2" onClick={() => { setIsEditing(true); setFormData({...f, items: f.lignes || []}); setView('form'); }}>Modifier</button>
-                    <button className="btn btn-sm btn-outline-danger" onClick={async () => { if(window.confirm("Supprimer ?")) { await api.delete(`/factures/${f.id}`); fetchData(); }}}>Supprimer</button>
-                  </td>
-                </tr>
-              ))}
+              {factures
+                .filter(f => f.client?.nom?.toLowerCase().includes(searchTerm.toLowerCase()))
+                .map(f => (
+                  <tr key={f.id}>
+                    <td>{f.client?.nom}</td>
+                    <td>{f.total_ttc} FCFA</td>
+                    <td>
+                      <button className="btn btn-sm btn-warning me-2" onClick={() => {
+                        setFormData({
+                          ...f,
+                          items: f.lignes || []
+                        });
+                        setIsEditing(true);
+                        setView('form');
+                      }}>
+                        Modifier
+                      </button>
+
+                      <button className="btn btn-sm btn-danger" onClick={async () => {
+                        if (window.confirm("Supprimer ?")) {
+                          await api.delete(`/factures/${f.id}`);
+                          fetchData();
+                        }
+                      }}>
+                        Supprimer
+                      </button>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
-        </div>
+        </>
       ) : (
-        <div className="card shadow-sm p-4">
-          <form onSubmit={handleSubmit}>
-            <div className="mb-3">
-              <label className="form-label">Sélectionner le Client</label>
-              <Select
-                options={clients.map(c => ({ value: c.id, label: c.nom }))}
-                value={clients.find(c => c.id === formData.client_id) ? { value: formData.client_id, label: clients.find(c => c.id === formData.client_id).nom } : null}
-                onChange={(c) => setFormData({ ...formData, client_id: c.value })}
-                required
-              />
-            </div>
+        <form onSubmit={handleSubmit}>
+          <Select
+            options={clients.map(c => ({ value: c.id, label: c.nom }))}
+            value={clients.find(c => c.id === formData.client_id)
+              ? { value: formData.client_id, label: clients.find(c => c.id === formData.client_id).nom }
+              : null}
+            onChange={(c) => setFormData({ ...formData, client_id: c?.value || '' })}
+          />
 
-            <div className="bg-light p-3 rounded">
-              <h5>Lignes de facture</h5>
-              {formData.items.map((item, i) => (
-                <div key={i} className="row g-2 mb-2">
-                  <div className="col-6"><input className="form-control" placeholder="Désignation" value={item.designation} onChange={(e) => handleItemChange(i, 'designation', e.target.value)} required /></div>
-                  <div className="col-2"><input type="number" className="form-control" value={item.quantite} onChange={(e) => handleItemChange(i, 'quantite', e.target.value)} /></div>
-                  <div className="col-4"><input type="number" className="form-control" value={item.prix_unitaire} onChange={(e) => handleItemChange(i, 'prix_unitaire', e.target.value)} /></div>
-                </div>
-              ))}
-              <button type="button" className="btn btn-sm btn-outline-secondary" onClick={addItem}>+ Ajouter une ligne</button>
-            </div>
+          <hr />
 
-            <div className="mt-3 text-end">
-              <h4 className="text-primary">Total TTC: {formData.total_ttc.toLocaleString()} FCFA</h4>
-              <button type="button" className="btn btn-secondary me-2" onClick={() => setView('list')}>Annuler</button>
-              <button type="submit" className="btn btn-success px-4">Enregistrer</button>
+          {formData.items.map((item, i) => (
+            <div key={i} className="row mb-2">
+              <div className="col">
+                <input className="form-control" placeholder="Designation"
+                  value={item.designation}
+                  onChange={(e) => handleItemChange(i, 'designation', e.target.value)} />
+              </div>
+              <div className="col">
+                <input type="number" className="form-control"
+                  value={item.quantite}
+                  onChange={(e) => handleItemChange(i, 'quantite', e.target.value)} />
+              </div>
+              <div className="col">
+                <input type="number" className="form-control"
+                  value={item.prix_unitaire}
+                  onChange={(e) => handleItemChange(i, 'prix_unitaire', e.target.value)} />
+              </div>
             </div>
-          </form>
-        </div>
+          ))}
+
+          <button type="button" onClick={addItem} className="btn btn-secondary">Ajouter ligne</button>
+
+          <h4>Total TTC: {formData.total_ttc} FCFA</h4>
+
+          <button type="submit" className="btn btn-success">Enregistrer</button>
+        </form>
       )}
     </div>
   );

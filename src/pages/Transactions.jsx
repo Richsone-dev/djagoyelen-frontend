@@ -211,7 +211,17 @@ const Transactions = () => {
                                             <h5 className="fw-bold mb-0">
                                                 <span style={{ color: colors.successGreen }}>Djago</span><span style={{ color: colors.orange }}>Yelen</span>
                                             </h5>
-                                            <small className="text-muted">Solde disponible: <b className="text-dark">{soldeActuel.toLocaleString()} F</b></small>
+                                            <small className="text-muted">
+                                                Solde disponible: 
+                                                <b className="text-dark">
+                                                    {loading ? (
+                                                        " Calcul..."
+                                                        ` ${soldeActuel.toLocaleString()} F`
+                                                    ) : (
+                                                        " 0 F"
+                                                    )}
+                                                </b>
+                                            </small>
                                         </div>
                                     </div>
                                     <button className="btn-close shadow-none" onClick={() => setShowModal(false)}></button>
