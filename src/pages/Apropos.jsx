@@ -1,11 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
+import { useNavigate } from 'react-router-dom';
 // Importations corrigées pour Vite
 import img2 from '../assets/img2.png';
 import probleme from '../assets/probleme.svg';
 import solution from '../assets/solution.svg';
 import solution1 from '../assets/solution1.png';
 import karimProfil from '../assets/karimProfil.jpeg';
+import francoiseProfil from '../assets/francoiseProfil.jpeg';
+import hyacintheProfil from '../assets/hyacintheProfil.jpeg';
 import visuel2 from '../assets/visuel2.jpeg';
 import visuel3 from '../assets/visuel3.jpeg';
 
@@ -83,9 +86,9 @@ const AproposDetails = () => {
                 colors={colors}
             />
             <Section
-                title="Notre Vision"
+                title="DjagoYelen : Architecte de la Prospérité"
                 img={visuel3}
-                text="DjagoYelen vise à transformer la gestion financière en Afrique en apportant clarté, transparence et performance aux entreprises."
+                text="Nous structurons l'avenir financier en offrant à chaque idée la solidité technologique nécessaire pour passer de l'ambition à la performance durable."
                 colors={colors}
             />
 
@@ -132,8 +135,8 @@ const ProblemSolution = ({ colors, cardStyle }) => {
         <section ref={ref} className={`mb-5 fade ${visible ? 'show' : ''}`}>
             <div className="row g-4">
                 <div className="col-md-6">
-                        <img src={probleme} alt="Problème" className="mb-3" style={{ width: '60px', height: '60px' }} />
                     <div className="p-4 rounded-4 shadow border-start border-danger border-4 glass premium-card" style={cardStyle}>
+                        <img src={probleme} alt="Problème" className="mb-3" style={{ width: '60px', height: '60px' }} />
                         <h5 className="text-danger fw-bold">Problème</h5>
                         <p>Les entreprises utilisent encore des outils dispersés et inefficaces.</p>
                     </div>
@@ -197,10 +200,11 @@ const Team = ({ colors, cardStyle }) => {
     // On stocke les membres dans un tableau pour rendre le code lisible
     const teamMembers = [
         { name: "Karim SANOU", title: "Développeur Fullstack", img: karimProfil, profil:"Passionné par l'innovation numérique et la création de solutions financières robustes." },
-        { name: "François Jessica SOW", title: "Développeuse Fullstack", profil:"Passionnée par l'innovation numérique et la création de solutions financières robustes." },
-        { name: "Dossi Wilfried Hyacinthe SANOU", title: "Agent d'Assurance Banque", profil:"Passionnée par l'innovation de comptabilité des entreprises Ouest Africaines." }
+        { name: "François Jessica SOW", title: "Développeuse Fullstack", img: francoiseProfil, profil:"Passionnée par l'innovation numérique et la création de solutions financières robustes." },
+        { name: "Dossi Wilfried Hyacinthe SANOU", title: "Agent d'Assurance Banque", img: hyacintheProfil, profil:"Passionnée par l'innovation de comptabilité des entreprises Ouest Africaines." }
     ];
 
+    
     return (
         <section ref={ref} className={`text-center mb-5 fade ${visible ? 'show' : ''}`}>
             <h2 className="fw-bold mb-5" style={{ color: colors.darkGreen }}>
@@ -221,7 +225,7 @@ const Team = ({ colors, cardStyle }) => {
                                         width: '150px', height: '150px', 
                                         objectFit: 'cover', borderColor: colors.orange 
                                     }} 
-                                />
+                                    />
                             </div>
                             <h4 className="fw-bold mb-1">{member.name}</h4>
                             <p className="text-uppercase small mb-3" style={{ color: colors.orange, letterSpacing: '2px' }}>
@@ -233,7 +237,7 @@ const Team = ({ colors, cardStyle }) => {
                             {/* <div className="d-flex justify-content-center gap-3">
                                 <a href="#" style={{ color: colors.textColor }}><i className="bi bi-github fs-4"></i></a>
                                 <a href="#" style={{ color: colors.textColor }}><i className="bi bi-linkedin fs-4"></i></a>
-                            </div> */}
+                                </div> */}
                         </div>
                     </div>
                 ))}
@@ -244,10 +248,13 @@ const Team = ({ colors, cardStyle }) => {
 
 const CTA = ({ colors }) => {
     const [ref, visible] = useScrollAnimation();
+    const navigate = useNavigate();
     return (
-        <section ref={ref} className={`text-center fade ${visible ? 'show' : ''}`}>
+        <section ref={ref} className={`py-5 text-center fade ${visible ? 'show' : ''}`}>
             <h3 className="fw-bold mb-3">Commencer maintenant</h3>
-            <button className="btn px-4 py-2 fw-bold" style={{ backgroundColor: colors.orange, color: 'white', borderRadius: '30px' }}>Lancer</button>
+            <button className="btn px-4 py-2 fw-bold" style={{ backgroundColor: colors.orange, color: 'white', borderRadius: '30px' }}
+                        onClick={() => navigate('/dashboard')}
+                    >Commancer</button>
         </section>
     );
 };
