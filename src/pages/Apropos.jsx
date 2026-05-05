@@ -60,7 +60,7 @@ const AproposDetails = () => {
                     {/* Texte : On utilise col-lg-8 pour que ça respire mieux sur PC, et on enlève la justification forcée sur mobile pour éviter les trous */}
                     <p className="lead px-3 px-md-0 col-lg-8 mx-auto opacity-75" 
                     style={{ fontSize: '1.1rem', lineHeight: '1.6' }}>
-                        Une plateforme intelligente de gestion financière conçue pour moderniser les PME africaines. 
+                        Une plateforme intelligente de gestion financière conçue pour moderniser les PME ouest africaines. 
                         Libérez le potentiel de votre entreprise grâce à notre plateforme. 
                         Elle transforme vos données comptables en décisions stratégiques claires, accessibles en quelques clics.
                         <span className="fw-bold d-block mt-2">Clarté, performance et croissance au bout des doigts.</span>
@@ -86,7 +86,7 @@ const AproposDetails = () => {
                 colors={colors}
             />
             <Section
-                title="DjagoYelen : Architecte de la Prospérité"
+                title="Architecte de la Prospérité"
                 img={visuel3}
                 text="Nous structurons l'avenir financier en offrant à chaque idée la solidité technologique nécessaire pour passer de l'ambition à la performance durable."
                 colors={colors}
@@ -189,9 +189,9 @@ const Impact = ({ colors }) => (
     </section>
 );
 
-const Roadmap = ({ colors }) => (
+{/*const Roadmap = ({ colors }) => (
     <section className="mb-5 text-center"><h2 className="fw-bold mb-4" style={{ color: colors.darkGreen }}>Roadmap</h2>{["MVP", "Mobile", "IA", "Expansion"].map((s, i) => <p key={i} className="fade show">{s}</p>)}</section>
-);
+);*/}
 
 
 const Team = ({ colors, cardStyle }) => {
