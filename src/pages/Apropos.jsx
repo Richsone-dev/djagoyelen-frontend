@@ -189,9 +189,9 @@ const Impact = ({ colors }) => (
     </section>
 );
 
-//const Roadmap = ({ colors }) => (
-    //<section className="mb-5 text-center"><h2 className="fw-bold mb-4" style={{ color: colors.darkGreen }}>Roadmap</h2>{["MVP", "Mobile", "IA", "Expansion"].map((s, i) => <p key={i} className="fade show">{s}</p>)}</section>
-//);
+const Roadmap = ({ colors }) => (
+    <section className="mb-5 text-center"></section>
+);
 
 
 const Team = ({ colors, cardStyle }) => {
