@@ -25,34 +25,23 @@
   -webkit-font-smoothing: antialiased;
 }
 
-/* ================= ANIMATIONS ================= */
-@keyframes fadeInRow {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ================= BODY ================= */
-body {
-  background-color: #0c450d;
+/* ================= RESET GLOBAL ================= */
+* {
   margin: 0;
   padding: 0;
-}
-
-* {
   box-sizing: border-box;
 }
 
-/* ================= ROOT APP ================= */
+body {
+  background-color: #0c450d;
+}
+
+/* ================= ROOT APP (Modifié pour les marges 2px) ================= */
 #root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
+  width: 100%;
+  max-width: 100vw; /* Utilise toute la largeur */
+  padding-left: 2px;
+  padding-right: 2px;
   text-align: center;
   border-inline: 1px solid var(--border);
   min-height: 100svh;
@@ -61,30 +50,18 @@ body {
 }
 
 /* ================= TEXT ================= */
-h1,
-h2 {
+h1, h2 {
   font-family: var(--heading);
   font-weight: 500;
   color: var(--text-h);
 }
 
-h1 {
-  font-size: 56px;
-  margin: 32px 0;
-}
-
-h2 {
-  font-size: 24px;
-  margin-bottom: 8px;
-}
-
-p {
-  margin: 0;
-}
+h1 { font-size: 56px; margin: 32px 0; }
+h2 { font-size: 24px; margin-bottom: 8px; }
+p { margin: 0; }
 
 /* ================= CODE ================= */
-code,
-.counter {
+code, .counter {
   font-family: var(--mono);
   display: inline-flex;
   border-radius: 4px;
@@ -99,16 +76,8 @@ code {
 
 /* ================= TABLE RESPONSIVE ================= */
 @media (max-width: 767px) {
-  .responsive-table thead {
-    display: none;
-  }
-
-  .responsive-table tr {
-    display: block;
-    border-bottom: 2px solid #eee;
-    margin-bottom: 10px;
-  }
-
+  .responsive-table thead { display: none; }
+  .responsive-table tr { display: block; border-bottom: 2px solid #eee; margin-bottom: 10px; }
   .responsive-table td {
     display: flex;
     justify-content: space-between;
@@ -117,7 +86,6 @@ code {
     padding: 10px 15px !important;
     border: none !important;
   }
-
   .responsive-table td::before {
     content: attr(data-label);
     font-weight: bold;
@@ -143,16 +111,7 @@ code {
 
 /* ================= RESPONSIVE ================= */
 @media (max-width: 1024px) {
-  :root {
-    font-size: 16px;
-  }
-
-  h1 {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-
-  h2 {
-    font-size: 20px;
-  }
+  :root { font-size: 16px; }
+  h1 { font-size: 36px; margin: 20px 0; }
+  h2 { font-size: 20px; }
 }
