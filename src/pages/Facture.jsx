@@ -444,7 +444,7 @@ Date: ${fullFacture.date_emission}
 
             {/* ── MODAL CLIENT ── */}
             {showClientModal && (
-                <div className="modal show d-block" style={{ background: 'rgba(0,0,0,0.5)' }}>
+                <div className="modal show d-block py-5" style={{ background: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog">
                         <div className="modal-content text-align-left">
                             <div className="modal-header">
