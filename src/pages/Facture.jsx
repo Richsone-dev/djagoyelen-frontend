@@ -440,11 +440,11 @@ Date: ${fullFacture.date_emission}
     if (loading) return <div className="text-center mt-5">Chargement...</div>;
 
     return (
-        <div className="container p-3">
+        <div className="container p-3 mb-5">
 
             {/* ── MODAL CLIENT ── */}
             {showClientModal && (
-                <div className="modal show d-block mb-10" style={{ background: 'rgba(0,0,0,0.5)' }}>
+                <div className="modal show d-block" style={{ background: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog">
                         <div className="modal-content text-align-left">
                             <div className="modal-header">
@@ -598,8 +598,8 @@ Date: ${fullFacture.date_emission}
                 </>
             ) : (
                 // ── FORMULAIRE ──
-                <form onSubmit={handleSubmit}>
-                    <div className="d-flex justify-content-between align-items-center mb-3">
+                <form onSubmit={handleSubmit} className='mb-10'>
+                    <div className="d-flex justify-content-between align-items-center mb-10">
                         <h4>{isEditing ? 'Modifier la facture' : 'Nouvelle facture'}</h4>
                         <button type="button" className="btn btn-secondary" onClick={() => {
                             setShowModal(false);
@@ -728,7 +728,7 @@ Date: ${fullFacture.date_emission}
                         </div>
                     </div>
 
-                    <button type="submit" className="btn btn-success" disabled={submitLoading}>
+                    <button type="submit" className="btn btn-success mb-5 w-100" disabled={submitLoading}>
                         {submitLoading ? 'Enregistrement...' : (isEditing ? 'Mettre à jour' : 'Enregistrer la facture')}
                     </button>
                 </form>
