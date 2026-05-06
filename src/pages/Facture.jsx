@@ -439,12 +439,20 @@ Date: ${fullFacture.date_emission}
     // ─────────────────────────────────────────
     if (loading) return <div className="text-center mt-5">Chargement...</div>;
 
+    const fieldConfig = {
+        nom: { placeholder: "Ex: Jean Dupont", type: "text" },
+        email: { placeholder: "Ex: jean@exemple.com", type: "email" },
+        telephone: { placeholder: "Ex: 70 00 00 00", type: "tel" },
+        adresse: { placeholder: "Ex: Bobo-Dioulasso, Burkina Faso", type: "text" }
+    };
+
+
     return (
         <div className="container p-3 mb-5">
 
             {/* ── MODAL CLIENT ── */}
             {showClientModal && (
-                <div className="modal show d-block" style={{ background: 'rgba(0,0,0,0.5)' }}>
+                <div className="modal show d-block text-align-left" style={{ background: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog">
                         <div className="modal-content text-align-left">
                             <div className="modal-header">
@@ -452,24 +460,34 @@ Date: ${fullFacture.date_emission}
                                 <button className="btn-close" onClick={() => setShowClientModal(false)} />
                             </div>
                             <form onSubmit={handleAddClient}>
-                                <div className="modal-body">
-                                    {['nom', 'email', 'telephone', 'adresse'].map(field => (
-                                        <div className="mb-2" key={field}>
-                                            <label className="form-label text-capitalize">{field}</label>
-                                            <input
-                                                className="form-control"
-                                                value={newClient[field]}
-                                                onChange={e => setNewClient(p => ({ ...p, [field]: e.target.value }))}
-                                                required={field === 'nom'}
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="modal-footer">
-                                    <button type="button" className="btn btn-secondary" onClick={() => setShowClientModal(false)}>Annuler</button>
-                                    <button type="submit" className="btn btn-primary">Enregistrer</button>
-                                </div>
-                            </form>
+            <div className="modal-body" style={{ textAlign: 'left' }}>
+                {Object.keys(fieldConfig).map(field => (
+                    <div className="mb-2" key={field}>
+                        <label className="form-label text-capitalize">{field}</label>
+                        <input
+                            type={fieldConfig[field].type}
+                            className="form-control"
+                            value={newClient[field] || ''}
+                            onChange={e => setNewClient(p => ({ ...p, [field]: e.target.value }))}
+                            required={field === 'nom'}
+                            placeholder={fieldConfig[field].placeholder}
+                        />
+                    </div>
+                ))}
+            </div>
+            <div className="modal-footer">
+                <button 
+                    type="button" 
+                    className="btn btn-secondary" 
+                    onClick={() => setShowClientModal(false)}
+                >
+                    Annuler
+                </button>
+                <button type="submit" className="btn btn-primary">
+                    Enregistrer
+                </button>
+            </div>
+        </form>
                         </div>
                     </div>
                 </div>
