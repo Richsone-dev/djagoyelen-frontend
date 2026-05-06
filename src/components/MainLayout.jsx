@@ -73,7 +73,7 @@ const MainLayout = () => {
             { path: 'parametres', label: 'Paramètres', icon: 'gear' },
             { path: 'clients', label: 'Clients', icon: 'people' },
             
-            { path: 'factures', label: 'Factures', icon: 'receipt', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
+            { path: 'factures', label: 'Factures', icon: 'receipt'},
             { path: 'aide', label: 'Aide', icon: 'question-circle', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
             { path: 'notifications', label: 'Notifications', icon: 'bell', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
             { path: 'dettes', label: 'Dettes', icon: 'person-dash', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },

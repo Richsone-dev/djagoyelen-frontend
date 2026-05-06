@@ -1,197 +1,742 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
-import Select from 'react-select';
+import { jsPDF } from 'jspdf';
+import QRCode from 'qrcode';
+import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
+import Swal from 'sweetalert2';
+import logo from '../assets/djago-logo.jpeg';
+
+
 
 const Facture = () => {
-  const [factures, setFactures] = useState([]);
-  const [clients, setClients] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [view, setView] = useState('list');
-  const [isEditing, setIsEditing] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+    const [factures, setFactures] = useState([]);
+    const [clients, setClients] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [showModal, setShowModal] = useState(false);
+    const [showClientModal, setShowClientModal] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [errors, setErrors] = useState({});
+    const [submitLoading, setSubmitLoading] = useState(false);
 
-  const initialFormState = {
-    id: null,
-    client_id: '',
-    date_emission: new Date().toISOString().split('T')[0],
-    items: [{ designation: '', quantite: 1, prix_unitaire: 0 }],
-    tva_taux: 18,
-    total_ht: 0,
-    total_ttc: 0
-  };
+    const [newClient, setNewClient] = useState({
+        nom: '', email: '', telephone: '', adresse: ''
+    });
 
-  const [formData, setFormData] = useState(initialFormState);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [resFactures, resClients] = await Promise.all([
-        api.get('/factures'),
-        api.get('/clients')
-      ]);
-      setFactures(resFactures.data);
-      setClients(resClients.data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
-
-  useEffect(() => {
-    const ht = formData.items.reduce((sum, item) => sum + (item.quantite * item.prix_unitaire), 0);
-    const tva = ht * (formData.tva_taux / 100);
-    setFormData(prev => ({ ...prev, total_ht: ht, total_ttc: ht + tva }));
-  }, [formData.items, formData.tva_taux]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!formData.client_id) {
-      alert("Veuillez sélectionner un client");
-      return;
-    }
-
-    const payload = {
-      client_id: formData.client_id,
-      date_emission: formData.date_emission,
-      tva_taux: formData.tva_taux,
-      total_ht: formData.total_ht,
-      total_ttc: formData.total_ttc,
-      lignes: formData.items
+    const colors = {
+        darkGreen: '#0A3B2F',
+        red1: '#FF0000',
+        orange: '#E97223',
+        successGreen: '#198754',
+        blue: '#2196f3',
+        purple: '#9c27b0',
+        lightGray: '#f8f9fa',
+        bgLight: '#f8f9fa',
+        redLight: '#f8d7da',
+        greenLight: '#d1e7dd',
+        purpleLight: '#f3ccff',
+        orangeLight: '#fff3cd',
+        yellowLight: '#fff9db',
+        orangeHover: '#ff7f50',
+        dangerRed: '#dc3545'
     };
 
-    try {
-      if (isEditing) {
-        await api.put(`/factures/${formData.id}`, payload);
-      } else {
-        await api.post('/factures', payload);
-      }
 
-      alert("Enregistré ✅");
-      setFormData(initialFormState);
-      setView('list');
-      fetchData();
+    const initialFormState = {
+        id: null,
+        client_id: '',
+        date_emission: new Date().toISOString().split('T')[0],
+        items: [{ designation: '', quantite: 1, prix_unitaire: 0 }],
+        tva_taux: 18,
+        total_ht: 0,
+        total_ttc: 0
+    };
 
-    } catch (error) {
-      console.error(error.response?.data);
-      alert("Erreur ❌");
-    }
-  };
+    const [formData, setFormData] = useState(initialFormState);
 
-  const handleItemChange = (idx, field, value) => {
-    const items = [...formData.items];
-    items[idx][field] = field === 'designation' ? value : parseFloat(value) || 0;
-    setFormData({ ...formData, items });
-  };
+    useEffect(() => {
+        fetchFactures();
+        fetchClients();
+    }, []);
 
-  const addItem = () => {
-    setFormData({
-      ...formData,
-      items: [...formData.items, { designation: '', quantite: 1, prix_unitaire: 0 }]
-    });
-  };
+    // ✅ Calcul automatique HT / TTC
+    useEffect(() => {
+        const ht = formData.items.reduce((sum, item) => {
+            const qte = Number(item.quantite) || 0;
+            const pu = Number(item.prix_unitaire) || 0;
+            return sum + qte * pu;
+        }, 0);
 
-  return (
-    <div className="container py-4">
-      <h2>Factures</h2>
+        const tva = ht * (Number(formData.tva_taux) / 100);
+        const ttc = ht + tva;
 
-      {view === 'list' ? (
-        <>
-          <button className="btn btn-primary mb-3" onClick={() => {
+        setFormData(prev => {
+            if (prev.total_ht === ht && prev.total_ttc === ttc) return prev;
+            return { ...prev, total_ht: parseFloat(ht.toFixed(2)), total_ttc: parseFloat(ttc.toFixed(2)) };
+        });
+    }, [formData.items, formData.tva_taux]);
+
+    // ─────────────────────────────────────────
+    // FETCH
+    // ─────────────────────────────────────────
+    const fetchFactures = async () => {
+        try {
+            const res = await api.get('/factures');
+            // Laravel retourne souvent { data: [...] } avec pagination, ou directement un tableau
+            setFactures(Array.isArray(res.data) ? res.data : res.data.data || []);
+        } catch (e) {
+            console.error('Erreur fetchFactures:', e.response?.data || e.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchClients = async () => {
+        try {
+            const res = await api.get('/clients');
+            setClients(Array.isArray(res.data) ? res.data : res.data.data || []);
+        } catch (e) {
+            console.error('Erreur fetchClients:', e.response?.data || e.message);
+        }
+    };
+
+    // ─────────────────────────────────────────
+    // AJOUTER CLIENT
+    // ─────────────────────────────────────────
+    const handleAddClient = async (e) => {
+        e.preventDefault();
+        try {
+            const res = await api.post('/clients', newClient);
+            // Laravel retourne souvent { data: {...} } ou directement l'objet
+            const created = res.data.data || res.data;
+            setClients(prev => [...prev, created]);
+            setFormData(prev => ({ ...prev, client_id: created.id }));
+            setShowClientModal(false);
+            setNewClient({ nom: '', email: '', telephone: '', adresse: '' });
+        } catch (e) {
+            console.error('Erreur addClient:', e.response?.data || e.message);
+            alert("Erreur lors de l'ajout du client : " + (e.response?.data?.message || e.message));
+        }
+    };
+
+    // ─────────────────────────────────────────
+    // SUBMIT FACTURE — correction principale
+    // ─────────────────────────────────────────
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setErrors({});
+        setSubmitLoading(true);
+
+        // Validation côté client
+        if (!formData.client_id) {
+            setErrors({ client_id: 'Veuillez sélectionner un client.' });
+            setSubmitLoading(false);
+            return;
+        }
+
+        const hasEmptyItem = formData.items.some(i => !i.designation.trim());
+        if (hasEmptyItem) {
+            setErrors({ items: 'Chaque ligne doit avoir une désignation.' });
+            setSubmitLoading(false);
+            return;
+        }
+
+        // ✅ Payload propre pour Laravel
+        // Laravel s'attend à des types corrects, les items sont souvent envoyés
+        // en JSON ou comme tableau imbriqué selon votre contrôleur
+        const payload = {
+            client_id:     parseInt(formData.client_id),
+            date_emission: formData.date_emission,
+            tva_taux:      parseFloat(formData.tva_taux),
+            total_ht:      parseFloat(formData.total_ht),
+            total_ttc:     parseFloat(formData.total_ttc),
+            items: formData.items.map(item => ({
+                designation:   String(item.designation).trim(),
+                quantite:      parseInt(item.quantite),
+                prix_unitaire: parseFloat(item.prix_unitaire)
+            }))
+        };
+
+        try {
+            if (isEditing && formData.id) {
+                // ✅ Laravel : PUT ou PATCH selon votre route
+                await api.put(`/factures/${formData.id}`, payload);
+            } else {
+                await api.post('/factures', payload);
+            }
+
+            setShowModal(false);
             setFormData(initialFormState);
             setIsEditing(false);
-            setView('form');
-          }}>
-            Nouvelle facture
-          </button>
+            await fetchFactures();
 
-          <input className="form-control mb-3" placeholder="Recherche..." onChange={(e) => setSearchTerm(e.target.value)} />
+        } catch (err) {
+            console.error('Erreur submit:', err.response?.data || err.message);
 
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Client</th>
-                <th>Total TTC</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {factures
-                .filter(f => f.client?.nom?.toLowerCase().includes(searchTerm.toLowerCase()))
-                .map(f => (
-                  <tr key={f.id}>
-                    <td>{f.client?.nom}</td>
-                    <td>{f.total_ttc} FCFA</td>
-                    <td>
-                      <button className="btn btn-sm btn-warning me-2" onClick={() => {
-                        setFormData({
-                          ...f,
-                          items: f.lignes || []
-                        });
-                        setIsEditing(true);
-                        setView('form');
-                      }}>
-                        Modifier
-                      </button>
+            // ✅ Laravel retourne les erreurs de validation sous err.response.data.errors
+            if (err.response?.status === 422) {
+                const laravelErrors = err.response.data.errors || {};
+                // Convertir { 'items.0.designation': [...] } en messages lisibles
+                const flat = {};
+                Object.entries(laravelErrors).forEach(([key, msgs]) => {
+                    flat[key] = Array.isArray(msgs) ? msgs[0] : msgs;
+                });
+                setErrors(flat);
+            } else {
+                alert("Erreur serveur : " + (err.response?.data?.message || err.message));
+            }
+        } finally {
+            setSubmitLoading(false);
+        }
+    };
 
-                      <button className="btn btn-sm btn-danger" onClick={async () => {
-                        if (window.confirm("Supprimer ?")) {
-                          await api.delete(`/factures/${f.id}`);
-                          fetchData();
-                        }
-                      }}>
-                        Supprimer
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        </>
-      ) : (
-        <form onSubmit={handleSubmit}>
-          <Select
-            options={clients.map(c => ({ value: c.id, label: c.nom }))}
-            value={clients.find(c => c.id === formData.client_id)
-              ? { value: formData.client_id, label: clients.find(c => c.id === formData.client_id).nom }
-              : null}
-            onChange={(c) => setFormData({ ...formData, client_id: c?.value || '' })}
-          />
+    // ─────────────────────────────────────────
+    // SUPPRIMER
+    // ─────────────────────────────────────────
+    const handleDelete = async (id) => {
+    // 1. Vérification de la confirmation
+    const result = await Swal.fire({
+        title: 'Êtes-vous sûr ?',
+        text: "Cette action est irréversible !",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33', // Assure-toi que cette couleur est définie
+        cancelButtonColor: '#6c757d',
+        cancelButtonText: 'Annuler',
+        confirmButtonText: 'Oui, supprimer'
+    });
 
-          <hr />
+    if (result.isConfirmed) {
+        try {
+            // 2. Appel API
+            await api.delete(`/factures/${id}`);
+            
+            // 3. Mise à jour optimisée de l'interface (plus rapide que fetchData())
+            setFactures(prevFactures => prevFactures.filter(f => f.id !== id));
+            
+            // 4. Feedback utilisateur
+            await Swal.fire('Supprimé !', 'La facture a été supprimée avec succès.', 'success');
+        } catch (err) {
+            console.error("Erreur suppression:", err);
+            // Affichage du message d'erreur spécifique si disponible
+            const errorMessage = err.response?.data?.message || "Impossible de supprimer la facture.";
+            Swal.fire('Erreur', errorMessage, 'error');
+        }
+    }
+};
 
-          {formData.items.map((item, i) => (
-            <div key={i} className="row mb-2">
-              <div className="col">
-                <input className="form-control" placeholder="Designation"
-                  value={item.designation}
-                  onChange={(e) => handleItemChange(i, 'designation', e.target.value)} />
-              </div>
-              <div className="col">
-                <input type="number" className="form-control"
-                  value={item.quantite}
-                  onChange={(e) => handleItemChange(i, 'quantite', e.target.value)} />
-              </div>
-              <div className="col">
-                <input type="number" className="form-control"
-                  value={item.prix_unitaire}
-                  onChange={(e) => handleItemChange(i, 'prix_unitaire', e.target.value)} />
-              </div>
-            </div>
-          ))}
 
-          <button type="button" onClick={addItem} className="btn btn-secondary">Ajouter ligne</button>
+    // ─────────────────────────────────────────
+    // MODIFIER ITEM
+    // ─────────────────────────────────────────
+    const handleItemChange = (index, field, value) => {
+        const items = [...formData.items];
+        items[index] = {
+            ...items[index],
+            [field]: field === 'designation' ? value : Number(value)
+        };
+        setFormData(prev => ({ ...prev, items }));
+    };
 
-          <h4>Total TTC: {formData.total_ttc} FCFA</h4>
+    const addItem = () => {
+        setFormData(prev => ({
+            ...prev,
+            items: [...prev.items, { designation: '', quantite: 1, prix_unitaire: 0 }]
+        }));
+    };
 
-          <button type="submit" className="btn btn-success">Enregistrer</button>
-        </form>
-      )}
-    </div>
-  );
+    const removeItem = (index) => {
+        if (formData.items.length === 1) return;
+        setFormData(prev => ({
+            ...prev,
+            items: prev.items.filter((_, i) => i !== index)
+        }));
+    };
+
+    // ─────────────────────────────────────────
+    // PDF
+    // ─────────────────────────────────────────
+
+    // ✅ FORMAT PRIX PRO (20 000)
+// ✅ FORMAT PRIX PRO (23 000)
+const formatPrix = (value, separator = ' ') => {
+    if (isNaN(value)) return '0';
+
+    return Number(value)
+        .toFixed(0)
+        .replace(/\B(?=(\d{3})+(?!\d))/g, separator);
+};
+
+const generatePDF = async (facture) => {
+    try {
+        const res = await api.get(`/factures/${facture.id}`);
+        const fullFacture = res.data.data || res.data;
+
+        const doc = new jsPDF();
+        const numFacture = fullFacture.numero_facture || fullFacture.id;
+
+        // 🎨 Couleurs
+        const successGreen = [25, 135, 84];
+        const orange = [233, 114, 35];
+
+        // ─────────────────────────────
+        // 🧾 HEADER ALIGNÉ PRO
+        // ─────────────────────────────
+        const headerY = 20;
+
+        doc.setFontSize(18);
+        doc.setFont("helvetica", "bold");
+
+        // Texte DjagoYelen
+        doc.setTextColor(...successGreen);
+        doc.text("Djago", 14, headerY);
+
+        const widthDjago = doc.getTextWidth("Djago");
+
+        doc.setTextColor(...orange);
+        doc.text("Yelen", 14 + widthDjago + 2, headerY);
+
+        // 🖼️ Logo aligné horizontalement
+        try {
+            doc.addImage(logo, 'JPEG', 150, headerY - 22, 30, 30);
+        } catch {
+            console.warn("Logo non chargé");
+        }
+
+        // 🟩 Ligne horizontale sous header
+        doc.setDrawColor(...orange);
+        doc.setLineWidth(0.3);
+        doc.line(14, headerY + 5, 196, headerY + 5);
+
+        // ─────────────────────────────
+        // 📄 INFOS FACTURE
+        // ─────────────────────────────
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(10);
+        doc.text(`DETAILS DE LA FACTURE`,14, 35);
+
+        doc.setFont("helvetica", "normal");
+        doc.text(`Référence : ${numFacture}`, 14, 40);
+        doc.text(`Date : ${fullFacture.date_emission || '-'}`, 14, 45);
+
+        doc.setFont("helvetica", "bold");
+        doc.text(`CLIENT`, 130, 35);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Client : ${fullFacture.client?.nom || 'N/A'}`, 130, 40);
+        doc.text(`Tél : ${fullFacture.client?.telephone || 'N/A'}`, 130, 45);
+        doc.text(`Email : ${fullFacture.client?.email || 'N/A'}`, 130, 50);
+        
+
+        // ─────────────────────────────
+        // 📦 ITEMS
+        // ─────────────────────────────
+        let items = [];
+
+        if (fullFacture.lignes) {
+            items = fullFacture.lignes;
+        } else if (typeof fullFacture.items === 'string') {
+            try {
+                items = JSON.parse(fullFacture.items);
+            } catch {
+                items = [];
+            }
+        } else {
+            items = fullFacture.items || [];
+        }
+
+        // ─────────────────────────────
+        // 📊 TABLE DATA
+        // ─────────────────────────────
+        const rows = items.map(i => {
+            const qte = Number(i.quantite || 0);
+            const pu = Number(i.prix_unitaire || i.prix || 0);
+
+            return [
+                i.designation || i.description || 'N/A',
+                qte,
+                `${formatPrix(pu)} F`,
+                `${formatPrix(qte * pu)} F`
+            ];
+        });
+
+        // ─────────────────────────────
+        // 📊 TABLEAU
+        // ─────────────────────────────
+        autoTable(doc, {
+            startY: 55,
+            head: [['Désignation', 'Quantité', 'Prix Unitaire', 'Montant']],
+            body: rows,
+            foot: [
+                ['', '', 'Total HT', `${formatPrix(fullFacture.total_ht)} F`],
+                ['', '', `TVA (${fullFacture.tva_taux || 18}%)`,
+                    `${formatPrix(fullFacture.total_ttc - fullFacture.total_ht)} F`
+                ],
+                ['', '', 'TOTAL TTC', `${formatPrix(fullFacture.total_ttc)} F`]
+            ],
+            theme: 'grid',
+            styles: {
+                lineColor: [0, 0, 0],
+                lineWidth: 0.2,
+                fontSize: 9,
+                halign: 'right'
+            },
+            columnStyles: {
+                0: { halign: 'left' }
+            },
+            headStyles: {
+                fillColor: successGreen,
+                textColor: 255
+            },
+            footStyles: {
+              lineWidth: 0,
+              fillColor: orange,
+              textColor: 255,
+                fontStyle: 'bold'
+            }
+          });
+          // ─────────────────────────────
+          // 📝 FOOTER
+          // ─────────────────────────────
+          const finalY = doc.lastAutoTable.finalY || 100;
+
+          doc.setFontSize(8);
+          doc.setTextColor(120);
+          doc.setFont('times', 'italic');
+          doc.text("Merci pour votre confiance - DjagoYelen", 14, finalY + 10);
+
+        // ─────────────────────────────
+        // 📱 QR CODE
+        // ─────────────────────────────
+        const qrData = `
+DjagoYelen FACTURATION
+Facture: ${numFacture}
+Client: ${fullFacture.client?.nom}
+Tél: ${fullFacture.client?.telephone}
+Email: ${fullFacture.client?.email}
+Total TTC: ${formatPrix(fullFacture.total_ttc)} F
+Date: ${fullFacture.date_emission}
+        `;
+
+        const qrImage = await QRCode.toDataURL(qrData);
+
+        doc.addImage(qrImage, 'PNG', 100, 30, 20, 20);
+
+
+        // ─────────────────────────────
+        // 💾 EXPORT
+        // ─────────────────────────────
+        doc.save(`Facture_${numFacture}.pdf`);
+
+    } catch (error) {
+        console.error("Erreur PDF:", error);
+        alert("Impossible de générer le PDF");
+    }
+};
+
+    // ─────────────────────────────────────────
+    // RENDER
+    // ─────────────────────────────────────────
+    if (loading) return <div className="text-center mt-5">Chargement...</div>;
+
+    return (
+        <div className="container p-3">
+
+            {/* ── MODAL CLIENT ── */}
+            {showClientModal && (
+                <div className="modal show d-block" style={{ background: 'rgba(0,0,0,0.5)' }}>
+                    <div className="modal-dialog">
+                        <div className="modal-content text-align-left">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Nouveau Client</h5>
+                                <button className="btn-close" onClick={() => setShowClientModal(false)} />
+                            </div>
+                            <form onSubmit={handleAddClient}>
+                                <div className="modal-body">
+                                    {['nom', 'email', 'telephone', 'adresse'].map(field => (
+                                        <div className="mb-2" key={field}>
+                                            <label className="form-label text-capitalize">{field}</label>
+                                            <input
+                                                className="form-control"
+                                                value={newClient[field]}
+                                                onChange={e => setNewClient(p => ({ ...p, [field]: e.target.value }))}
+                                                required={field === 'nom'}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="modal-footer">
+                                    <button type="button" className="btn btn-secondary" onClick={() => setShowClientModal(false)}>Annuler</button>
+                                    <button type="submit" className="btn btn-primary">Enregistrer</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── LISTE ── */}
+            {!showModal ? (
+                <>
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                        <h3 className="mb-0">Factures</h3>
+                        <button className="btn btn-primary" onClick={() => {
+                            setFormData(initialFormState);
+                            setIsEditing(false);
+                            setErrors({});
+                            setShowModal(true);
+                        }}>
+                            + Nouvelle facture
+                        </button>
+                    </div>
+
+                    {factures.length === 0 ? (
+                        <p className="text-muted">Aucune facture enregistrée.</p>
+                    ) : (
+                        <div className="table-responsive">
+                          <table className="table table-hover align-middle">
+                              <thead className="bg-green text-white">
+                                  <tr>
+                                      <th>N°</th>
+                                      <th>Client</th>
+                                      <th className="d-none d-md-table-cell">Date</th>
+                                      <th>Total TTC</th>
+                                      <th className="text-end">Actions</th>
+                                  </tr>
+                              </thead>
+
+                              <tbody>
+                                  {factures.length === 0 ? (
+                                      <tr>
+                                          <td colSpan="5" className="text-center py-4 text-muted">
+                                              Aucune facture disponible
+                                          </td>
+                                      </tr>
+                                  ) : (
+                                      factures.map(f => (
+                                          <tr key={f.id}>
+
+                                              {/* N° */}
+                                              <td className="fw-bold text-primary">
+                                                  #{f.numero_facture || f.num_facture || f.id}
+                                              </td>
+
+                                              {/* Client + date mobile */}
+                                              <td>
+                                                  <div className="fw-semibold">
+                                                      {f.client?.nom || '-'}
+                                                  </div>
+
+                                                  {/* Date visible seulement mobile */}
+                                                  <small className="text-muted d-md-none">
+                                                      {f.date_emission || '-'}
+                                                  </small>
+                                              </td>
+
+                                              {/* Date desktop */}
+                                              <td className="d-none d-md-table-cell">
+                                                  {f.date_emission || '-'}
+                                              </td>
+
+                                              {/* Total */}
+                                              <td className="fw-bold text-success">
+                                                  {formatPrix(f.total_ttc)} F
+                                              </td>
+
+                                              {/* Actions */}
+                                              <td className="text-end">
+                                                  <div className="btn-group">
+
+                                                      {/* PDF */}
+                                                      <button
+                                                          className="btn btn-sm btn-outline-success"
+                                                          title="Télécharger PDF"
+                                                          onClick={() => generatePDF(f)}
+                                                      >
+                                                          <i className="bi bi-file-earmark-pdf"></i>
+                                                      </button>
+
+                                                      {/* Modifier */}
+                                                      <button
+                                                          className="btn btn-sm btn-outline-warning"
+                                                          title="Modifier"
+                                                          onClick={() => {
+                                                              setIsEditing(true);
+                                                              setErrors({});
+
+                                                              const items = typeof f.items === 'string'
+                                                                  ? JSON.parse(f.items)
+                                                                  : f.items || initialFormState.items;
+
+                                                              setFormData({ ...f, items });
+                                                              setShowModal(true);
+                                                          }}
+                                                      >
+                                                          <i className="bi bi-pencil-square"></i>
+                                                      </button>
+
+                                                      {/* Supprimer */}
+                                                      <button
+                                                          className="btn btn-sm btn-outline-danger"
+                                                          title="Supprimer"
+                                                          onClick={() => handleDelete(f.id)}
+                                                      >
+                                                          <i className="bi bi-trash"></i>
+                                                      </button>
+
+                                                  </div>
+                                              </td>
+
+                                          </tr>
+                                      ))
+                                  )}
+                              </tbody>
+                          </table>
+                          
+                      </div>
+                    )}
+                </>
+            ) : (
+                // ── FORMULAIRE ──
+                <form onSubmit={handleSubmit}>
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                        <h4>{isEditing ? 'Modifier la facture' : 'Nouvelle facture'}</h4>
+                        <button type="button" className="btn btn-secondary" onClick={() => {
+                            setShowModal(false);
+                            setErrors({});
+                        }}>
+                            ← Retour
+                        </button>
+                    </div>
+
+                    {/* Client */}
+                    <div className="mb-3">
+                        <label className="form-label">Client <span className="text-danger">*</span></label>
+                        <div className="d-flex gap-2">
+                            <select
+                                className={`form-control ${errors.client_id ? 'is-invalid' : ''}`}
+                                value={formData.client_id}
+                                onChange={e => setFormData(p => ({ ...p, client_id: Number(e.target.value) }))}
+                            >
+                                <option value="">-- Choisir un client --</option>
+                                {clients.map(c => (
+                                    <option key={c.id} value={c.id}>{c.nom}</option>
+                                ))}
+                            </select>
+                            <button type="button" className="btn btn-outline-primary text-nowrap"
+                                onClick={() => setShowClientModal(true)}>
+                                + Nouveau
+                            </button>
+                        </div>
+                        {errors.client_id && <div className="text-danger small mt-1">{errors.client_id}</div>}
+                    </div>
+
+                    {/* Date */}
+                    <div className="mb-3">
+                        <label className="form-label">Date d'émission</label>
+                        <input
+                            type="date"
+                            className="form-control"
+                            value={formData.date_emission}
+                            onChange={e => setFormData(p => ({ ...p, date_emission: e.target.value }))}
+                        />
+                    </div>
+
+                    {/* Taux TVA */}
+                    <div className="mb-3">
+                        <label className="form-label">Taux TVA (%)</label>
+                        <input
+                            type="number"
+                            className="form-control"
+                            style={{ maxWidth: 120 }}
+                            value={formData.tva_taux}
+                            min={0}
+                            onChange={e => setFormData(p => ({ ...p, tva_taux: Number(e.target.value) }))}
+                        />
+                    </div>
+
+                    {/* Lignes */}
+                    <label className="form-label fw-bold">Lignes de facturation</label>
+                    {errors.items && <div className="text-danger small mb-2">{errors.items}</div>}
+
+                    {formData.items.map((item, i) => (
+                        <div key={i} className="border rounded p-3 mb-2 bg-light">
+                            <div className="row g-2 align-items-center">
+                                <div className="col-12 col-md-5">
+                                    <input
+                                        className={`form-control ${errors[`items.${i}.designation`] ? 'is-invalid' : ''}`}
+                                        placeholder="Désignation *"
+                                        value={item.designation}
+                                        onChange={e => handleItemChange(i, 'designation', e.target.value)}
+                                    />
+                                    {errors[`items.${i}.designation`] && (
+                                        <div className="invalid-feedback">{errors[`items.${i}.designation`]}</div>
+                                    )}
+                                </div>
+                                <div className="col-6 col-md-2">
+                                    <input
+                                        type="number" min={1}
+                                        className="form-control"
+                                        placeholder="Qté"
+                                        value={item.quantite}
+                                        onChange={e => handleItemChange(i, 'quantite', e.target.value)}
+                                    />
+                                </div>
+                                <div className="col-6 col-md-3">
+                                    <input
+                                        type="number" min={0} step="0.01"
+                                        className="form-control"
+                                        placeholder="Prix unitaire"
+                                        value={item.prix_unitaire}
+                                        onChange={e => handleItemChange(i, 'prix_unitaire', e.target.value)}
+                                    />
+                                </div>
+                                <div className="col-6 col-md-1 text-muted small">
+                                    = {(Number(item.quantite) * Number(item.prix_unitaire)).toLocaleString()} F
+                                </div>
+                                <div className="col-6 col-md-1">
+                                    <button type="button" className="btn btn-sm btn-outline-danger w-100"
+                                        onClick={() => removeItem(i)}
+                                        disabled={formData.items.length === 1}>
+                                        ✕
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+
+                    <button type="button" className="btn btn-outline-info btn-sm mb-4" onClick={addItem}>
+                        + Ajouter une ligne
+                    </button>
+
+                    {/* Totaux */}
+                    <div className="card mb-3">
+                        <div className="card-body">
+                            <div className="d-flex justify-content-between">
+                                <span>Total HT</span>
+                                <strong>{formData.total_ht.toLocaleString()} F</strong>
+                            </div>
+                            <div className="d-flex justify-content-between text-muted">
+                                <span>TVA ({formData.tva_taux}%)</span>
+                                <span>{(formData.total_ttc - formData.total_ht).toLocaleString()} F</span>
+                            </div>
+                            <hr />
+                            <div className="d-flex justify-content-between fs-5">
+                                <span className="fw-bold">Total TTC</span>
+                                <strong className="text-success">{formData.total_ttc.toLocaleString()} F</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" className="btn btn-success" disabled={submitLoading}>
+                        {submitLoading ? 'Enregistrement...' : (isEditing ? 'Mettre à jour' : 'Enregistrer la facture')}
+                    </button>
+                </form>
+            )}
+        </div>
+
+        
+    );
 };
 
 export default Facture;

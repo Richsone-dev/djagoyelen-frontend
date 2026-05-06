@@ -71,7 +71,7 @@ const AproposDetails = () => {
                         <img
                             src={img2}
                             className="img-fluid shadow rounded-4"
-                            style={{ maxHeight: '500px', objectFit: 'cover', width: '100%' }}
+                            style={{ maxHeight: '50%', objectFit: 'cover', width: '100%' }}
                             alt="DjagoYelen Interface"
                         />
                     </div>
