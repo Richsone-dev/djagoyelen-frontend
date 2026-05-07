@@ -50,12 +50,12 @@ function App() {
           <Route path="budgets" element={<Budgets />} />
           <Route path="dettes" element={<Dettes />} />
           <Route path="rapports" element={<Rapports />} />
-          <Route path="factures" element={<Facture />} />
           <Route path="profil" element={<Profil />} />
           <Route path="clients" element={<Clients />} />
           <Route path="parametres" element={<Parametres />} />
           <Route path="apropos" element={<Apropos />} />
-          <Route path="notifications" element={<Notifications />} />
+          {/*<Route path="factures" element={<Facture />} />
+          <Route path="notifications" element={<Notifications />} />*/}
         </Route>
 
         {/* --- 404 --- */}
