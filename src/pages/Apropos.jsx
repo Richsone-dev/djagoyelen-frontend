@@ -200,8 +200,8 @@ const Team = ({ colors, cardStyle }) => {
     // On stocke les membres dans un tableau pour rendre le code lisible
     const teamMembers = [
         { name: "Karim SANOU", title: "Développeur Fullstack", img: karimProfil, profil:"Passionné par l'innovation numérique et la création de solutions financières robustes." },
-        { name: "François Jessica SOW", title: "Développeuse Fullstack", img: francoiseProfil, profil:"Passionnée par l'innovation numérique et la création de solutions financières robustes." },
-        { name: "Dossi Wilfried Hyacinthe SANOU", title: "Agent d'Assurance Banque", img: hyacintheProfil, profil:"Passionnée par l'innovation de comptabilité des entreprises Ouest Africaines." }
+        { name: "François Jessica SOW", title: "Développeuse Fullstack", img: francoiseProfil, profil:"Passionnée par l'innovation numérique et la création de solutions financières robustes." }
+        //{ name: "Dossi Wilfried Hyacinthe SANOU", title: "Agent d'Assurance Banque", img: hyacintheProfil, profil:"Passionnée par l'innovation de comptabilité des entreprises Ouest Africaines." }
     ];
 
     
