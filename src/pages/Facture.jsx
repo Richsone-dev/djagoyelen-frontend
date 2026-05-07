@@ -152,9 +152,9 @@ const Facture = () => {
             total_ht:      parseFloat(formData.total_ht),
             total_ttc:     parseFloat(formData.total_ttc),
             items: formData.items.map(item => ({
-                designation:   String(item.designation).trim(),
-                quantite:      parseInt(item.quantite),
-                prix_unitaire: parseFloat(item.prix_unitaire)
+                designation:   String(item.designation || '').trim(),
+                quantite:      parseInt(item.quantite || 0),
+                prix_unitaire: parseFloat(item.prix_unitaire || 0)
             }))
         };
 
