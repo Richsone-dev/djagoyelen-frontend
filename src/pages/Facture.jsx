@@ -437,7 +437,15 @@ Date: ${fullFacture.date_emission}
     // ─────────────────────────────────────────
     // RENDER
     // ─────────────────────────────────────────
-    if (loading) return <div className="text-center mt-5">Chargement...</div>;
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center" style={{ height: '80vh', backgroundColor: colors.lightGray}}>
+                <div className="spinner-border" style={{ color: colors.orange }} role="status">
+                    <span className="visually-hidden">Chargement des factures...</span>
+                </div>
+            </div>
+        );
+    }
 
     const fieldConfig = {
         nom: { placeholder: "Ex: Jean Dupont", type: "text" },
