@@ -54,8 +54,8 @@ function App() {
           <Route path="clients" element={<Clients />} />
           <Route path="parametres" element={<Parametres />} />
           <Route path="apropos" element={<Apropos />} />
-          {/*<Route path="factures" element={<Facture />} />
-          <Route path="notifications" element={<Notifications />} />*/}
+          <Route path="factures" element={<Facture />} />
+          <Route path="notifications" element={<Notifications />} />
         </Route>
 
         {/* --- 404 --- */}

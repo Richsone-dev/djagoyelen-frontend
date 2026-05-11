@@ -119,7 +119,7 @@ const MainLayout = () => {
                     padding: isCollapsed && !isMobile ? '1.5rem 0.75rem' : '1.5rem',
                 }}
             >
-                <div className={`d-flex ${isCollapsed && !isMobile ? 'justify-content-center' : 'justify-content-between'} align-items-center mb-4`}>
+                <div className={`d-flex ${isCollapsed && !isMobile ? 'justify-content-center' : 'justify-content-between'} align-items-center mb-4`} style={{backgroundColor: colors.white, borderRadius: '10px'}}>
                     <div className="d-flex align-items-center" onClick={() => !isMobile && setIsCollapsed(!isCollapsed)} style={{ cursor: 'pointer' }}>
                         <img src={logo} alt="Logo" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} />
                         {(!isCollapsed || isMobile) && (
