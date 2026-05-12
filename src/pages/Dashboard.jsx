@@ -18,7 +18,6 @@ import {
 } from 'chart.js';
 import { Line, Doughnut, Bar, PolarArea, Radar } from 'react-chartjs-2';
 
-// Enregistrement des composants Chart.js
 ChartJS.register(
     CategoryScale,
     LinearScale,
@@ -33,13 +32,21 @@ ChartJS.register(
     Filler
 );
 
+// --- COMPOSANT DE CHARGEMENT RÉUTILISABLE ---
+const LoaderOverlay = ({ message = "Chargement..." }) => (
+    <div className="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center" 
+         style={{ backgroundColor: 'rgba(255,255,255,1)', zIndex: 10, borderRadius: '15px' }}>
+        <div className="spinner-border text-warning mb-2" role="status" style={{ width: '1.5rem', height: '1.5rem' }}></div>
+        <span className="small fw-bold text-muted">{message}</span>
+    </div>
+);
+
 const Dashboard = () => {
     const [stats, setStats] = useState({ total: 0, revenus: 0, depenses: 0 });
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
-    // États des graphiques
     const [lineData, setLineData] = useState({ labels: [], datasets: [] });
     const [doughnutData, setDoughnutData] = useState({ labels: [], datasets: [] });
     const [barData, setBarData] = useState({ labels: [], datasets: [] });
@@ -59,21 +66,19 @@ const Dashboard = () => {
         greenLight: '#d1e7dd',
         purpleLight: '#f3ccff',
         orangeLight: '#fff3cd',
-        yellowLight: '#fff9db',
-        orangeHover: '#ff7f50'
+        yellowLight: '#fff9db'
     };
 
     useEffect(() => {
         const loadData = async () => {
+            setLoading(true);
             try {
                 const res = await api.get('/analyse/stats');
                 const data = res.data;
 
-                // 1. Stats de base
                 setStats(data.cards);
                 setTransactions(data.recent);
 
-                // 2. Line Chart (Comparatif Temporel)
                 const moisLabels = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
                 const labelsLine = Object.keys(data.chart.revenus).map(m => moisLabels[m - 1]);
                 
@@ -97,7 +102,6 @@ const Dashboard = () => {
                     ]
                 });
 
-                // 3. Doughnut (Répartition circulaire)
                 const labelsCat = data.repartition.map(item => item.label);
                 const valuesCat = data.repartition.map(item => item.total);
 
@@ -105,13 +109,11 @@ const Dashboard = () => {
                     labels: labelsCat,
                     datasets: [{
                         data: valuesCat,
-                        backgroundColor: [colors.darkGreen, colors.orange, colors.successGreen, colors.redLight, colors.greenLight, colors.blueLight, colors.purpleLight, colors.orangeLight, colors.yellowLight, colors.blue, colors.purple],
-                        hoverOffset: 10,
+                        backgroundColor: [colors.darkGreen, colors.orange, colors.successGreen, colors.redLight, colors.greenLight, colors.purpleLight, colors.orangeLight, colors.yellowLight, colors.blue, colors.purple],
                         borderWidth: 0
                     }]
                 });
 
-                // 4. Bar Chart (Volumes par Catégories)
                 setBarData({
                     labels: labelsCat,
                     datasets: [{
@@ -119,34 +121,30 @@ const Dashboard = () => {
                         data: valuesCat,
                         backgroundColor: colors.orange,
                         borderRadius: 10,
-                        width: '80%',
                     }]
                 });
 
-                // 5. Polar Area (Analyse des Flux)
                 setPolarData({
-                    labels: ['Revenus', 'Dépenses', 'Épargne estimée'],
+                    labels: ['Revenus', 'Dépenses', 'Épargne'],
                     datasets: [{
                         data: [data.cards.revenus, data.cards.depenses, (data.cards.revenus - data.cards.depenses)],
                         backgroundColor: ['rgba(25, 135, 84, 0.7)', 'rgba(233, 114, 35, 0.7)', 'rgba(10, 59, 47, 0.7)'],
                     }]
                 });
 
-                // 6. Radar Chart (Équilibre du Budget - Données simulées pour la démo)
                 setRadarData({
                     labels: ['Alimentation', 'Loyer', 'Loisirs', 'Santé', 'Transport'],
                     datasets: [{
-                        label: 'Profil de dépense',
+                        label: 'Profil',
                         data: [80, 70, 50, 90, 60],
                         borderColor: colors.orange,
                         backgroundColor: 'rgba(233, 114, 35, 0.2)',
-                        pointBackgroundColor: colors.orange,
                     }]
                 });
 
-                setLoading(false);
             } catch (err) {
-                console.error("Erreur de chargement DjagoYelen", err);
+                console.error("Erreur Dashboard", err);
+            } finally {
                 setLoading(false);
             }
         };
@@ -157,30 +155,21 @@ const Dashboard = () => {
         maintainAspectRatio: false,
         responsive: true,
         plugins: {
-            legend: { position: 'bottom', labels: { boxWidth: 12, padding: 20, font: { size: 11 } } }
+            legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }
         }
     };
-
-    if (loading) {
-        return (
-            <div className="d-flex justify-content-center align-items-center" style={{ height: '80vh', backgroundColor: colors.lightGray}}>
-                <div className="spinner-border" style={{ color: colors.orange }} role="status">
-                    <span className="visually-hidden">Chargement...</span>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="container-fluid px-1 py-4 bg-light min-vh-100">
             {/* --- CARTES DE RÉSUMÉ --- */}
             <div className="row g-3 mb-4">
-                <div className="col-12 col-md-4" >
-                    <div className="card shadow-sm border-0 p-3 text-white h-100" style={{ borderLeft: `10px solid ${colors.orange}`,backgroundColor: colors.darkGreen, borderRadius: '15px' }}>
+                <div className="col-12 col-md-4">
+                    <div className="card shadow-sm border-0 p-3 text-white h-100 position-relative" style={{ borderLeft: `10px solid ${colors.orange}`, backgroundColor: colors.darkGreen, borderRadius: '15px' }}>
+                        {loading && <LoaderOverlay />}
                         <div className="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 className="text-uppercase small fw-bold opacity-75">Solde Total</h6>
-                                <h2 className="fw-bold mb-0">{stats.total.toLocaleString()} FCFA</h2>
+                                <h2 className="fw-bold mb-0">{stats.total.toLocaleString()} F</h2>
                             </div>
                             <i className="bi bi-bank2 fs-1 opacity-25"></i>
                         </div>
@@ -188,99 +177,91 @@ const Dashboard = () => {
                 </div>
 
                 <div className="col-12 col-sm-6 col-md-4">
-                    <div className="card shadow-sm border-0 p-3 bg-white h-100" style={{ borderRadius: '15px', borderLeft: `5px solid ${colors.successGreen}` }}>
+                    <div className="card shadow-sm border-0 p-3 bg-white h-100 position-relative" style={{ borderRadius: '15px', borderLeft: `5px solid ${colors.successGreen}` }}>
+                        {loading && <LoaderOverlay />}
                         <div className="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 className="text-uppercase small fw-bold text-muted">Total Revenus</h6>
                                 <h3 className="fw-bold mb-0" style={{ color: colors.successGreen }}>+{stats.revenus.toLocaleString()}</h3>
                             </div>
-                            <div className="rounded-circle p-2 bg-success-subtle">
-                                <i className="bi bi-arrow-up-right fs-4 text-success"></i>
-                            </div>
+                            <div className="rounded-circle p-2 bg-success-subtle"><i className="bi bi-arrow-up-right fs-4 text-success"></i></div>
                         </div>
                     </div>
                 </div>
 
                 <div className="col-12 col-sm-6 col-md-4">
-                    <div className="card shadow-sm border-0 p-3 bg-white h-100" style={{ borderRadius: '15px', borderLeft: `5px solid ${colors.orange}` }}>
+                    <div className="card shadow-sm border-0 p-3 bg-white h-100 position-relative" style={{ borderRadius: '15px', borderLeft: `5px solid ${colors.orange}` }}>
+                        {loading && <LoaderOverlay />}
                         <div className="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 className="text-uppercase small fw-bold text-muted">Total Dépenses</h6>
                                 <h3 className="fw-bold mb-0" style={{ color: colors.orange }}>-{stats.depenses.toLocaleString()}</h3>
                             </div>
-                            <div className="rounded-circle p-2 bg-warning-subtle">
-                                <i className="bi bi-arrow-down-left fs-4 text-warning"></i>
-                            </div>
+                            <div className="rounded-circle p-2 bg-warning-subtle"><i className="bi bi-arrow-down-left fs-4 text-warning"></i></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* --- PREMIÈRE RANGÉE : ANALYSE PRINCIPALE --- */}
+            {/* --- GRAPHIQUES PRINCIPAUX --- */}
             <div className="row g-4 mb-4">
                 <div className="col-12 col-xl-8">
-                    <div className="card shadow-sm border-0 p-4 h-100" style={{ borderRadius: '15px' }}>
-                        <h5 className="fw-bold mb-4" style={{ color: colors.darkGreen }}>
-                            <i className="bi bi-graph-up-arrow me-2"></i> Flux de Trésorerie Mensuel
-                        </h5>
+                    <div className="card shadow-sm border-0 p-4 h-100 position-relative" style={{ borderRadius: '15px' }}>
+                        {loading && <LoaderOverlay />}
+                        <h5 className="fw-bold mb-4" style={{ color: colors.darkGreen }}><i className="bi bi-graph-up-arrow me-2"></i> Flux Mensuel</h5>
                         <div style={{ height: '250px' }}>
-                            <Line data={lineData} options={chartOptions} />
+                            {!loading && <Line data={lineData} options={chartOptions} />}
                         </div>
                     </div>
                 </div>
                 <div className="col-12 col-xl-4">
-                    <div className="card shadow-sm border-0 p-4 h-100" style={{ borderRadius: '15px' }}>
-                        <h5 className="fw-bold mb-4" style={{ color: colors.darkGreen }}>
-                            <i className="bi bi-pie-chart-fill me-2"></i> Par Catégorie
-                        </h5>
-                        <div style={{ height: '300px' }}>
-                            <Doughnut data={doughnutData} options={chartOptions} />
+                    <div className="card shadow-sm border-0 p-4 h-100 position-relative" style={{ borderRadius: '15px' }}>
+                        {loading && <LoaderOverlay />}
+                        <h5 className="fw-bold mb-4" style={{ color: colors.darkGreen }}><i className="bi bi-pie-chart-fill me-2"></i> Par Catégorie</h5>
+                        <div style={{ height: '250px' }}>
+                            {!loading && <Doughnut data={doughnutData} options={chartOptions} />}
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* --- DEUXIÈME RANGÉE : ANALYSE AVANCÉE --- */}
+            {/* --- ANALYSE AVANCÉE --- */}
             <div className="row g-4 mb-4">
-                <div className="col-12 col-md-6 col-xl-4">
-                    <div className="card shadow-sm border-0 p-4 h-100" style={{ borderRadius: '15px' }}>
+                <div className="col-12 col-md-4">
+                    <div className="card shadow-sm border-0 p-4 h-100 position-relative" style={{ borderRadius: '15px' }}>
+                        {loading && <LoaderOverlay />}
                         <h6 className="fw-bold mb-3">Volume Comparatif</h6>
-                        <div style={{ height: '300px', color: colors.orange}}>
-                            <Bar data={barData} options={chartOptions} style={{width: '100%', color: colors.orange}}/>
+                        <div style={{ height: '200px' }}>
+                            {!loading && <Bar data={barData} options={chartOptions} />}
                         </div>
                     </div>
                 </div>
-                <div className="col-12 col-md-6 col-xl-4">
-                    <div className="card shadow-sm border-0 p-4 h-100" style={{ borderRadius: '15px' }}>
-                        <h6 className="fw-bold mb-3">Poids des Revenus/Dépenses</h6>
-                        <div style={{ height: '250px' }}>
-                            <PolarArea data={polarData} options={chartOptions} />
+                <div className="col-12 col-md-4">
+                    <div className="card shadow-sm border-0 p-4 h-100 position-relative" style={{ borderRadius: '15px' }}>
+                        {loading && <LoaderOverlay />}
+                        <h6 className="fw-bold mb-3">Analyse des Flux</h6>
+                        <div style={{ height: '200px' }}>
+                            {!loading && <PolarArea data={polarData} options={chartOptions} />}
                         </div>
                     </div>
                 </div>
-                <div className="col-12 col-md-12 col-xl-4">
-                    <div className="card shadow-sm border-0 p-4 h-100" style={{ borderRadius: '15px' }}>
-                        <h6 className="fw-bold mb-3">Équilibre du Budget</h6>
-                        <div style={{ height: '250px' }}>
-                            <Radar data={radarData} options={chartOptions} />
+                <div className="col-12 col-md-4">
+                    <div className="card shadow-sm border-0 p-4 h-100 position-relative" style={{ borderRadius: '15px' }}>
+                        {loading && <LoaderOverlay />}
+                        <h6 className="fw-bold mb-3">Équilibre</h6>
+                        <div style={{ height: '200px' }}>
+                            {!loading && <Radar data={radarData} options={chartOptions} />}
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* --- DERNIÈRES TRANSACTIONS --- */}
-            <div className="card shadow-sm border-0 p-4 mb-5" style={{ borderRadius: '15px' }}>
+            {/* --- TABLEAU --- */}
+            <div className="card shadow-sm border-0 p-4 mb-5 position-relative" style={{ borderRadius: '15px' }}>
+                {loading && <LoaderOverlay message="Chargement des activités..." />}
                 <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h5 className="fw-bold m-0" style={{ color: colors.darkGreen }}>
-                        <i className="bi bi-clock-history me-2"></i> Activités Récentes
-                    </h5>
-                    <button 
-                        className="btn btn-sm text-white px-3" 
-                        style={{ backgroundColor: colors.orange, borderRadius: '8px' }}
-                        onClick={() => navigate('/transactions')}
-                    >
-                        Tout voir
-                    </button>
+                    <h5 className="fw-bold m-0" style={{ color: colors.darkGreen }}><i className="bi bi-clock-history me-2"></i> Activités Récentes</h5>
+                    <button className="btn btn-sm text-white px-3" style={{ backgroundColor: colors.orange, borderRadius: '8px' }} onClick={() => navigate('/transactions')}>Tout voir</button>
                 </div>
                 <div className="table-responsive">
                     <table className="table table-hover align-middle">
@@ -303,10 +284,13 @@ const Dashboard = () => {
                                         </span>
                                     </td>
                                     <td className={`text-end fw-bold ${t.type === 'revenu' ? 'text-success' : 'text-danger'}`}>
-                                        {t.type === 'revenu' ? '+' : '-'} {parseFloat(t.montant).toLocaleString()} FCFA
+                                        {t.type === 'revenu' ? '+' : '-'} {parseFloat(t.montant).toLocaleString()} F
                                     </td>
                                 </tr>
                             ))}
+                            {!loading && transactions.length === 0 && (
+                                <tr><td colSpan="4" className="text-center py-4 text-muted">Aucune donnée récente</td></tr>
+                            )}
                         </tbody>
                     </table>
                 </div>

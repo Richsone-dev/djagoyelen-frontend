@@ -1,13 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../api/axios';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+// --- COMPOSANT SKELETON POUR LE CHARGEMENT ---
+const SkeletonCard = () => (
+    <div className="col-md-4">
+        <div className="card border-0 shadow-sm p-3 h-100 placeholder-glow" style={{ borderRadius: '15px' }}>
+            <div className="d-flex justify-content-between mb-3">
+                <span className="placeholder col-4 py-2 rounded"></span>
+                <span className="placeholder col-1 py-2 rounded"></span>
+            </div>
+            <div className="placeholder col-8 mb-2 py-2"></div>
+            <div className="placeholder col-6 mb-4 py-2"></div>
+            <div className="placeholder col-12 py-3 rounded-3"></div>
+        </div>
+    </div>
+);
+
 const Rapports = () => {
     const [reports, setReports] = useState({ daily: [], weekly: [], monthly: [] });
     const [loading, setLoading] = useState(true);
-    const [loadingDetails, setLoadingDetails] = useState(false); // État de chargement pour la modale
+    const [loadingDetails, setLoadingDetails] = useState(false);
     const [detailData, setDetailData] = useState([]);
     const [selectedPeriod, setSelectedPeriod] = useState('');
     const [showModal, setShowModal] = useState(false);
@@ -15,7 +30,8 @@ const Rapports = () => {
     const colors = {
         darkGreen: '#0A3B2F',
         orange: '#E97223',
-        successGreen: '#198754'
+        successGreen: '#198754',
+        lightGray: '#f8f9fa'
     };
 
     const periodLabels = {
@@ -24,12 +40,9 @@ const Rapports = () => {
         monthly: 'Mensuel'
     };
 
-    useEffect(() => {
-        fetchReports();
-    }, []);
-
-    const fetchReports = async () => {
+    const fetchReports = useCallback(async () => {
         try {
+            setLoading(true);
             const response = await api.get('/reports/summary');
             setReports(response.data);
         } catch (error) {
@@ -37,7 +50,11 @@ const Rapports = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchReports();
+    }, [fetchReports]);
 
     const handleViewDetails = async (period) => {
         setSelectedPeriod(period);
@@ -54,16 +71,13 @@ const Rapports = () => {
     };
 
     const formatPrix = (prix) => {
-        return Number(prix)
-            .toFixed(0)
-            .replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+        return Number(prix || 0).toLocaleString('fr-FR');
     };
 
     const downloadPDF = () => {
         const doc = new jsPDF();
         const periodTitle = periodLabels[selectedPeriod] || 'Financier';
 
-        // En-tête PDF
         doc.setFontSize(20);
         doc.setTextColor(10, 59, 47);
         doc.text(`DjagoYelen - Rapport ${periodTitle}`, 14, 20);
@@ -87,7 +101,7 @@ const Rapports = () => {
             body: tableRows,
             theme: 'striped',
             headStyles: { fillColor: [10, 59, 47], halign: 'center' },
-            columnStyles: { 4: { halign: 'right' } }, // Montant aligné à droite
+            columnStyles: { 4: { halign: 'right' } },
             styles: { fontSize: 9, font: 'helvetica', cellPadding: 3 },
         });
 
@@ -99,126 +113,155 @@ const Rapports = () => {
         return data.reduce((sum, item) => sum + Number(item.total || 0), 0);
     };
 
-    if (loading) return (
-        <div className="d-flex flex-column justify-content-center align-items-center" style={{height: '80vh'}}>
-            <div className="spinner-border" style={{color: colors.orange}} role="status"></div>
-            <p className="mt-3 text-muted fw-bold">Analyse des finances en cours...</p>
-        </div>
-    );
-
     return (
-        <div className="p-0" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+        <div className="p-0" style={{ backgroundColor: colors.lightGray, minHeight: '100vh' }}>
             <div className="container py-4">
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h2 style={{ color: colors.darkGreen }} className="fw-bold mb-0">📊 Rapports Financiers</h2>
-                    <button className="btn btn-outline-secondary btn-sm" onClick={fetchReports}>
-                        <i className="bi bi-arrow-clockwise"></i> Actualiser
+                {/* HEADER */}
+                <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                    <div className="text-start">
+                        <h2 style={{ color: colors.darkGreen }} className="fw-bold mb-1">
+                            <i className="bi bi-bar-chart-line-fill me-2 text-success"></i>Rapports Financiers
+                        </h2>
+                        <p className="text-muted small mb-0">Analysez vos performances sur différentes périodes.</p>
+                    </div>
+                    <button className="btn btn-white shadow-sm border-0 rounded-pill px-3 py-2 text-start" onClick={fetchReports}>
+                        <i className={`bi bi-arrow-clockwise ${loading ? 'spin' : ''} me-2 text-success`}></i>
+                        <span className="small fw-bold">Actualiser les données</span>
                     </button>
                 </div>
 
-                {/* Cartes Résumé */}
+                {/* CARTES RÉSUMÉ (AVEC SKELETON) */}
                 <div className="row g-3 mb-4">
-                    {['daily', 'weekly', 'monthly'].map((period) => {
-                        const pColors = { daily: colors.darkGreen, weekly: colors.orange, monthly: colors.successGreen };
-                        return (
-                            <div className="col-md-4" key={period}>
-                                <div className="card border-0 shadow-sm p-3 h-100" style={{ borderRadius: '15px', borderLeft: `5px solid ${pColors[period]}` }}>
-                                    <div className="d-flex justify-content-between">
-                                        <h6 className="text-muted small fw-bold text-uppercase">{periodLabels[period]}</h6>
-                                        <i className="bi bi-calendar-event text-muted"></i>
-                                    </div>
-                                    <div className="mt-3 flex-grow-1">
-                                        {reports[period]?.length > 0 ? reports[period].map((item, idx) => (
-                                            <div key={idx} className="d-flex justify-content-between align-items-center mb-2">
-                                                <span className={`small badge ${item.type === 'depense' ? 'text-danger' : 'text-success'}`}>
-                                                    {item.type === 'depense' ? 'Sorties' : 'Entrées'}
-                                                </span>
-                                                <strong className={item.type === 'depense' ? 'text-dark' : 'text-success'}>
-                                                    {formatPrix(item.total)}
-                                                </strong>
+                    {loading ? (
+                        <>
+                            <SkeletonCard />
+                            <SkeletonCard />
+                            <SkeletonCard />
+                        </>
+                    ) : (
+                        ['daily', 'weekly', 'monthly'].map((period) => {
+                            const pColors = { daily: colors.darkGreen, weekly: colors.orange, monthly: colors.successGreen };
+                            return (
+                                <div className="col-md-4 text-start" key={period}>
+                                    <div className="card border-0 shadow-sm p-3 h-100 transition-hover" 
+                                         style={{ borderRadius: '18px', borderLeft: `6px solid ${pColors[period]}` }}>
+                                        <div className="d-flex justify-content-between align-items-center mb-3">
+                                            <h6 className="text-muted small fw-bold text-uppercase mb-0">{periodLabels[period]}</h6>
+                                            <div className="rounded-circle p-2" style={{ backgroundColor: `${pColors[period]}15` }}>
+                                                <i className="bi bi-calendar-check" style={{ color: pColors[period] }}></i>
                                             </div>
-                                        )) : <p className="text-muted small italic">Aucun flux enregistré</p>}
+                                        </div>
+                                        
+                                        <div className="mt-2 flex-grow-1">
+                                            {reports[period]?.length > 0 ? reports[period].map((item, idx) => (
+                                                <div key={idx} className="d-flex justify-content-between align-items-center mb-2 p-2 rounded-3 bg-light-subtle">
+                                                    <span className={`small fw-medium ${item.type === 'depense' ? 'text-danger' : 'text-success'}`}>
+                                                        <i className={`bi bi-arrow-${item.type === 'depense' ? 'down' : 'up'}-right me-1`}></i>
+                                                        {item.type === 'depense' ? 'Dépenses' : 'Recettes'}
+                                                    </span>
+                                                    <strong className="text-dark">{formatPrix(item.total)} F</strong>
+                                                </div>
+                                            )) : (
+                                                <div className="py-3 text-center">
+                                                    <p className="text-muted small mb-0 fst-italic">Aucune activité</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                        
+                                        <button 
+                                            onClick={() => handleViewDetails(period)} 
+                                            className="btn btn-sm mt-3 w-100 text-white shadow-sm border-0 py-2 fw-bold" 
+                                            style={{backgroundColor: pColors[period], borderRadius: '12px'}}
+                                            disabled={loadingDetails}
+                                        >
+                                            {loadingDetails && selectedPeriod === period ? (
+                                                <span className="spinner-border spinner-border-sm me-2"></span>
+                                            ) : <i className="bi bi-eye me-2"></i>}
+                                            Détails
+                                        </button>
                                     </div>
-                                    <button 
-                                        onClick={() => handleViewDetails(period)} 
-                                        className="btn btn-sm mt-3 w-100 text-white shadow-sm" 
-                                        style={{backgroundColor: pColors[period], borderRadius: '8px'}}
-                                        disabled={loadingDetails}
-                                    >
-                                        {loadingDetails && selectedPeriod === period ? 'Chargement...' : 'Voir l\'historique'}
-                                    </button>
                                 </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })
+                    )}
                 </div>
 
-                {/* Résumé Global */}
-                <div className="card border-0 shadow-sm p-4 mb-5" style={{ borderRadius: '15px' }}>
-                    <h5 className="fw-bold mb-4" style={{ color: colors.darkGreen }}>
-                        <i className="bi bi-graph-up-arrow me-2"></i>Résumé des flux cumulés
+                {/* RÉSUMÉ GLOBAL DYNAMIQUE */}
+                <div className="card border-0 shadow-sm p-4 mb-5" style={{ borderRadius: '20px' }}>
+                    <h5 className="fw-bold mb-4 text-start" style={{ color: colors.darkGreen }}>
+                        <i className="bi bi-lightning-charge-fill me-2 text-warning"></i>Flux cumulés par période
                     </h5>
                     <div className="row text-center g-4">
-                        <div className="col-md-4 border-end-md">
-                            <h6 className="text-muted small">Volume Aujourd'hui</h6>
-                            <h4 className="fw-bold mb-0" style={{ color: colors.orange }}>{formatPrix(calculateTotal(reports.daily))}</h4>
-                        </div>
-                        <div className="col-md-4 border-end-md">
-                            <h6 className="text-muted small">Volume Semaine</h6>
-                            <h4 className="fw-bold mb-0" style={{ color: colors.darkGreen }}>{formatPrix(calculateTotal(reports.weekly))}</h4>
-                        </div>
-                        <div className="col-md-4">
-                            <h6 className="text-muted small">Volume Mois</h6>
-                            <h4 className="fw-bold mb-0" style={{ color: colors.successGreen }}>{formatPrix(calculateTotal(reports.monthly))}</h4>
-                        </div>
+                        {[
+                            { label: "Aujourd'hui", key: 'daily', color: colors.orange },
+                            { label: "Semaine", key: 'weekly', color: colors.darkGreen },
+                            { label: "Ce mois", key: 'monthly', color: colors.successGreen }
+                        ].map((item, index) => (
+                            <div key={index} className={`col-md-4 ${index !== 2 ? 'border-end-md' : ''}`}>
+                                <h6 className="text-muted small mb-2">{item.label}</h6>
+                                {loading ? (
+                                    <div className="placeholder-glow"><span className="placeholder col-6 py-3 rounded"></span></div>
+                                ) : (
+                                    <h4 className="fw-bold mb-0" style={{ color: item.color }}>{formatPrix(calculateTotal(reports[item.key]))} <small style={{fontSize: '0.6em'}}>F</small></h4>
+                                )}
+                            </div>
+                        ))}
                     </div>
                 </div>
 
-                {/* MODALE HISTORIQUE */}
+                {/* MODALE DÉTAILS OPTIMISÉE */}
                 {showModal && (
-                    <div className="modal d-block animate__animated animate__fadeIn" tabIndex="-1" style={{backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)'}}>
+                    <div className="modal d-block" tabIndex="-1" style={{backgroundColor: 'rgba(10,59,47,0.4)', backdropFilter: 'blur(6px)', zIndex: 1060}}>
                         <div className="modal-dialog modal-lg modal-dialog-centered">
-                            <div className="modal-content border-0 shadow-lg" style={{borderRadius: '18px', overflow: 'hidden'}}>
+                            <div className="modal-content border-0 shadow-lg" style={{borderRadius: '24px', overflow: 'hidden'}}>
                                 <div className="modal-header border-0 text-white p-4" style={{backgroundColor: colors.darkGreen}}>
-                                    <h5 className="modal-title fw-bold">
-                                        <i className="bi bi-clock-history me-2"></i>Détails : {periodLabels[selectedPeriod]}
-                                    </h5>
+                                    <div className="d-flex align-items-center">
+                                        <div className="bg-white rounded-3 p-2 me-3">
+                                            <i className="bi bi-file-earmark-text text-success fs-4"></i>
+                                        </div>
+                                        <div>
+                                            <h5 className="modal-title fw-bold mb-0">{periodLabels[selectedPeriod]}</h5>
+                                            <small className="opacity-75">Historique des transactions</small>
+                                        </div>
+                                    </div>
                                     <button className="btn-close btn-close-white" onClick={() => setShowModal(false)}></button>
                                 </div>
-                                <div className="modal-body p-0" style={{maxHeight: '55vh', overflowY: 'auto'}}>
-                                    <table className="table table-hover mb-0">
-                                        <thead className="table-light sticky-top">
-                                            <tr>
-                                                <th className="ps-4">Date</th>
-                                                <th>Description</th>
-                                                <th>Type</th>
-                                                <th className="text-end pe-4">Montant</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {detailData.length > 0 ? detailData.map((t, i) => (
-                                                <tr key={i}>
-                                                    <td className="ps-4 small text-muted">{new Date(t.created_at).toLocaleDateString('fr-FR')}</td>
-                                                    <td className="fw-medium">{t.description || 'Sans description'}</td>
-                                                    <td>
-                                                        <span className={`badge rounded-pill ${t.type === 'depense' ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'}`}>
-                                                            {t.type === 'depense' ? 'Dépense' : 'Recette'}
-                                                        </span>
-                                                    </td>
-                                                    <td className={`text-end fw-bold pe-4 ${t.type === 'depense' ? 'text-dark' : 'text-success'}`}>
-                                                        {formatPrix(t.montant)}
-                                                    </td>
+                                <div className="modal-body p-0" style={{maxHeight: '50vh', overflowY: 'auto'}}>
+                                    <div className="table-responsive">
+                                        <table className="table table-hover align-middle mb-0">
+                                            <thead className="bg-light sticky-top">
+                                                <tr className="small text-muted text-uppercase">
+                                                    <th className="ps-4 py-3">Date</th>
+                                                    <th>Description</th>
+                                                    <th>Type</th>
+                                                    <th className="text-end pe-4">Montant</th>
                                                 </tr>
-                                            )) : (
-                                                <tr><td colSpan="4" className="text-center py-5 text-muted">Aucune transaction trouvée pour cette période.</td></tr>
-                                            )}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody>
+                                                {detailData.length > 0 ? detailData.map((t, i) => (
+                                                    <tr key={i}>
+                                                        <td className="ps-4 small text-muted">{new Date(t.created_at).toLocaleDateString('fr-FR')}</td>
+                                                        <td className="fw-bold text-dark">{t.description || 'N/A'}</td>
+                                                        <td>
+                                                            <span className={`badge rounded-pill px-3 py-2 ${t.type === 'depense' ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'}`}>
+                                                                {t.type === 'depense' ? 'Dépense' : 'Recette'}
+                                                            </span>
+                                                        </td>
+                                                        <td className={`text-end fw-bold pe-4 ${t.type === 'depense' ? 'text-dark' : 'text-success'}`}>
+                                                            {formatPrix(t.montant)} F
+                                                        </td>
+                                                    </tr>
+                                                )) : (
+                                                    <tr><td colSpan="4" className="text-center py-5 text-muted">Aucune donnée.</td></tr>
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
-                                <div className="modal-footer border-0 bg-light p-3">
-                                    <button className="btn btn-light px-4 fw-bold" onClick={() => setShowModal(false)} style={{borderRadius: '10px'}}>Fermer</button>
-                                    <button className="btn btn-success px-4 fw-bold shadow-sm" onClick={downloadPDF} disabled={detailData.length === 0} style={{borderRadius: '10px'}}>
-                                        <i className="bi bi-file-earmark-pdf-fill me-2"></i>Exporter PDF
+                                <div className="modal-footer border-0 bg-light p-4">
+                                    <button className="btn btn-outline-secondary rounded-pill px-4" onClick={() => setShowModal(false)}>Fermer</button>
+                                    <button className="btn btn-success rounded-pill px-4 fw-bold shadow-sm" onClick={downloadPDF} disabled={detailData.length === 0}>
+                                        <i className="bi bi-download me-2"></i>Télécharger PDF
                                     </button>
                                 </div>
                             </div>
@@ -226,6 +269,16 @@ const Rapports = () => {
                     </div>
                 )}
             </div>
+
+            <style>{`
+                .transition-hover { transition: transform 0.3s ease, shadow 0.3s ease; cursor: default; }
+                .transition-hover:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+                .spin { animation: spin 1s linear infinite; display: inline-block; }
+                @keyframes spin { 100% { transform: rotate(360deg); } }
+                @media (min-width: 768px) {
+                    .border-end-md { border-right: 1px solid #dee2e6 !important; }
+                }
+            `}</style>
         </div>
     );
 };

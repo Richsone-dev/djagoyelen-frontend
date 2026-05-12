@@ -624,8 +624,8 @@ Date: ${fullFacture.date_emission}
                 </>
             ) : (
                 // ── FORMULAIRE ──
-                <form onSubmit={handleSubmit} className='mb-10'>
-                    <div className="d-flex justify-content-between align-items-center mb-10">
+                <form onSubmit={handleSubmit} className='mb-10' style={{textAlign: 'left'}}>
+                    <div className="d-flex justify-content-between align-items-center mb-10 text-align-left">
                         <h4>{isEditing ? 'Modifier la facture' : 'Nouvelle facture'}</h4>
                         <button type="button" className="btn btn-secondary" onClick={() => {
                             setShowModal(false);
@@ -637,7 +637,7 @@ Date: ${fullFacture.date_emission}
 
                     {/* Client */}
                     <div className="mb-3">
-                        <label className="form-label">Client <span className="text-danger">*</span></label>
+                        <label className="form-label">Client <span className="text-danger"  style={{color: colors.dangerRed}}>*</span></label>
                         <div className="d-flex gap-2">
                             <select
                                 className={`form-control ${errors.client_id ? 'is-invalid' : ''}`}
@@ -664,7 +664,7 @@ Date: ${fullFacture.date_emission}
                             type="date"
                             className="form-control"
                             value={formData.date_emission}
-                            onChange={e => setFormData(p => ({ ...p, date_emission: e.target.value }))}
+                            onChange={e => setFormData(p => ({ ...p, date_emission: e.target.value }))} disabled
                         />
                     </div>
 
@@ -688,10 +688,11 @@ Date: ${fullFacture.date_emission}
                     {formData.items.map((item, i) => (
                         <div key={i} className="border rounded p-3 mb-2 bg-light">
                             <div className="row g-2 align-items-center">
-                                <div className="col-12 col-md-5">
+                                <div className="col-12 col-md-5 d-flex flex-column text-align-start">
+                                    <label className="form-label">Designation : <span className="text-danger"  style={{color: colors.dangerRed}}>*</span></label>
                                     <input
                                         className={`form-control ${errors[`items.${i}.designation`] ? 'is-invalid' : ''}`}
-                                        placeholder="Désignation *"
+                                        placeholder="Désignation"
                                         value={item.designation}
                                         onChange={e => handleItemChange(i, 'designation', e.target.value)}
                                     />
@@ -700,6 +701,7 @@ Date: ${fullFacture.date_emission}
                                     )}
                                 </div>
                                 <div className="col-6 col-md-2">
+                                    <label className="form-label">Quantité :</label>
                                     <input
                                         type="number" min={1}
                                         className="form-control"
@@ -709,6 +711,7 @@ Date: ${fullFacture.date_emission}
                                     />
                                 </div>
                                 <div className="col-6 col-md-3">
+                                    <label className="form-label">Prix Unitaire : <span className="text-danger"  style={{color: colors.dangerRed}}>*</span></label>
                                     <input
                                         type="number" min={0} step="0.01"
                                         className="form-control"
@@ -717,9 +720,10 @@ Date: ${fullFacture.date_emission}
                                         onChange={e => handleItemChange(i, 'prix_unitaire', e.target.value)}
                                     />
                                 </div>
-                                <div className="col-6 col-md-1 text-muted small">
-                                    = {(Number(item.quantite) * Number(item.prix_unitaire)).toLocaleString()} F
-                                </div>
+                                    <div className="col-6 col-md-1 text-muted small">
+                                        <label className="form-label">Valeur : </label><br></br>
+                                        = {(Number(item.quantite) * Number(item.prix_unitaire)).toLocaleString()} F
+                                    </div>
                                 <div className="col-6 col-md-1">
                                     <button type="button" className="btn btn-sm btn-outline-danger w-100"
                                         onClick={() => removeItem(i)}

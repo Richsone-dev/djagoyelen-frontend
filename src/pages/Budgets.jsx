@@ -4,6 +4,15 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import Swal from 'sweetalert2'; 
 import Select from 'react-select';
 
+// --- COMPOSANT DE CHARGEMENT RÉUTILISABLE ---
+const LoaderOverlay = ({ message = "Chargement..." }) => (
+    <div className="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center" 
+         style={{ backgroundColor: 'rgba(255,255,255,0.7)', zIndex: 10, borderRadius: '20px', backdropFilter: 'blur(2px)' }}>
+        <div className="spinner-border text-success mb-2" role="status" style={{ width: '1.5rem', height: '1.5rem' }}></div>
+        <span className="small fw-bold text-muted">{message}</span>
+    </div>
+);
+
 const Budgets = () => {
     const [budgets, setBudgets] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -130,6 +139,7 @@ const Budgets = () => {
                 </div>
             )}
 
+            {/* HEADER - Toujours visible */}
             <div className="row mb-4 align-items-center">
                 <div className="col-md-8 text-start">
                     <h2 className="fw-bold h4" style={{ color: colors.darkGreen }}>
@@ -148,6 +158,7 @@ const Budgets = () => {
                 </div>
             </div>
 
+            {/* MODAL FORMULAIRE */}
             {showFormModal && (
                 <div className="modal d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', zIndex: 1060 }}>
                     <div className="modal-dialog modal-dialog-centered">
@@ -204,18 +215,29 @@ const Budgets = () => {
                 </div>
             )}
 
-            <div className="col-12">
+            {/* CONTENU PRINCIPAL */}
+            <div className="col-12 position-relative" style={{ minHeight: '400px' }}>
                 <h5 className="fw-bold text-start mb-3">Suivi en temps réel</h5>
-                {loading ? (
-                    <div className="text-center py-5"><div className="spinner-grow text-success"></div></div>
-                ) : budgets.length === 0 ? (
+                
+                {/* Loader spécifique à la liste des budgets */}
+                {loading && <LoaderOverlay message="Chargement de vos objectifs..." />}
+
+                {/* État vide (affiché uniquement si non chargement) */}
+                {!loading && budgets.length === 0 ? (
                     <div className="card border-0 shadow-sm py-5 text-center" style={{ borderRadius: '20px' }}>
                         <i className="bi bi-shield-lock fs-1 text-muted opacity-25"></i>
                         <p className="text-muted mt-3">Aucun budget défini.</p>
                     </div>
                 ) : (
                     <div className="row g-3">
-                        {budgets.map((budget) => {
+                        {(loading && budgets.length === 0 ? [1, 2] : budgets).map((budget, index) => {
+                            // Si on charge et qu'on n'a pas encore de données, on affiche des cartes vides "Skeleton"
+                            if (loading && budgets.length === 0) return (
+                                <div className="col-12 col-md-6" key={index}>
+                                    <div className="card border-0 shadow-sm h-100 p-4" style={{ borderRadius: '18px', height: '200px', backgroundColor: '#fff', opacity: 0.6 }}></div>
+                                </div>
+                            );
+
                             const progress = calculateProgress(budget.current_spent, budget.amount_limit);
                             const isOver = progress >= 100;
                             return (
@@ -242,14 +264,12 @@ const Budgets = () => {
                                                 <span className={`fw-bold ${isOver ? 'text-danger' : 'text-success'}`}>{progress}%</span>
                                             </div>
 
-                                            {/* BARRE DE PROGRESSION GRADUÉE */}
                                             <div className="progress mb-4" style={{ height: '10px', borderRadius: '10px', backgroundColor: '#f0f0f0', position: 'relative', overflow: 'visible' }}>
                                                 <div 
                                                     className={`progress-bar progress-bar-striped progress-bar-animated ${progress > 90 ? 'bg-danger' : progress > 70 ? 'bg-warning' : 'bg-success'}`} 
                                                     style={{ width: `${progress}%`, borderRadius: '10px', zIndex: 2 }}
                                                 ></div>
                                                 
-                                                {/* Graduations */}
                                                 {[25, 50, 75].map((mark) => (
                                                     <div 
                                                         key={mark}
