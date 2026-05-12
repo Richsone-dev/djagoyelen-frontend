@@ -301,7 +301,7 @@ const generatePDF = async (facture) => {
     doc.setFont("helvetica", "normal");
     doc.setTextColor(0, 0, 0);
 
-    doc.setFontSize(8);
+    doc.setFontSize(10);
     doc.text('Services Numériques & Gestion financière', 14, headerY +2);
 
         // 🖼️ Logo aligné horizontalement
