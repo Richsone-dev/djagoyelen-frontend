@@ -626,13 +626,13 @@ Date: ${fullFacture.date_emission}
                 // ── FORMULAIRE ──
                 <form onSubmit={handleSubmit} className='mb-10' style={{textAlign: 'left'}}>
                     <div className="d-flex justify-content-between align-items-center mb-10 text-align-left">
-                        <h4>{isEditing ? 'Modifier la facture' : 'Nouvelle facture'}</h4>
                         <button type="button" className="btn btn-secondary" onClick={() => {
                             setShowModal(false);
                             setErrors({});
                         }}>
                             ← Retour
                         </button>
+                        <h4>{isEditing ? 'Modifier la facture' : 'Nouvelle facture'}</h4>
                     </div>
 
                     {/* Client */}
