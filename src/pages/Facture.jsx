@@ -11,6 +11,7 @@ import logo from '../assets/djago-logo.jpeg';
 
 const Facture = () => {
     const [factures, setFactures] = useState([]);
+    const [user, setUser] = useState(null);
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -268,7 +269,22 @@ const formatPrix = (value, separator = ' ') => {
         .replace(/\B(?=(\d{3})+(?!\d))/g, separator);
 };
 
-const generatePDF = async (facture) => {
+// État pour la modale d'aperçu
+const [previewUrl, setPreviewUrl] = useState(null);
+
+const handleDownload = async (facture) => {
+    const doc = await generateInvoicePDF(facture);
+    doc.save(`Facture_${facture.numero_facture || facture.id}.pdf`);
+};
+
+const handlePreview = async (facture) => {
+    const doc = await generateInvoicePDF(facture);
+    const blob = doc.output('bloburl');
+    setPreviewUrl(blob);
+    setShowModal(true);
+};
+
+{/*const generatePDF = async (facture) => {
     try {
     const res = await api.get(`/factures/${facture.id}`);
     const fullFacture = res.data.data || res.data;
@@ -326,7 +342,13 @@ const generatePDF = async (facture) => {
 
         doc.setFont("helvetica", "normal");
         doc.text(`Référence : ${numFacture}`, 14, 50);
-        doc.text(`Date : ${fullFacture.date_emission || '-'}`, 14, 55);
+
+        const date = new Date(fullFacture.date_emission).toLocaleDateString('fr-FR', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+        doc.text(`Date : ${date || '-'}`, 14, 55);
 
         doc.setFont("helvetica", "bold");
         doc.text(`STATUT: Payé`, 14, 60);
@@ -425,6 +447,27 @@ const generatePDF = async (facture) => {
           doc.setTextColor(120);
           doc.setFont('times', 'italic');
           doc.text("Factrure générée par DjagoYelen", 14, finalY + 10);
+
+          doc.setFontSize(10);
+          doc.setTextColor(0);
+          doc.setFont('helvetica', 'italic');
+          //doc.text(`Générée le ${fullFacture.date_emission}`, 150, finalY + 10);
+
+          
+
+            // Utilisation des backticks ` et du symbole $ pour la variable
+            doc.text(`Générée le ${date}`, 150, finalY + 15);
+
+          const utilisateur= JSON.parse(localStorage.getItem('user'));
+          const userName = utilisateur? utilisateur.name : '---';
+          const téléphone = utilisateur? utilisateur.telephone : '00000000';
+          doc.setFont('helvetica', 'bold');
+          doc.text(`Responsable commercial :`, 130, finalY + 20);
+          doc.setFont('helvetica', 'normal');
+          doc.text(`${userName}`, 130, finalY + 25);
+          doc.text(`${téléphone}`, 130, finalY + 30);
+
+
           // 🖼️ Logo avec opacité réduite (Correction sécurisée)
             {/*try {
                 // Vérifier si GState est disponible pour éviter le crash
@@ -440,20 +483,23 @@ const generatePDF = async (facture) => {
                 }
             } catch (error) {
                 console.warn("Erreur lors de l'insertion du logo :", error);
-            }*/}
+            }
 
         // ─────────────────────────────
         // 📱 QR CODE
         // ─────────────────────────────
         const qrData = `
 DjagoYelen FACTURATION
+
 Facture: ${numFacture}
 Client: ${fullFacture.client?.nom}
-Tél: ${fullFacture.client?.telephone}
-Email: ${fullFacture.client?.email}
+Tél: ${fullFacture.client?.telephone || '-'}
+Email: ${fullFacture.client?.email || '-'}
+
+Responsable: ${userName}
+Tél: ${téléphone}
 Total TTC: ${formatPrix(fullFacture.total_ttc)} F
-Date: ${fullFacture.date_emission}
-        `;
+Date: ${date}`;
 
         const qrImage = await QRCode.toDataURL(qrData);
 
@@ -468,6 +514,153 @@ Date: ${fullFacture.date_emission}
     } catch (error) {
         console.error("Erreur PDF:", error);
         alert("Impossible de générer le PDF");
+    }
+};*/}
+
+
+        const generateInvoicePDF = async (facture) => {
+    try {
+        const res = await api.get(`/factures/${facture.id}`);
+        const fullFacture = res.data.data || res.data;
+
+        const doc = new jsPDF();
+        const numFacture = fullFacture.numero_facture || fullFacture.id;
+
+        // 🎨 Couleurs
+        const successGreen = [25, 135, 84];
+        const orange = [233, 114, 35];
+
+        // ─────────────────────────────
+        // 🧾 HEADER ALIGNÉ PRO
+        // ─────────────────────────────
+        const headerY = 30;
+        doc.setFontSize(18);
+        doc.setFont("helvetica", "bold");
+
+        // Texte DjagoYelen
+        doc.setTextColor(...successGreen);
+        doc.text("Djago", 14, headerY - 4);
+        const widthDjago = doc.getTextWidth("Djago");
+        doc.setTextColor(...orange);
+        doc.text("Yelen", 14 + widthDjago, headerY - 4); 
+        
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(10);
+        doc.text('Services Numériques & Gestion financière', 14, headerY + 2);
+
+        // 🖼️ Logo
+        try {
+            doc.addImage(logo, 'JPEG', 165, headerY - 22, 30, 30);
+        } catch {
+            console.warn("Logo non chargé");
+        }
+
+        doc.setDrawColor(...orange);
+        doc.setLineWidth(0.3);
+        doc.line(14, headerY + 5, 196, headerY + 5);
+
+        // ─────────────────────────────
+        // 📄 INFOS FACTURE & CLIENT
+        // ─────────────────────────────
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.text(`DÉTAILS DE LA FACTURE`, 14, 45);
+
+        doc.setFont("helvetica", "normal");
+        doc.text(`Référence : ${numFacture}`, 14, 50);
+
+        // Conversion de la date en format lettre (ex: 12 mai 2026)
+        const dateEnLettre = new Date(fullFacture.date_emission).toLocaleDateString('fr-FR', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+        doc.text(`Date : ${dateEnLettre || '-'}`, 14, 55);
+
+        doc.setFont("helvetica", "bold");
+        doc.text(`STATUT: PAYÉ`, 14, 60);
+
+        // Infos Client
+        doc.text(`CLIENT`, 130, 45);
+        const nomClient = (fullFacture.client_nom || fullFacture.client?.nom || '---').toUpperCase();
+        doc.text(`${nomClient}`, 130, 50);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Tél : ${fullFacture.client?.telephone || '---'}`, 130, 55);
+        doc.text(`Email : ${fullFacture.client?.email || '---'}`, 130, 60);
+
+        // ─────────────────────────────
+        // 📊 ITEMS & TABLEAU
+        // ─────────────────────────────
+        let items = fullFacture.lignes || fullFacture.items || [];
+        if (typeof items === 'string') {
+            try { items = JSON.parse(items); } catch { items = []; }
+        }
+
+        const rows = items.map(i => {
+            const qte = Number(i.quantite || 0);
+            const pu = Number(i.prix_unitaire || i.prix || 0);
+            return [
+                i.designation || i.description || 'N/A',
+                qte,
+                `${formatPrix(pu)} F`,
+                `${formatPrix(qte * pu)} F`
+            ];
+        });
+
+        autoTable(doc, {
+            startY: 65,
+            head: [['Désignation', 'Quantité', 'Prix Unitaire', 'Montant']],
+            body: rows,
+            foot: [
+                ['', '', 'Total HT', `${formatPrix(fullFacture.total_ht)} F`],
+                ['', '', `TVA (${fullFacture.tva_taux || 18}%)`, `${formatPrix(fullFacture.total_ttc - fullFacture.total_ht)} F`],
+                ['', '', 'TOTAL TTC', `${formatPrix(fullFacture.total_ttc)} F`]
+            ],
+            theme: 'grid',
+            styles: { fontSize: 9, halign: 'center' },
+            headStyles: { fillColor: successGreen, textColor: 255 },
+            footStyles: { fillColor: orange, textColor: 255 }
+        });
+
+        // ─────────────────────────────
+        // 📝 FOOTER & SIGNATURE
+        // ─────────────────────────────
+        const finalY = doc.lastAutoTable.finalY || 100;
+        const localTime = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+        doc.setFontSize(8);
+        doc.setTextColor(120);
+        doc.setFont('times', 'italic');
+        doc.text("Facture générée par DjagoYelen", 14, finalY + 10);
+
+        doc.setFontSize(10);
+        doc.setTextColor(0);
+        doc.setFont('helvetica', 'italic');
+        doc.text(`Générée le ${dateEnLettre} à ${localTime}`, 130, finalY + 15);
+
+        // Infos Utilisateur Connecté
+        const utilisateur = JSON.parse(localStorage.getItem('user'));
+        const userName = utilisateur?.name || '---';
+        const telephone = utilisateur?.telephone || '---';
+
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Responsable commercial :`, 130, finalY + 25);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`${userName}`, 130, finalY + 30);
+        doc.text(`Tél : ${telephone}`, 130, finalY + 35);
+
+        // 📱 QR CODE
+        const qrData = `Facture: ${numFacture}\nClient: ${nomClient}\nTotal: ${formatPrix(fullFacture.total_ttc)} F\nResponsable: ${userName}`;
+        const qrImage = await QRCode.toDataURL(qrData);
+        doc.addImage(qrImage, 'PNG', 100, 37, 25, 25);
+
+        return doc;
+
+    } catch (error) {
+        console.error("Erreur PDF:", error);
+        throw error;
     }
 };
 
@@ -495,6 +688,41 @@ Date: ${fullFacture.date_emission}
     return (
         <div className="container p-3 mb-5">
 
+        {showModal && (
+    <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 1050 }}>
+        <div className="modal-dialog modal-xl" style={{ height: '90vh' }}>
+            <div className="modal-content h-100">
+                <div className="modal-header justify-content-between">
+                    <h5 className="modal-title">Aperçu de la facture</h5>
+                    <div>
+                        <button 
+                            className="btn btn-danger me-2 mb-2 flex-fill align-items-center justify-content-center shadow-sm" 
+                            onClick={() => setShowModal(false)}
+                        >
+                            <i className="bi bi-arrow-left me-2"></i> Retour
+                        </button>
+                        <button className="btn btn-success me-2 mb-2" onClick={() => {
+                            const link = document.createElement('a');
+                            link.href = previewUrl;
+                            link.download = "Facture.pdf";
+                            link.click();
+                        }}>
+                            <i className="bi bi-download me-2"></i>
+                            Télécharger
+                        </button>
+                    </div>
+                </div>
+                <div className="modal-body p-0">
+                    <iframe src={previewUrl} width="100%" height="100%" title="Aperçu"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+)}
+
+            
+
+
             {/* ── MODAL CLIENT ── */}
             {showClientModal && (
                 <div className="modal show d-block text-align-left" style={{ background: 'rgba(0,0,0,0.5)' }}>
@@ -505,34 +733,34 @@ Date: ${fullFacture.date_emission}
                                 <button className="btn-close" onClick={() => setShowClientModal(false)} />
                             </div>
                             <form onSubmit={handleAddClient}>
-            <div className="modal-body" style={{ textAlign: 'left' }}>
-                {Object.keys(fieldConfig).map(field => (
-                    <div className="mb-2" key={field}>
-                        <label className="form-label text-capitalize">{field}</label>
-                        <input
-                            type={fieldConfig[field].type}
-                            className="form-control"
-                            value={newClient[field] || ''}
-                            onChange={e => setNewClient(p => ({ ...p, [field]: e.target.value }))}
-                            required={field === 'nom'}
-                            placeholder={fieldConfig[field].placeholder}
-                        />
-                    </div>
-                ))}
-            </div>
-            <div className="modal-footer">
-                <button 
-                    type="button" 
-                    className="btn btn-secondary" 
-                    onClick={() => setShowClientModal(false)}
-                >
-                    Annuler
-                </button>
-                <button type="submit" className="btn btn-primary">
-                    Enregistrer
-                </button>
-            </div>
-        </form>
+                                <div className="modal-body" style={{ textAlign: 'left' }}>
+                                    {Object.keys(fieldConfig).map(field => (
+                                        <div className="mb-2" key={field}>
+                                            <label className="form-label text-capitalize">{field}</label>
+                                            <input
+                                                type={fieldConfig[field].type}
+                                                className="form-control"
+                                                value={newClient[field] || ''}
+                                                onChange={e => setNewClient(p => ({ ...p, [field]: e.target.value }))}
+                                                required={field === 'nom'}
+                                                placeholder={fieldConfig[field].placeholder}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="modal-footer">
+                                    <button 
+                                        type="button" 
+                                        className="btn btn-secondary" 
+                                        onClick={() => setShowClientModal(false)}
+                                    >
+                                        Annuler
+                                    </button>
+                                    <button type="submit" className="btn btn-primary">
+                                        Enregistrer
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -614,7 +842,7 @@ Date: ${fullFacture.date_emission}
                                                       <button
                                                           className="btn btn-sm btn-outline-success"
                                                           title="Télécharger PDF"
-                                                          onClick={() => generatePDF(f)}
+                                                          onClick={() => handlePreview(f)}
                                                       >
                                                           <i className="bi bi-file-earmark-pdf"></i>
                                                       </button>
@@ -715,6 +943,7 @@ Date: ${fullFacture.date_emission}
                             value={formData.tva_taux}
                             min={0}
                             onChange={e => setFormData(p => ({ ...p, tva_taux: Number(e.target.value) }))}
+                            disabled
                         />
                     </div>
 
