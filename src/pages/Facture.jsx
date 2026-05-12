@@ -19,6 +19,9 @@ const Facture = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [errors, setErrors] = useState({});
     const [submitLoading, setSubmitLoading] = useState(false);
+    const [showModal_up, setShowModal_up] = useState(false);
+
+    const [fullFacture, setFullFacture] = useState(null);
 
     const [newClient, setNewClient] = useState({
         nom: '', email: '', telephone: '', adresse: ''
@@ -168,6 +171,7 @@ const Facture = () => {
             }
 
             setShowModal(false);
+            setShowModal_up(true);
             setFormData(initialFormState);
             setIsEditing(false);
             await fetchFactures();
@@ -278,10 +282,21 @@ const handleDownload = async (facture) => {
 };
 
 const handlePreview = async (facture) => {
-    const doc = await generateInvoicePDF(facture);
-    const blob = doc.output('bloburl');
-    setPreviewUrl(blob);
-    setShowModal(true);
+    try {
+        const res = await api.get(`/factures/${facture.id}`);
+        const data = res.data.data || res.data;
+        
+        // Maintenant setFullFacture est défini et peut être appelé
+        setFullFacture(data);
+
+        const doc = await generateInvoicePDF(data); 
+        const blob = doc.output('bloburl');
+        
+        setPreviewUrl(blob);
+        setShowModal(true);
+    } catch (error) {
+        console.error("Erreur aperçu:", error);
+    }
 };
 
 {/*const generatePDF = async (facture) => {
@@ -689,32 +704,50 @@ Date: ${date}`;
         <div className="container p-3 mb-5">
 
         {showModal && (
-    <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 1050 }}>
-        <div className="modal-dialog modal-xl" style={{ height: '90vh' }}>
-            <div className="modal-content h-100">
-                <div className="modal-header justify-content-between">
-                    <h5 className="modal-title">Aperçu de la facture</h5>
-                    <div>
-                        <button 
-                            className="btn btn-danger me-2 mb-2 flex-fill align-items-center justify-content-center shadow-sm" 
-                            onClick={() => setShowModal(false)}
-                        >
-                            <i className="bi bi-arrow-left me-2"></i> Retour
-                        </button>
-                        <button className="btn btn-success me-2 mb-2" onClick={() => {
+    <div className="bg-secondary min-vh-100 d-flex flex-column" 
+         style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 2000 }}>
+        
+        <div className="navbar navbar-dark bg-dark shadow-sm px-2 px-md-4 py-2">
+            <div className="container-fluid d-flex flex-column flex-md-row gap-3">
+                
+                <h5 className="text-white mb-0 fs-6 fs-md-5 text-truncate">
+                    <i className="bi bi-file-earmark-pdf-fill me-2 text-danger"></i>
+                    {/* Utilisation sécurisée de fullFacture */}
+                    Aperçu : {fullFacture?.numero_facture || 'Chargement...'}
+                </h5>
+                
+                <div className="d-flex w-100 w-md-auto gap-2">
+                    <button 
+                        className="btn btn-outline-light flex-fill d-flex align-items-center justify-content-center" 
+                        onClick={() => setShowModal(false)}
+                    >
+                        <i className="bi bi-arrow-left me-2"></i> Retour
+                    </button>
+
+                    <button 
+                        className="btn btn-success flex-fill d-flex align-items-center justify-content-center" 
+                        onClick={() => {
                             const link = document.createElement('a');
                             link.href = previewUrl;
-                            link.download = "Facture.pdf";
+                            link.download = `Facture_${fullFacture?.numero_facture || 'document'}.pdf`;
                             link.click();
-                        }}>
-                            <i className="bi bi-download me-2"></i>
-                            Télécharger
-                        </button>
-                    </div>
+                        }}
+                    >
+                        <i className="bi bi-download me-2"></i> Télécharger
+                    </button>
                 </div>
-                <div className="modal-body p-0">
-                    <iframe src={previewUrl} width="100%" height="100%" title="Aperçu"></iframe>
-                </div>
+            </div>
+        </div>
+
+        <div className="flex-grow-1 p-1 p-md-4 d-flex justify-content-center align-items-start bg-dark overflow-auto">
+            <div className="w-100 h-100 shadow-lg" style={{ maxWidth: '1000px', backgroundColor: '#525659' }}>
+                <iframe 
+                    src={`${previewUrl}#view=FitH`} 
+                    width="100%" 
+                    height="100%" 
+                    style={{ minHeight: '85vh', border: 'none' }}
+                    title="Aperçu Facture"
+                ></iframe>
             </div>
         </div>
     </div>
@@ -774,6 +807,7 @@ Date: ${date}`;
                         <button className="btn btn-primary" onClick={() => {
                             setFormData(initialFormState);
                             setIsEditing(false);
+                            setShowModal_up(true);
                             setErrors({});
                             setShowModal(true);
                         }}>
@@ -860,7 +894,7 @@ Date: ${date}`;
                                                                   : f.items || initialFormState.items;
 
                                                               setFormData({ ...f, items });
-                                                              setShowModal(true);
+                                                              setIsEditing(true);
                                                           }}
                                                       >
                                                           <i className="bi bi-pencil-square"></i>
