@@ -283,7 +283,7 @@ const generatePDF = async (facture) => {
     // ─────────────────────────────
     // 🧾 HEADER ALIGNÉ PRO
     // ─────────────────────────────
-    const headerY = 20;
+    const headerY = 30;
 
     doc.setFontSize(18);
     doc.setFont("helvetica", "bold");
@@ -306,7 +306,7 @@ const generatePDF = async (facture) => {
 
         // 🖼️ Logo aligné horizontalement
         try {
-            doc.addImage(logo, 'JPEG', 160, headerY - 22, 30, 30);
+            doc.addImage(logo, 'JPEG', 165, headerY - 22, 30, 30);
         } catch {
             console.warn("Logo non chargé");
         }
@@ -322,25 +322,25 @@ const generatePDF = async (facture) => {
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(10);
         doc.setFont("helvetica", "bold");
-        doc.text(`DETAILS DE LA FACTURE`,14, 35);
+        doc.text(`DETAILS DE LA FACTURE`,14, 45);
 
         doc.setFont("helvetica", "normal");
-        doc.text(`Référence : ${numFacture}`, 14, 40);
-        doc.text(`Date : ${fullFacture.date_emission || '-'}`, 14, 45);
-
-        doc.setFont("times", "bold");
-        doc.text(`STATUT: Payé`, 14, 50);
+        doc.text(`Référence : ${numFacture}`, 14, 50);
+        doc.text(`Date : ${fullFacture.date_emission || '-'}`, 14, 55);
 
         doc.setFont("helvetica", "bold");
-        doc.text(`CLIENT`, 130, 35);
+        doc.text(`STATUT: Payé`, 14, 60);
+
+        doc.setFont("helvetica", "bold");
+        doc.text(`CLIENT`, 130, 45);
         doc.setFont("helvetica", "bold");
         // 2. Récupérer le nom et le transformer en majuscules
         const nomClient = (fullFacture.client_nom || fullFacture.client?.nom || '---').toUpperCase();
         
-        doc.text(`${nomClient}`, 130, 40);
+        doc.text(`${nomClient}`, 130, 50);
         doc.setFont("helvetica", "normal");
-        doc.text(`Tél : ${fullFacture.client?.telephone || '---'}`, 130, 45);
-        doc.text(`Email : ${fullFacture.client?.email || '---'}`, 130, 50);
+        doc.text(`Tél : ${fullFacture.client?.telephone || '---'}`, 130, 55);
+        doc.text(`Email : ${fullFacture.client?.email || '---'}`, 130, 60);
         
 
         // ─────────────────────────────
@@ -379,7 +379,7 @@ const generatePDF = async (facture) => {
         // 📊 TABLEAU
         // ─────────────────────────────
         autoTable(doc, {
-            startY: 55,
+            startY: 65,
             head: [['Désignation', 'Quantité', 'Prix Unitaire', 'Montant']],
             body: rows,
             foot: [
@@ -425,6 +425,22 @@ const generatePDF = async (facture) => {
           doc.setTextColor(120);
           doc.setFont('times', 'italic');
           doc.text("Factrure générée par DjagoYelen", 14, finalY + 10);
+          // 🖼️ Logo avec opacité réduite (Correction sécurisée)
+            {/*try {
+                // Vérifier si GState est disponible pour éviter le crash
+                if (typeof doc.GState === 'function') {
+                    const gs1 = new doc.GState({ opacity: 0.3 });
+                    doc.setGState(gs1);
+                    doc.addImage(logo, 'PNG', 20, finalY + 15, 20, 20);
+                    // Toujours remettre l'opacité à 1.0
+                    doc.setGState(new doc.GState({ opacity: 1.0 }));
+                } else {
+                    // Fallback : affiche le logo normalement si GState n'est pas supporté
+                    doc.addImage(logo, 'PNG', 20, finalY + 15, 5, 5);
+                }
+            } catch (error) {
+                console.warn("Erreur lors de l'insertion du logo :", error);
+            }*/}
 
         // ─────────────────────────────
         // 📱 QR CODE
@@ -441,7 +457,7 @@ Date: ${fullFacture.date_emission}
 
         const qrImage = await QRCode.toDataURL(qrData);
 
-        doc.addImage(qrImage, 'PNG', 100, 30, 20, 20);
+        doc.addImage(qrImage, 'PNG', 100, 37, 25, 25);
 
 
         // ─────────────────────────────

@@ -70,9 +70,13 @@ const Rapports = () => {
         }
     };
 
-    const formatPrix = (prix) => {
-        return Number(prix || 0).toLocaleString('fr-FR');
-    };
+    const formatPrix = (value, separator = ' ') => {
+    if (isNaN(value)) return '0';
+
+    return Number(value)
+        .toFixed(0)
+        .replace(/\B(?=(\d{3})+(?!\d))/g, separator);
+};
 
     const downloadPDF = () => {
         const doc = new jsPDF();
