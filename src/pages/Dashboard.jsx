@@ -15,6 +15,7 @@ import {
     ArcElement,
     Filler,
     RadialLinearScale,
+    Colors,
 } from 'chart.js';
 import { Line, Doughnut, Bar, PolarArea, Radar } from 'react-chartjs-2';
 
@@ -36,7 +37,7 @@ ChartJS.register(
 const LoaderOverlay = ({ message = "Chargement..." }) => (
     <div className="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center" 
          style={{ backgroundColor: 'rgba(255,255,255,1)', zIndex: 10, borderRadius: '15px' }}>
-        <div className="spinner-border text-warning mb-2" role="status" style={{ width: '1.5rem', height: '1.5rem' }}></div>
+        <div className="spinner-border text-warning mb-2" role="status" style={{ width: '1.5rem', height: '1.5rem', backgroundColor: Colors.successGreen}}></div>
         <span className="small fw-bold text-muted">{message}</span>
     </div>
 );

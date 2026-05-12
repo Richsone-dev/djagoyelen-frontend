@@ -4,6 +4,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import logo from '../assets/djago-logo.jpeg';
 import Select from 'react-select';
 import Swal from 'sweetalert2';
+import { Colors } from 'chart.js';
 
 // --- COMPOSANT DE GESTION DU CONTENU DU TABLEAU (OPTION 2) ---
 const TableContent = ({ loading, data, columns, renderRow }) => {
@@ -11,7 +12,7 @@ const TableContent = ({ loading, data, columns, renderRow }) => {
         return (
             <tr>
                 <td colSpan={columns} className="text-center py-5 text-muted">
-                    <div className="spinner-border spinner-border-sm me-2" role="status"></div>
+                    <div className="spinner-border spinner-border-sm me-2" role="status" style={{color: Colors.successGreen}}></div>
                     Chargement des transactions...
                 </td>
             </tr>

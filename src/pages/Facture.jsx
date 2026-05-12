@@ -270,36 +270,43 @@ const formatPrix = (value, separator = ' ') => {
 
 const generatePDF = async (facture) => {
     try {
-        const res = await api.get(`/factures/${facture.id}`);
-        const fullFacture = res.data.data || res.data;
+    const res = await api.get(`/factures/${facture.id}`);
+    const fullFacture = res.data.data || res.data;
 
-        const doc = new jsPDF();
-        const numFacture = fullFacture.numero_facture || fullFacture.id;
+    const doc = new jsPDF();
+    const numFacture = fullFacture.numero_facture || fullFacture.id;
 
-        // 🎨 Couleurs
-        const successGreen = [25, 135, 84];
-        const orange = [233, 114, 35];
+    // 🎨 Couleurs
+    const successGreen = [25, 135, 84];
+    const orange = [233, 114, 35];
 
-        // ─────────────────────────────
-        // 🧾 HEADER ALIGNÉ PRO
-        // ─────────────────────────────
-        const headerY = 20;
+    // ─────────────────────────────
+    // 🧾 HEADER ALIGNÉ PRO
+    // ─────────────────────────────
+    const headerY = 20;
 
-        doc.setFontSize(18);
-        doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
 
-        // Texte DjagoYelen
-        doc.setTextColor(...successGreen);
-        doc.text("Djago", 14, headerY);
+    // Texte DjagoYelen
+    doc.setTextColor(...successGreen);
+    doc.text("Djago", 14, headerY - 4);
 
-        const widthDjago = doc.getTextWidth("Djago");
+    const widthDjago = doc.getTextWidth("Djago");
 
-        doc.setTextColor(...orange);
-        doc.text("Yelen", 14 + widthDjago + 2, headerY);
+    doc.setTextColor(...orange);
+    // On utilise l'espacement calculé pour coller "Yelen" après "Djago"
+    doc.text("Yelen", 14 + widthDjago, headerY - 4); 
+    
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(0, 0, 0);
+
+    doc.setFontSize(8);
+    doc.text('Services Numériques & Gestion financière', 14, headerY +2);
 
         // 🖼️ Logo aligné horizontalement
         try {
-            doc.addImage(logo, 'JPEG', 150, headerY - 22, 30, 30);
+            doc.addImage(logo, 'JPEG', 160, headerY - 22, 30, 30);
         } catch {
             console.warn("Logo non chargé");
         }
@@ -314,18 +321,26 @@ const generatePDF = async (facture) => {
         // ─────────────────────────────
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
         doc.text(`DETAILS DE LA FACTURE`,14, 35);
 
         doc.setFont("helvetica", "normal");
         doc.text(`Référence : ${numFacture}`, 14, 40);
         doc.text(`Date : ${fullFacture.date_emission || '-'}`, 14, 45);
 
+        doc.setFont("times", "bold");
+        doc.text(`STATUT: Payé`, 14, 50);
+
         doc.setFont("helvetica", "bold");
         doc.text(`CLIENT`, 130, 35);
+        doc.setFont("helvetica", "bold");
+        // 2. Récupérer le nom et le transformer en majuscules
+        const nomClient = (fullFacture.client_nom || fullFacture.client?.nom || '---').toUpperCase();
+        
+        doc.text(`${nomClient}`, 130, 40);
         doc.setFont("helvetica", "normal");
-        doc.text(`Client : ${fullFacture.client?.nom || 'N/A'}`, 130, 40);
-        doc.text(`Tél : ${fullFacture.client?.telephone || 'N/A'}`, 130, 45);
-        doc.text(`Email : ${fullFacture.client?.email || 'N/A'}`, 130, 50);
+        doc.text(`Tél : ${fullFacture.client?.telephone || '---'}`, 130, 45);
+        doc.text(`Email : ${fullFacture.client?.email || '---'}`, 130, 50);
         
 
         // ─────────────────────────────
@@ -376,23 +391,29 @@ const generatePDF = async (facture) => {
             ],
             theme: 'grid',
             styles: {
-                lineColor: [0, 0, 0],
-                lineWidth: 0.2,
+                lineColor: [230,230,230],
+                lineWidth: 0.1,
                 fontSize: 9,
-                halign: 'right'
+                halign: 'center'
             },
             columnStyles: {
-                0: { halign: 'left' }
+                0: { halign: 'center' },
+                1: { halign: 'center' },
+                2: { halign: 'center' },
+                3: { halign: 'center' }
             },
             headStyles: {
                 fillColor: successGreen,
-                textColor: 255
+                textColor: 255,
+                fontStyle: 'bold',
+                textAlign: 'center'
             },
             footStyles: {
               lineWidth: 0,
               fillColor: orange,
               textColor: 255,
-                fontStyle: 'bold'
+                fontStyle: 'bold',
+                textAlign: 'center'
             }
           });
           // ─────────────────────────────
@@ -403,7 +424,7 @@ const generatePDF = async (facture) => {
           doc.setFontSize(8);
           doc.setTextColor(120);
           doc.setFont('times', 'italic');
-          doc.text("Merci pour votre confiance - DjagoYelen", 14, finalY + 10);
+          doc.text("Factrure générée par DjagoYelen", 14, finalY + 10);
 
         // ─────────────────────────────
         // 📱 QR CODE

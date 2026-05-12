@@ -74,9 +74,9 @@ const MainLayout = () => {
             { path: 'clients', label: 'Clients', icon: 'people' },
             
             { path: 'factures', label: 'Factures', icon: 'receipt'},
-            { path: 'dettes', label: 'Dettes', icon: 'person-dash'},
             { path: 'aide', label: 'Aide', icon: 'question-circle', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
             { path: 'notifications', label: 'Notifications', icon: 'bell', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
+            { path: 'dettes', label: 'Dettes', icon: 'person-dash', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
         ],
     },
     // Injection conditionnelle pour Admin
