@@ -19,9 +19,6 @@ const Facture = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [errors, setErrors] = useState({});
     const [submitLoading, setSubmitLoading] = useState(false);
-    const [showModal_up, setShowModal_up] = useState(false);
-
-    const [fullFacture, setFullFacture] = useState(null);
 
     const [newClient, setNewClient] = useState({
         nom: '', email: '', telephone: '', adresse: ''
@@ -171,7 +168,6 @@ const Facture = () => {
             }
 
             setShowModal(false);
-            setShowModal_up(true);
             setFormData(initialFormState);
             setIsEditing(false);
             await fetchFactures();
@@ -273,33 +269,8 @@ const formatPrix = (value, separator = ' ') => {
         .replace(/\B(?=(\d{3})+(?!\d))/g, separator);
 };
 
-// État pour la modale d'aperçu
-const [previewUrl, setPreviewUrl] = useState(null);
 
-const handleDownload = async (facture) => {
-    const doc = await generateInvoicePDF(facture);
-    doc.save(`Facture_${facture.numero_facture || facture.id}.pdf`);
-};
-
-const handlePreview = async (facture) => {
-    try {
-        const res = await api.get(`/factures/${facture.id}`);
-        const data = res.data.data || res.data;
-        
-        // Maintenant setFullFacture est défini et peut être appelé
-        setFullFacture(data);
-
-        const doc = await generateInvoicePDF(data); 
-        const blob = doc.output('bloburl');
-        
-        setPreviewUrl(blob);
-        setShowModal(true);
-    } catch (error) {
-        console.error("Erreur aperçu:", error);
-    }
-};
-
-{/*const generatePDF = async (facture) => {
+const generatePDF = async (facture) => {
     try {
     const res = await api.get(`/factures/${facture.id}`);
     const fullFacture = res.data.data || res.data;
@@ -498,7 +469,7 @@ const handlePreview = async (facture) => {
                 }
             } catch (error) {
                 console.warn("Erreur lors de l'insertion du logo :", error);
-            }
+            }*/}
 
         // ─────────────────────────────
         // 📱 QR CODE
@@ -530,153 +501,6 @@ Date: ${date}`;
         console.error("Erreur PDF:", error);
         alert("Impossible de générer le PDF");
     }
-};*/}
-
-
-        const generateInvoicePDF = async (facture) => {
-    try {
-        const res = await api.get(`/factures/${facture.id}`);
-        const fullFacture = res.data.data || res.data;
-
-        const doc = new jsPDF();
-        const numFacture = fullFacture.numero_facture || fullFacture.id;
-
-        // 🎨 Couleurs
-        const successGreen = [25, 135, 84];
-        const orange = [233, 114, 35];
-
-        // ─────────────────────────────
-        // 🧾 HEADER ALIGNÉ PRO
-        // ─────────────────────────────
-        const headerY = 30;
-        doc.setFontSize(18);
-        doc.setFont("helvetica", "bold");
-
-        // Texte DjagoYelen
-        doc.setTextColor(...successGreen);
-        doc.text("Djago", 14, headerY - 4);
-        const widthDjago = doc.getTextWidth("Djago");
-        doc.setTextColor(...orange);
-        doc.text("Yelen", 14 + widthDjago, headerY - 4); 
-        
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(10);
-        doc.text('Services Numériques & Gestion financière', 14, headerY + 2);
-
-        // 🖼️ Logo
-        try {
-            doc.addImage(logo, 'JPEG', 165, headerY - 22, 30, 30);
-        } catch {
-            console.warn("Logo non chargé");
-        }
-
-        doc.setDrawColor(...orange);
-        doc.setLineWidth(0.3);
-        doc.line(14, headerY + 5, 196, headerY + 5);
-
-        // ─────────────────────────────
-        // 📄 INFOS FACTURE & CLIENT
-        // ─────────────────────────────
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "bold");
-        doc.text(`DÉTAILS DE LA FACTURE`, 14, 45);
-
-        doc.setFont("helvetica", "normal");
-        doc.text(`Référence : ${numFacture}`, 14, 50);
-
-        // Conversion de la date en format lettre (ex: 12 mai 2026)
-        const dateEnLettre = new Date(fullFacture.date_emission).toLocaleDateString('fr-FR', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-        });
-        doc.text(`Date : ${dateEnLettre || '-'}`, 14, 55);
-
-        doc.setFont("helvetica", "bold");
-        doc.text(`STATUT: PAYÉ`, 14, 60);
-
-        // Infos Client
-        doc.text(`CLIENT`, 130, 45);
-        const nomClient = (fullFacture.client_nom || fullFacture.client?.nom || '---').toUpperCase();
-        doc.text(`${nomClient}`, 130, 50);
-        doc.setFont("helvetica", "normal");
-        doc.text(`Tél : ${fullFacture.client?.telephone || '---'}`, 130, 55);
-        doc.text(`Email : ${fullFacture.client?.email || '---'}`, 130, 60);
-
-        // ─────────────────────────────
-        // 📊 ITEMS & TABLEAU
-        // ─────────────────────────────
-        let items = fullFacture.lignes || fullFacture.items || [];
-        if (typeof items === 'string') {
-            try { items = JSON.parse(items); } catch { items = []; }
-        }
-
-        const rows = items.map(i => {
-            const qte = Number(i.quantite || 0);
-            const pu = Number(i.prix_unitaire || i.prix || 0);
-            return [
-                i.designation || i.description || 'N/A',
-                qte,
-                `${formatPrix(pu)} F`,
-                `${formatPrix(qte * pu)} F`
-            ];
-        });
-
-        autoTable(doc, {
-            startY: 65,
-            head: [['Désignation', 'Quantité', 'Prix Unitaire', 'Montant']],
-            body: rows,
-            foot: [
-                ['', '', 'Total HT', `${formatPrix(fullFacture.total_ht)} F`],
-                ['', '', `TVA (${fullFacture.tva_taux || 18}%)`, `${formatPrix(fullFacture.total_ttc - fullFacture.total_ht)} F`],
-                ['', '', 'TOTAL TTC', `${formatPrix(fullFacture.total_ttc)} F`]
-            ],
-            theme: 'grid',
-            styles: { fontSize: 9, halign: 'center' },
-            headStyles: { fillColor: successGreen, textColor: 255 },
-            footStyles: { fillColor: orange, textColor: 255 }
-        });
-
-        // ─────────────────────────────
-        // 📝 FOOTER & SIGNATURE
-        // ─────────────────────────────
-        const finalY = doc.lastAutoTable.finalY || 100;
-        const localTime = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-
-        doc.setFontSize(8);
-        doc.setTextColor(120);
-        doc.setFont('times', 'italic');
-        doc.text("Facture générée par DjagoYelen", 14, finalY + 10);
-
-        doc.setFontSize(10);
-        doc.setTextColor(0);
-        doc.setFont('helvetica', 'italic');
-        doc.text(`Générée le ${dateEnLettre} à ${localTime}`, 130, finalY + 15);
-
-        // Infos Utilisateur Connecté
-        const utilisateur = JSON.parse(localStorage.getItem('user'));
-        const userName = utilisateur?.name || '---';
-        const telephone = utilisateur?.telephone || '---';
-
-        doc.setFont('helvetica', 'bold');
-        doc.text(`Responsable commercial :`, 130, finalY + 25);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`${userName}`, 130, finalY + 30);
-        doc.text(`Tél : ${telephone}`, 130, finalY + 35);
-
-        // 📱 QR CODE
-        const qrData = `Facture: ${numFacture}\nClient: ${nomClient}\nTotal: ${formatPrix(fullFacture.total_ttc)} F\nResponsable: ${userName}`;
-        const qrImage = await QRCode.toDataURL(qrData);
-        doc.addImage(qrImage, 'PNG', 100, 37, 25, 25);
-
-        return doc;
-
-    } catch (error) {
-        console.error("Erreur PDF:", error);
-        throw error;
-    }
 };
 
     // ─────────────────────────────────────────
@@ -702,59 +526,6 @@ Date: ${date}`;
 
     return (
         <div className="container p-3 mb-5">
-
-        {showModal && (
-    <div className="bg-secondary min-vh-100 d-flex flex-column" 
-         style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 2000 }}>
-        
-        <div className="navbar navbar-dark bg-dark shadow-sm px-2 px-md-4 py-2">
-            <div className="container-fluid d-flex flex-column flex-md-row gap-3">
-                
-                <h5 className="text-white mb-0 fs-6 fs-md-5 text-truncate">
-                    <i className="bi bi-file-earmark-pdf-fill me-2 text-danger"></i>
-                    {/* Utilisation sécurisée de fullFacture */}
-                    Aperçu : {fullFacture?.numero_facture || 'Chargement...'}
-                </h5>
-                
-                <div className="d-flex w-100 w-md-auto gap-2">
-                    <button 
-                        className="btn btn-outline-light flex-fill d-flex align-items-center justify-content-center" 
-                        onClick={() => setShowModal(false)}
-                    >
-                        <i className="bi bi-arrow-left me-2"></i> Retour
-                    </button>
-
-                    <button 
-                        className="btn btn-success flex-fill d-flex align-items-center justify-content-center" 
-                        onClick={() => {
-                            const link = document.createElement('a');
-                            link.href = previewUrl;
-                            link.download = `Facture_${fullFacture?.numero_facture || 'document'}.pdf`;
-                            link.click();
-                        }}
-                    >
-                        <i className="bi bi-download me-2"></i> Télécharger
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div className="flex-grow-1 p-1 p-md-4 d-flex justify-content-center align-items-start bg-dark overflow-auto">
-            <div className="w-100 h-100 shadow-lg" style={{ maxWidth: '1000px', backgroundColor: '#525659' }}>
-                <iframe 
-                    src={`${previewUrl}#view=FitH`} 
-                    width="100%" 
-                    height="100%" 
-                    style={{ minHeight: '85vh', border: 'none' }}
-                    title="Aperçu Facture"
-                ></iframe>
-            </div>
-        </div>
-    </div>
-)}
-
-            
-
 
             {/* ── MODAL CLIENT ── */}
             {showClientModal && (
@@ -807,7 +578,6 @@ Date: ${date}`;
                         <button className="btn btn-primary" onClick={() => {
                             setFormData(initialFormState);
                             setIsEditing(false);
-                            setShowModal_up(true);
                             setErrors({});
                             setShowModal(true);
                         }}>
@@ -876,7 +646,7 @@ Date: ${date}`;
                                                       <button
                                                           className="btn btn-sm btn-outline-success"
                                                           title="Télécharger PDF"
-                                                          onClick={() => handlePreview(f)}
+                                                          onClick={() => generatePDF(f)}
                                                       >
                                                           <i className="bi bi-file-earmark-pdf"></i>
                                                       </button>
@@ -894,7 +664,7 @@ Date: ${date}`;
                                                                   : f.items || initialFormState.items;
 
                                                               setFormData({ ...f, items });
-                                                              setIsEditing(true);
+                                                              setShowModal(true);
                                                           }}
                                                       >
                                                           <i className="bi bi-pencil-square"></i>
