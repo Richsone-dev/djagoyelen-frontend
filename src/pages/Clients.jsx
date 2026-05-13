@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../api/axios';
+import Swal from 'sweetalert2';
 
 // --- COMPOSANT DE CHARGEMENT (SKELETON) ---
 const SkeletonRow = () => (
@@ -105,15 +106,46 @@ const Clients = () => {
     };
 
     const handleDeleteClient = async (id) => {
-        if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce client ?")) return;
-        try {
-            await api.delete(`/clients/${id}`);
-            showFeedback('success', "Client supprimé.");
-            setClients(clients.filter(c => c.id !== id));
-        } catch (error) { 
-            showFeedback('danger', "Action impossible (client lié à des factures)."); 
+        const result = await Swal.fire({
+            title: 'Êtes-vous sûr ?',
+            text: "Cette action est irréversible !",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Oui, supprimer',
+            cancelButtonText: 'Annuler'
+        });
+        if (result.isConfirmed) {
+
+            try {
+
+                await api.delete(`/clients/${id}`);
+
+                setClients(prev =>
+                    prev.filter(c => c.id !== id)
+                );
+
+                Swal.fire(
+                    'Supprimé !',
+                    'Le client a été supprimé avec succès.',
+                    'success'
+                );
+
+            } catch (err) {
+
+                console.error(err);
+
+                Swal.fire(
+                    'Erreur',
+                    err.response?.data?.message || 'Erreur',
+                    'error'
+                );
+            }
         }
     };
+
+    
 
     const openClientModal = (client = null) => {
         if (client) {

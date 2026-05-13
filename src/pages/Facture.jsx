@@ -826,6 +826,11 @@ Date: ${date}`;
     const handleDownloadPDF = async (facture) => {
 
         try {
+            Swal.fire({
+                title: 'Téléchargement...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
 
             const { doc, fullFacture } =
                 await buildPdf(facture);
@@ -836,6 +841,8 @@ Date: ${date}`;
                     fullFacture.id
                 }.pdf`
             );
+            Swal.close();
+
 
         } catch (error) {
 
@@ -856,6 +863,11 @@ Date: ${date}`;
     const handleSharePDF = async (facture) => {
 
         try {
+            Swal.fire({
+                title: 'Partage...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
 
             const { blob, fullFacture } =
                 await buildPdf(facture);
@@ -890,6 +902,8 @@ Date: ${date}`;
                 window.open(url, '_blank');
 
             }
+
+            Swal.close();
 
         } catch (error) {
 
