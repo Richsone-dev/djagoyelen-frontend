@@ -623,9 +623,9 @@ const Facture = () => {
 
                 qte,
 
-                `${formatPrix(pu)} F`,
+                `${formatPrix(pu)} F CFA`,
 
-                `${formatPrix(qte * pu)} F`
+                `${formatPrix(qte * pu)} F CFA`
 
             ];
         });
@@ -645,28 +645,17 @@ const Facture = () => {
 
             foot: [
 
-                [
-                    '',
-                    '',
-                    'Total HT',
-                    `${formatPrix(fullFacture.total_ht)} F`
+                ['','','Total HT',`${formatPrix(fullFacture.total_ht)} F CFA`
                 ],
 
-                [
-                    '',
-                    '',
-                    `TVA (${fullFacture.tva_taux || 18}%)`,
-                    `${formatPrix(
-                        fullFacture.total_ttc -
-                        fullFacture.total_ht
-                    )} F`
+                ['','',`TVA (${fullFacture.tva_taux || 18}%)`,`${formatPrix(fullFacture.total_ttc -fullFacture.total_ht)} F CFA`
                 ],
 
                 [
                     '',
                     '',
                     'TOTAL TTC',
-                    `${formatPrix(fullFacture.total_ttc)} F`
+                    `${formatPrix(fullFacture.total_ttc)} F CFA`
                 ]
             ],
 
@@ -675,15 +664,15 @@ const Facture = () => {
             styles: {
                 lineColor: [230, 230, 230],
                 lineWidth: 0.1,
-                fontSize: 9,
-                halign: 'center'
+                fontSize: 10
             },
 
             headStyles: {
                 fillColor: successGreen,
                 textColor: 255,
                 fontStyle: 'bold',
-                textAlign: 'center'
+                textAlign: 'center',
+                halign: 'center'
             },
 
             footStyles: {
@@ -747,14 +736,12 @@ const Facture = () => {
 
         const qrData = `
             DjagoYelen FACTURATION
--------------------------------------------------
 Facture: ${numFacture}
 Client: ${fullFacture.client?.nom}
 Tél: ${fullFacture.client?.telephone || '-'}
 Email: ${fullFacture.client?.email || '-'}
-Total TTC: ${formatPrix(fullFacture.total_ttc)} F
+Total TTC: ${formatPrix(fullFacture.total_ttc)} F CFA
 Date: ${date}
---------------------------------------------------
 Responsable: ${userName}
 Tél: ${téléphone}`;
 
