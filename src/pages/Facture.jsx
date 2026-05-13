@@ -707,17 +707,17 @@ Montant : ${data.total_ttc} F
                 30
             );
 
-            // PREVIEW
+            // =========================
+            // CORRECTION PREVIEW MOBILE
+            // =========================
+
+            const blob = doc.output('blob');
+
+            const blobUrl = URL.createObjectURL(blob);
 
             if (preview) {
 
-                const blob =
-                    doc.output('blob');
-
-                const url =
-                    URL.createObjectURL(blob);
-
-                setPreviewUrl(url);
+                setPreviewUrl(blobUrl);
 
                 setCurrentPdfName(
                     `Facture_${numFacture}.pdf`
@@ -727,9 +727,19 @@ Montant : ${data.total_ttc} F
 
             } else {
 
-                doc.save(
-                    `Facture_${numFacture}.pdf`
-                );
+                const link =
+                    document.createElement('a');
+
+                link.href = blobUrl;
+
+                link.download =
+                    `Facture_${numFacture}.pdf`;
+
+                document.body.appendChild(link);
+
+                link.click();
+
+                document.body.removeChild(link);
             }
 
         } catch (err) {
@@ -757,7 +767,37 @@ Montant : ${data.total_ttc} F
 
         link.download = currentPdfName;
 
+        document.body.appendChild(link);
+
         link.click();
+
+        document.body.removeChild(link);
+    };
+
+    // =========================
+    // OPEN PDF MOBILE
+    // =========================
+
+    const handleOpenPdfMobile = () => {
+
+        window.open(
+            previewUrl,
+            '_blank'
+        );
+    };
+
+    // =========================
+    // CLOSE PREVIEW
+    // =========================
+
+    const closePreview = () => {
+
+        setShowPreview(false);
+
+        if (previewUrl) {
+
+            URL.revokeObjectURL(previewUrl);
+        }
     };
 
     // =========================
@@ -786,91 +826,123 @@ Montant : ${data.total_ttc} F
         <div className="container py-4">
 
             {/* =========================
-                PREVIEW PDF
-            ========================= */}
+    PREVIEW PDF
+========================= */}
 
-            {showPreview && (
+{showPreview && (
+
+    <div
+        className="modal show d-block"
+        style={{
+            background: 'rgba(0,0,0,0.7)',
+            zIndex: 9999
+        }}
+    >
+        <div
+            className="modal-dialog modal-fullscreen-md-down modal-xl modal-dialog-centered"
+            style={{
+                maxWidth: '98%',
+                margin: '10px auto'
+            }}
+        >
+            <div
+                className="modal-content"
+                style={{
+                    height: '95vh'
+                }}
+            >
+
+                {/* HEADER */}
+
+                <div className="modal-header">
+
+                    <h5 className="modal-title">
+                        Prévisualisation PDF
+                    </h5>
+
+                    <button
+                        className="btn-close"
+                        onClick={() => {
+
+                            setShowPreview(false);
+
+                            if (previewUrl) {
+                                URL.revokeObjectURL(previewUrl);
+                            }
+                        }}
+                    />
+
+                </div>
+
+                {/* BODY */}
 
                 <div
-                    className="modal show d-block"
+                    className="modal-body p-0"
                     style={{
-                        background:
-                            'rgba(0,0,0,0.7)',
-                        zIndex: 9999
+                        height: '100%',
+                        overflow: 'hidden',
+                        backgroundColor: '#f1f1f1'
                     }}
                 >
-                    <div
-                        className="modal-dialog modal-xl"
+
+                    {/* =========================
+                        MOBILE + DESKTOP
+                    ========================= */}
+
+                    <iframe
+                        src={`${previewUrl}#toolbar=1&navpanes=0&scrollbar=1`}
+                        title="Prévisualisation PDF"
+                        width="100%"
+                        height="100%"
                         style={{
-                            maxWidth: '95%'
+                            border: 'none',
+                            background: '#fff'
+                        }}
+                    />
+
+                </div>
+
+                {/* FOOTER */}
+
+                <div className="modal-footer">
+
+                    <button
+                        className="btn btn-secondary"
+                        onClick={() => {
+
+                            setShowPreview(false);
+
+                            if (previewUrl) {
+                                URL.revokeObjectURL(previewUrl);
+                            }
                         }}
                     >
-                        <div className="modal-content">
+                        Fermer
+                    </button>
 
-                            <div className="modal-header">
+                    <a
+                        href={previewUrl}
+                        download={currentPdfName}
+                        className="btn btn-success"
+                    >
+                        Télécharger
+                    </a>
 
-                                <h5 className="modal-title">
-                                    Prévisualisation PDF
-                                </h5>
+                    <a
+                        href={previewUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-primary"
+                    >
+                        Ouvrir
+                    </a>
 
-                                <button
-                                    className="btn-close"
-                                    onClick={() => {
-
-                                        setShowPreview(false);
-
-                                        URL.revokeObjectURL(
-                                            previewUrl
-                                        );
-                                    }}
-                                />
-                            </div>
-
-                            <div
-                                className="modal-body p-0"
-                                style={{
-                                    height: '80vh'
-                                }}
-                            >
-                                <iframe
-                                    src={previewUrl}
-                                    width="100%"
-                                    height="100%"
-                                    title="PDF"
-                                />
-                            </div>
-
-                            <div className="modal-footer">
-
-                                <button
-                                    className="btn btn-secondary"
-                                    onClick={() => {
-
-                                        setShowPreview(false);
-
-                                        URL.revokeObjectURL(
-                                            previewUrl
-                                        );
-                                    }}
-                                >
-                                    Retour
-                                </button>
-
-                                <button
-                                    className="btn btn-success"
-                                    onClick={
-                                        handleDownloadPdf
-                                    }
-                                >
-                                    Télécharger
-                                </button>
-
-                            </div>
-
-                        </div>
-                    </div>
                 </div>
-            )}
+
+            </div>
+        </div>
+    </div>
+)}
 
             {/* =========================
                 LISTE
@@ -1002,10 +1074,6 @@ Montant : ${data.total_ttc} F
                 </>
 
             ) : (
-
-                // =========================
-                // FORMULAIRE
-                // =========================
 
                 <form onSubmit={handleSubmit}>
 
