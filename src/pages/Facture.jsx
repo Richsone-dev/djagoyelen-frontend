@@ -6,7 +6,6 @@ import 'jspdf-autotable';
 import autoTable from 'jspdf-autotable';
 import Swal from 'sweetalert2';
 import logo from '../assets/djago-logo.jpeg';
-import { Colors } from 'chart.js';
 
 const Facture = () => {
 
@@ -66,6 +65,7 @@ const Facture = () => {
     const [formData, setFormData] = useState(initialFormState);
 
     useEffect(() => {
+
         fetchFactures();
         fetchClients();
 
@@ -74,9 +74,10 @@ const Facture = () => {
         if (storedUser) {
             setUser(JSON.parse(storedUser));
         }
+
     }, []);
 
-    // ✅ Calcul automatique HT / TTC
+    // ✅ Calcul automatique
     useEffect(() => {
 
         const ht = formData.items.reduce((sum, item) => {
@@ -91,26 +92,20 @@ const Facture = () => {
         const tva = ht * (Number(formData.tva_taux) / 100);
         const ttc = ht + tva;
 
-        setFormData(prev => {
+        setFormData(prev => ({
 
-            if (
-                prev.total_ht === ht &&
-                prev.total_ttc === ttc
-            ) return prev;
+            ...prev,
 
-            return {
-                ...prev,
-                total_ht: parseFloat(ht.toFixed(2)),
-                total_ttc: parseFloat(ttc.toFixed(2))
-            };
+            total_ht: parseFloat(ht.toFixed(2)),
+            total_ttc: parseFloat(ttc.toFixed(2))
 
-        });
+        }));
 
     }, [formData.items, formData.tva_taux]);
 
-    // ─────────────────────────────────────────
+    // ─────────────────────────────
     // FETCH
-    // ─────────────────────────────────────────
+    // ─────────────────────────────
 
     const fetchFactures = async () => {
 
@@ -126,7 +121,7 @@ const Facture = () => {
 
         } catch (e) {
 
-            console.error('Erreur fetchFactures:', e.response?.data || e.message);
+            console.error(e);
 
         } finally {
 
@@ -149,14 +144,14 @@ const Facture = () => {
 
         } catch (e) {
 
-            console.error('Erreur fetchClients:', e.response?.data || e.message);
+            console.error(e);
 
         }
     };
 
-    // ─────────────────────────────────────────
-    // AJOUTER CLIENT
-    // ─────────────────────────────────────────
+    // ─────────────────────────────
+    // CLIENT
+    // ─────────────────────────────
 
     const handleAddClient = async (e) => {
 
@@ -192,20 +187,19 @@ const Facture = () => {
 
         } catch (e) {
 
-            console.error('Erreur addClient:', e.response?.data || e.message);
+            console.error(e);
 
             Swal.fire(
                 'Erreur',
                 e.response?.data?.message || e.message,
                 'error'
             );
-
         }
     };
 
-    // ─────────────────────────────────────────
-    // SUBMIT FACTURE
-    // ─────────────────────────────────────────
+    // ─────────────────────────────
+    // SUBMIT
+    // ─────────────────────────────
 
     const handleSubmit = async (e) => {
 
@@ -290,14 +284,16 @@ const Facture = () => {
             }
 
             setShowModal(false);
+
             setFormData(initialFormState);
+
             setIsEditing(false);
 
             await fetchFactures();
 
         } catch (err) {
 
-            console.error('Erreur submit:', err.response?.data || err.message);
+            console.error(err);
 
             if (err.response?.status === 422) {
 
@@ -331,9 +327,9 @@ const Facture = () => {
         }
     };
 
-    // ─────────────────────────────────────────
-    // SUPPRIMER
-    // ─────────────────────────────────────────
+    // ─────────────────────────────
+    // DELETE
+    // ─────────────────────────────
 
     const handleDelete = async (id) => {
 
@@ -386,9 +382,9 @@ const Facture = () => {
         }
     };
 
-    // ─────────────────────────────────────────
+    // ─────────────────────────────
     // ITEMS
-    // ─────────────────────────────────────────
+    // ─────────────────────────────
 
     const handleItemChange = (index, field, value) => {
 
@@ -438,9 +434,9 @@ const Facture = () => {
         }));
     };
 
-    // ─────────────────────────────────────────
-    // FORMAT PRIX
-    // ─────────────────────────────────────────
+    // ─────────────────────────────
+    // FORMAT
+    // ─────────────────────────────
 
     const formatPrix = (value, separator = ' ') => {
 
@@ -451,9 +447,9 @@ const Facture = () => {
             .replace(/\B(?=(\d{3})+(?!\d))/g, separator);
     };
 
-    // ─────────────────────────────────────────
+    // ─────────────────────────────
     // PDF
-    // ─────────────────────────────────────────
+    // ─────────────────────────────
 
     const buildPdf = useCallback(async (facture) => {
 
@@ -518,7 +514,6 @@ const Facture = () => {
         }
 
         doc.setDrawColor(...orange);
-        doc.setLineWidth(0.3);
 
         doc.line(
             14,
@@ -526,10 +521,6 @@ const Facture = () => {
             196,
             headerY + 5
         );
-
-        doc.setTextColor(0, 0, 0);
-
-        doc.setFontSize(10);
 
         doc.setFont('helvetica', 'bold');
 
@@ -545,41 +536,13 @@ const Facture = () => {
 
         const date = new Date(
             fullFacture.date_emission
-        ).toLocaleDateString('fr-FR', {
-
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-
-        });
+        ).toLocaleDateString('fr-FR');
 
         doc.text(`Date : ${date}`, 14, 55);
 
-        doc.setFont('helvetica', 'bold');
-
-        doc.text('STATUT: Payé', 14, 60);
-
-        doc.text('CLIENT', 130, 45);
-
-        const nomClient = (
-            fullFacture.client_nom ||
-            fullFacture.client?.nom ||
-            '---'
-        ).toUpperCase();
-
-        doc.text(nomClient, 130, 50);
-
-        doc.setFont('helvetica', 'normal');
-
         doc.text(
-            `Tél : ${fullFacture.client?.telephone || '---'}`,
-            130,
-            55
-        );
-
-        doc.text(
-            `Email : ${fullFacture.client?.email || '---'}`,
-            130,
+            `Client : ${fullFacture.client?.nom || '-'}`,
+            14,
             60
         );
 
@@ -634,7 +597,7 @@ const Facture = () => {
 
         autoTable(doc, {
 
-            startY: 65,
+            startY: 70,
 
             head: [[
                 'Désignation',
@@ -675,100 +638,27 @@ const Facture = () => {
             theme: 'grid',
 
             styles: {
-                lineColor: [230, 230, 230],
-                lineWidth: 0.1,
-                fontSize: 9,
-                halign: 'center'
+                fontSize: 9
             },
 
             headStyles: {
-                fillColor: successGreen,
-                textColor: 255,
-                fontStyle: 'bold',
-                textAlign: 'center'
+                fillColor: successGreen
             },
 
             footStyles: {
-                lineWidth: 0,
-                fillColor: orange,
-                textColor: 255,
-                fontStyle: 'bold',
-                textAlign: 'center'
+                fillColor: orange
             }
         });
 
-        const finalY = doc.lastAutoTable.finalY || 100;
-
-        doc.setFontSize(8);
-
-        doc.setTextColor(120);
-
-        doc.setFont('times', 'italic');
-
-        doc.text(
-            'Facture générée par DjagoYelen',
-            14,
-            finalY + 10
+        const qrImage = await QRCode.toDataURL(
+            `Facture ${numFacture}`
         );
-
-        doc.setFontSize(10);
-
-        doc.setTextColor(0);
-
-        doc.setFont('helvetica', 'italic');
-
-        doc.text(
-            `Générée le ${date}`,
-            150,
-            finalY + 15
-        );
-
-        const utilisateur = JSON.parse(
-            localStorage.getItem('user')
-        );
-
-        const userName =
-            utilisateur?.name || '---';
-
-        const téléphone =
-            utilisateur?.telephone || '00000000';
-
-        doc.setFont('helvetica', 'bold');
-
-        doc.text(
-            'Responsable commercial :',
-            130,
-            finalY + 20
-        );
-
-        doc.setFont('helvetica', 'normal');
-
-        doc.text(userName, 130, finalY + 25);
-
-        doc.text(téléphone, 130, finalY + 30);
-
-        const qrData = `
-DjagoYelen FACTURATION
-
-Facture: ${numFacture}
-Client: ${fullFacture.client?.nom}
-Tél: ${fullFacture.client?.telephone || '-'}
-Email: ${fullFacture.client?.email || '-'}
-
-Responsable: ${userName}
-Tél: ${téléphone}
-
-Total TTC: ${formatPrix(fullFacture.total_ttc)} F
-
-Date: ${date}`;
-
-        const qrImage = await QRCode.toDataURL(qrData);
 
         doc.addImage(
             qrImage,
             'PNG',
-            100,
-            37,
+            160,
+            35,
             25,
             25
         );
@@ -781,9 +671,9 @@ Date: ${date}`;
 
     }, []);
 
-    // ─────────────────────────────────────────
+    // ─────────────────────────────
     // PREVIEW PDF
-    // ─────────────────────────────────────────
+    // ─────────────────────────────
 
     const handlePreviewPDF = async (facture) => {
 
@@ -819,9 +709,9 @@ Date: ${date}`;
         }
     };
 
-    // ─────────────────────────────────────────
-    // TELECHARGER
-    // ─────────────────────────────────────────
+    // ─────────────────────────────
+    // DOWNLOAD
+    // ─────────────────────────────
 
     const handleDownloadPDF = async (facture) => {
 
@@ -849,9 +739,9 @@ Date: ${date}`;
         }
     };
 
-    // ─────────────────────────────────────────
-    // PARTAGE
-    // ─────────────────────────────────────────
+    // ─────────────────────────────
+    // SHARE
+    // ─────────────────────────────
 
     const handleSharePDF = async (facture) => {
 
@@ -887,7 +777,17 @@ Date: ${date}`;
 
                 const url = URL.createObjectURL(blob);
 
-                window.open(url, '_blank');
+                const link = document.createElement('a');
+
+                link.href = url;
+
+                link.download = file.name;
+
+                document.body.appendChild(link);
+
+                link.click();
+
+                document.body.removeChild(link);
 
             }
 
@@ -903,9 +803,167 @@ Date: ${date}`;
         }
     };
 
-    // ─────────────────────────────────────────
+    // ─────────────────────────────
+    // EDIT
+    // ─────────────────────────────
+
+    const handleEditFacture = async (facture) => {
+
+        try {
+
+            setErrors({});
+
+            setIsEditing(true);
+
+            const res = await api.get(`/factures/${facture.id}`);
+
+            const factureComplete = res.data.data || res.data;
+
+            let items = [];
+
+            // ✅ lignes relation Laravel
+            if (
+                factureComplete.lignes &&
+                Array.isArray(factureComplete.lignes)
+            ) {
+
+                items = factureComplete.lignes.map(item => ({
+                    designation:
+                        item.designation ||
+                        item.description ||
+                        '',
+
+                    quantite:
+                        Number(item.quantite) || 1,
+
+                    prix_unitaire:
+                        Number(
+                            item.prix_unitaire ||
+                            item.prix ||
+                            0
+                        )
+                }));
+            }
+
+            // ✅ items JSON
+            else if (
+                typeof factureComplete.items === 'string'
+            ) {
+
+                try {
+
+                    const parsed = JSON.parse(
+                        factureComplete.items
+                    );
+
+                    items = parsed.map(item => ({
+                        designation:
+                            item.designation ||
+                            item.description ||
+                            '',
+
+                        quantite:
+                            Number(item.quantite) || 1,
+
+                        prix_unitaire:
+                            Number(
+                                item.prix_unitaire ||
+                                item.prix ||
+                                0
+                            )
+                    }));
+
+                } catch {
+
+                    items = [];
+                }
+            }
+
+            // ✅ items tableau
+            else if (
+                Array.isArray(factureComplete.items)
+            ) {
+
+                items = factureComplete.items.map(item => ({
+                    designation:
+                        item.designation ||
+                        item.description ||
+                        '',
+
+                    quantite:
+                        Number(item.quantite) || 1,
+
+                    prix_unitaire:
+                        Number(
+                            item.prix_unitaire ||
+                            item.prix ||
+                            0
+                        )
+                }));
+            }
+
+            // ✅ sécurité
+            if (items.length === 0) {
+
+                items = [{
+                    designation: '',
+                    quantite: 1,
+                    prix_unitaire: 0
+                }];
+            }
+
+            // ✅ FORMULAIRE COMPLET
+            setFormData({
+
+                id: factureComplete.id,
+
+                client_id:
+                    factureComplete.client_id || '',
+
+                date_emission:
+                    factureComplete.date_emission
+                        ?.split('T')[0]
+                    ||
+                    new Date()
+                        .toISOString()
+                        .split('T')[0],
+
+                items,
+
+                tva_taux:
+                    Number(
+                        factureComplete.tva_taux
+                    ) || 18,
+
+                total_ht:
+                    Number(
+                        factureComplete.total_ht
+                    ) || 0,
+
+                total_ttc:
+                    Number(
+                        factureComplete.total_ttc
+                    ) || 0
+
+            });
+
+            setShowModal(true);
+
+        } catch (error) {
+
+            console.error(error);
+
+            Swal.fire(
+                'Erreur',
+                'Impossible de charger la facture',
+                'error'
+            );
+        }
+    };
+
+    // ─────────────────────────────
     // LOADING
-    // ─────────────────────────────────────────
+    // ─────────────────────────────
 
     if (loading) {
 
@@ -914,14 +972,12 @@ Date: ${date}`;
             <div
                 className="d-flex justify-content-center align-items-center"
                 style={{
-                    height: '80vh',
-                    backgroundColor: colors.lightGray
+                    height: '80vh'
                 }}
             >
 
                 <div
-                    className="spinner-border"
-                    style={{ color: colors.orange }}
+                    className="spinner-border text-success"
                     role="status"
                 >
 
@@ -962,23 +1018,19 @@ Date: ${date}`;
 
         <div className="container p-3 mb-5">
 
-            {/* ───────────────────────────── */}
             {/* PREVIEW PDF */}
-            {/* ───────────────────────────── */}
-
             {showPreview && (
 
                 <div
-                    className="position-fixed top-0 start-0 w-100 h-100 bg-light pb-5"
+                    className="position-fixed top-0 start-0 w-100 h-100 bg-white"
                     style={{
-                        zIndex: 9999,
-                        overflow: 'hidden'
+                        zIndex: 9999
                     }}
                 >
 
                     {/* HEADER */}
                     <div
-                        className=" bg-success border-bottom d-flex justify-content-between align-items-center p-3" style={{backgroundColor: Colors.successGreen, color: 'white'}}
+                        className="bg-success text-white d-flex justify-content-between align-items-center p-3"
                     >
 
                         <h5 className="mb-0">
@@ -986,7 +1038,7 @@ Date: ${date}`;
                         </h5>
 
                         <button
-                            className="btn-close" style={{color: 'white'}}
+                            className="btn btn-light btn-sm"
                             onClick={() => {
 
                                 setShowPreview(false);
@@ -998,187 +1050,89 @@ Date: ${date}`;
                                 setPreviewUrl(null);
 
                             }}
-                        />
+                        >
+
+                            Fermer
+
+                        </button>
 
                     </div>
-                            {/* FOOTER */}
-                            <div
-                                className="bg-white border-top p-2 d-flex gap-2 justify-content-center flex-wrap"
-                            >
-        
-                                <button
-                                    className="btn btn-secondary"
-                                    onClick={() => {
-        
-                                        setShowPreview(false);
-        
-                                        if (previewUrl) {
-                                            URL.revokeObjectURL(previewUrl);
-                                        }
-        
-                                        setPreviewUrl(null);
-        
-                                    }}
-                                >
-        
-                                    ← Retour
-        
-                                </button>
-        
-                                <button
-                                    className="btn btn-success"
-                                    onClick={() =>
-                                        handleDownloadPDF(previewFacture)
-                                    }
-                                >
-        
-                                    Télécharger
-        
-                                </button>
-        
-                                <button
-                                    className="btn btn-primary"
-                                    onClick={() =>
-                                        handleSharePDF(previewFacture)
-                                    }
-                                >
-        
-                                    Partager
-        
-                                </button>
-        
-                            </div>
 
                     {/* PDF */}
                     <div
                         style={{
-                            height: 'calc(100vh - 130px)',
-                            background: '#1e1e1e'
+                            height: 'calc(100vh - 120px)',
+                            overflow: 'auto',
+                            WebkitOverflowScrolling: 'touch'
                         }}
                     >
 
+                        {/* ✅ Android + iPhone */}
                         <iframe
                             title="PDF Preview"
-                            src={previewUrl}
+                            src={`${previewUrl}#toolbar=0`}
                             width="100%"
                             height="100%"
                             style={{
-                                border: 'none'
+                                border: 'none',
+                                minHeight: '100%'
                             }}
                         />
 
                     </div>
 
-                </div>
+                    {/* FOOTER */}
+                    <div
+                        className="bg-light border-top p-2 d-flex gap-2 justify-content-center flex-wrap"
+                    >
 
-            )}
+                        <button
+                            className="btn btn-secondary"
+                            onClick={() => {
 
-            {/* ───────────────────────────── */}
-            {/* MODAL CLIENT */}
-            {/* ───────────────────────────── */}
+                                setShowPreview(false);
 
-            {showClientModal && (
+                                if (previewUrl) {
+                                    URL.revokeObjectURL(previewUrl);
+                                }
 
-                <div
-                    className="modal show d-block"
-                    style={{
-                        background: 'rgba(0,0,0,0.5)'
-                    }}
-                >
+                                setPreviewUrl(null);
 
-                    <div className="modal-dialog">
+                            }}
+                        >
 
-                        <div className="modal-content">
+                            Retour
 
-                            <div className="modal-header">
+                        </button>
 
-                                <h5 className="modal-title">
-                                    Nouveau Client
-                                </h5>
+                        <button
+                            className="btn btn-success"
+                            onClick={() =>
+                                handleDownloadPDF(previewFacture)
+                            }
+                        >
 
-                                <button
-                                    className="btn-close"
-                                    onClick={() =>
-                                        setShowClientModal(false)
-                                    }
-                                />
+                            Télécharger
 
-                            </div>
+                        </button>
 
-                            <form onSubmit={handleAddClient}>
+                        <button
+                            className="btn btn-primary"
+                            onClick={() =>
+                                handleSharePDF(previewFacture)
+                            }
+                        >
 
-                                <div className="modal-body">
+                            Partager
 
-                                    {Object.keys(fieldConfig).map(field => (
-
-                                        <div
-                                            className="mb-2"
-                                            key={field}
-                                        >
-
-                                            <label className="form-label text-capitalize">
-                                                {field}
-                                            </label>
-
-                                            <input
-                                                type={fieldConfig[field].type}
-                                                className="form-control"
-                                                value={newClient[field] || ''}
-                                                onChange={e =>
-                                                    setNewClient(p => ({
-                                                        ...p,
-                                                        [field]: e.target.value
-                                                    }))
-                                                }
-                                                required={field === 'nom'}
-                                                placeholder={
-                                                    fieldConfig[field].placeholder
-                                                }
-                                            />
-
-                                        </div>
-                                    ))}
-
-                                </div>
-
-                                <div className="modal-footer">
-
-                                    <button
-                                        type="button"
-                                        className="btn btn-secondary"
-                                        onClick={() =>
-                                            setShowClientModal(false)
-                                        }
-                                    >
-
-                                        Annuler
-
-                                    </button>
-
-                                    <button
-                                        type="submit"
-                                        className="btn btn-primary"
-                                    >
-
-                                        Enregistrer
-
-                                    </button>
-
-                                </div>
-
-                            </form>
-
-                        </div>
+                        </button>
 
                     </div>
 
                 </div>
             )}
 
-            {/* ───────────────────────────── */}
             {/* LISTE */}
-            {/* ───────────────────────────── */}
-
             {!showModal ? (
 
                 <>
@@ -1210,325 +1164,124 @@ Date: ${date}`;
 
                     </div>
 
-                    {factures.length === 0 ? (
+                    <div className="table-responsive">
 
-                        <p className="text-muted">
-                            Aucune facture enregistrée.
-                        </p>
+                        <table className="table table-hover align-middle">
 
-                    ) : (
+                            <thead className="table-success">
 
-                        <div className="table-responsive">
+                                <tr>
 
-                            <table className="table table-hover align-middle">
+                                    <th>N°</th>
+                                    <th>Client</th>
+                                    <th>Total TTC</th>
+                                    <th className="text-end">
+                                        Actions
+                                    </th>
 
-                                <thead className="bg-success text-white">
+                                </tr>
 
-                                    <tr>
+                            </thead>
 
-                                        <th>N°</th>
+                            <tbody>
 
-                                        <th>Client</th>
+                                {factures.map(f => (
 
-                                        <th className="d-none d-md-table-cell">
-                                            Date
-                                        </th>
+                                    <tr key={f.id}>
 
-                                        <th>Total TTC</th>
+                                        <td>
+                                            #
+                                            {f.numero_facture || f.id}
+                                        </td>
 
-                                        <th className="text-end">
-                                            Actions
-                                        </th>
+                                        <td>
+                                            {f.client?.nom || '-'}
+                                        </td>
+
+                                        <td className="fw-bold text-success">
+                                            {formatPrix(f.total_ttc)} F
+                                        </td>
+
+                                        <td className="text-end">
+
+                                            <div className="btn-group flex-wrap">
+
+                                                <button
+                                                    className="btn btn-sm btn-outline-primary"
+                                                    onClick={() =>
+                                                        handlePreviewPDF(f)
+                                                    }
+                                                >
+
+                                                    <i className="bi bi-eye"></i>
+
+                                                </button>
+
+                                                <button
+                                                    className="btn btn-sm btn-outline-success"
+                                                    onClick={() =>
+                                                        handleDownloadPDF(f)
+                                                    }
+                                                >
+
+                                                    <i className="bi bi-file-earmark-pdf"></i>
+
+                                                </button>
+
+                                                <button
+                                                    className="btn btn-sm btn-outline-info"
+                                                    onClick={() =>
+                                                        handleSharePDF(f)
+                                                    }
+                                                >
+
+                                                    <i className="bi bi-share"></i>
+
+                                                </button>
+
+                                                {/* ✅ EDIT FIX */}
+                                                <button
+                                                    className="btn btn-sm btn-outline-warning"
+                                                    onClick={() =>
+                                                        handleEditFacture(f)
+                                                    }
+                                                >
+
+                                                    <i className="bi bi-pencil-square"></i>
+
+                                                </button>
+
+                                                <button
+                                                    className="btn btn-sm btn-outline-danger"
+                                                    onClick={() =>
+                                                        handleDelete(f.id)
+                                                    }
+                                                >
+
+                                                    <i className="bi bi-trash"></i>
+
+                                                </button>
+
+                                            </div>
+
+                                        </td>
 
                                     </tr>
+                                ))}
 
-                                </thead>
+                            </tbody>
 
-                                <tbody>
+                        </table>
 
-                                    {factures.map(f => (
-
-                                        <tr key={f.id}>
-
-                                            <td className="fw-bold text-primary">
-                                                #
-                                                {
-                                                    f.numero_facture ||
-                                                    f.id
-                                                }
-                                            </td>
-
-                                            <td>
-
-                                                <div className="fw-semibold">
-                                                    {f.client?.nom || '-'}
-                                                </div>
-
-                                                <small className="text-muted d-md-none">
-                                                    {f.date_emission || '-'}
-                                                </small>
-
-                                            </td>
-
-                                            <td className="d-none d-md-table-cell">
-                                                {f.date_emission || '-'}
-                                            </td>
-
-                                            <td className="fw-bold text-success">
-                                                {formatPrix(f.total_ttc)} F
-                                            </td>
-
-                                            <td className="text-end">
-
-                                                <div className="btn-group flex-wrap">
-
-                                                    {/* PREVIEW */}
-                                                    <button
-                                                        className="btn btn-sm btn-outline-primary"
-                                                        title="Prévisualiser"
-                                                        onClick={() =>
-                                                            handlePreviewPDF(f)
-                                                        }
-                                                    >
-
-                                                        <i className="bi bi-eye"></i>
-
-                                                    </button>
-
-                                                    {/* DOWNLOAD */}
-                                                    <button
-                                                        className="btn btn-sm btn-outline-success"
-                                                        title="Télécharger"
-                                                        onClick={() =>
-                                                            handleDownloadPDF(f)
-                                                        }
-                                                    >
-
-                                                        <i className="bi bi-file-earmark-pdf"></i>
-
-                                                    </button>
-
-                                                    {/* SHARE */}
-                                                    <button
-                                                        className="btn btn-sm btn-outline-info"
-                                                        title="Partager"
-                                                        onClick={() =>
-                                                            handleSharePDF(f)
-                                                        }
-                                                    >
-
-                                                        <i className="bi bi-share"></i>
-
-                                                    </button>
-
-                                                    {/* EDIT */}
-                                                    <button
-    className="btn btn-sm btn-outline-warning"
-    title="Modifier"
-    onClick={async () => {
-
-        try {
-
-            setErrors({});
-
-            setIsEditing(true);
-
-            // ✅ Charger la facture complète depuis Laravel
-            const res = await api.get(`/factures/${f.id}`);
-
-            const factureComplete = res.data.data || res.data;
-
-            // ✅ Gestion sécurisée des lignes
-            let items = [];
-
-            // Cas 1 : lignes relation Laravel
-            if (
-                factureComplete.lignes &&
-                Array.isArray(factureComplete.lignes)
-            ) {
-
-                items = factureComplete.lignes.map(item => ({
-                    designation:
-                        item.designation ||
-                        item.description ||
-                        '',
-
-                    quantite:
-                        Number(item.quantite) || 1,
-
-                    prix_unitaire:
-                        Number(
-                            item.prix_unitaire ||
-                            item.prix ||
-                            0
-                        )
-                }));
-
-            }
-
-            // Cas 2 : items JSON string
-            else if (
-                typeof factureComplete.items === 'string'
-            ) {
-
-                try {
-
-                    const parsed = JSON.parse(
-                        factureComplete.items
-                    );
-
-                    items = parsed.map(item => ({
-                        designation:
-                            item.designation ||
-                            item.description ||
-                            '',
-
-                        quantite:
-                            Number(item.quantite) || 1,
-
-                        prix_unitaire:
-                            Number(
-                                item.prix_unitaire ||
-                                item.prix ||
-                                0
-                            )
-                    }));
-
-                } catch {
-
-                    items = [];
-
-                }
-
-            }
-
-            // Cas 3 : items tableau
-            else if (
-                Array.isArray(factureComplete.items)
-            ) {
-
-                items = factureComplete.items.map(item => ({
-                    designation:
-                        item.designation ||
-                        item.description ||
-                        '',
-
-                    quantite:
-                        Number(item.quantite) || 1,
-
-                    prix_unitaire:
-                        Number(
-                            item.prix_unitaire ||
-                            item.prix ||
-                            0
-                        )
-                }));
-
-            }
-
-            // ✅ Sécurité si aucune ligne
-            if (items.length === 0) {
-
-                items = [
-                    {
-                        designation: '',
-                        quantite: 1,
-                        prix_unitaire: 0
-                    }
-                ];
-            }
-
-            // ✅ Pré-remplissage COMPLET du formulaire
-            setFormData({
-
-                id: factureComplete.id,
-
-                client_id:
-                    factureComplete.client_id || '',
-
-                date_emission:
-                    factureComplete.date_emission
-                        ?.split('T')[0] ||
-                    new Date()
-                        .toISOString()
-                        .split('T')[0],
-
-                items,
-
-                tva_taux:
-                    Number(
-                        factureComplete.tva_taux
-                    ) || 18,
-
-                total_ht:
-                    Number(
-                        factureComplete.total_ht
-                    ) || 0,
-
-                total_ttc:
-                    Number(
-                        factureComplete.total_ttc
-                    ) || 0
-
-            });
-
-            // ✅ Ouvrir le formulaire
-            setShowModal(true);
-
-        } catch (error) {
-
-            console.error(error);
-
-            Swal.fire(
-                'Erreur',
-                'Impossible de charger la facture',
-                'error'
-            );
-        }
-    }}
->
-    <i className="bi bi-pencil-square"></i>
-</button>
-
-                                                    {/* DELETE */}
-                                                    <button
-                                                        className="btn btn-sm btn-outline-danger"
-                                                        title="Supprimer"
-                                                        onClick={() =>
-                                                            handleDelete(f.id)
-                                                        }
-                                                    >
-
-                                                        <i className="bi bi-trash"></i>
-
-                                                    </button>
-
-                                                </div>
-
-                                            </td>
-
-                                        </tr>
-                                    ))}
-
-                                </tbody>
-
-                            </table>
-
-                        </div>
-                    )}
+                    </div>
 
                 </>
 
             ) : (
 
-                // ─────────────────────────────
-                // FORMULAIRE
-                // ─────────────────────────────
-
                 <form
                     onSubmit={handleSubmit}
                     className="mb-5"
-                    style={{ textAlign: 'left' }}
                 >
 
                     <div className="d-flex justify-content-between align-items-center mb-4">
@@ -1550,9 +1303,11 @@ Date: ${date}`;
                         </button>
 
                         <h4>
+
                             {isEditing
                                 ? 'Modifier la facture'
                                 : 'Nouvelle facture'}
+
                         </h4>
 
                     </div>
@@ -1561,18 +1316,7 @@ Date: ${date}`;
                     <div className="mb-3">
 
                         <label className="form-label">
-
                             Client
-
-                            <span
-                                className="text-danger"
-                                style={{
-                                    color: colors.dangerRed
-                                }}
-                            >
-                                *
-                            </span>
-
                         </label>
 
                         <div className="d-flex gap-2">
@@ -1613,7 +1357,7 @@ Date: ${date}`;
 
                             <button
                                 type="button"
-                                className="btn btn-outline-primary text-nowrap"
+                                className="btn btn-outline-primary"
                                 onClick={() =>
                                     setShowClientModal(true)
                                 }
@@ -1625,61 +1369,12 @@ Date: ${date}`;
 
                         </div>
 
-                        {errors.client_id && (
-
-                            <div className="text-danger small mt-1">
-                                {errors.client_id}
-                            </div>
-
-                        )}
-
-                    </div>
-
-                    {/* DATE */}
-                    <div className="mb-3">
-
-                        <label className="form-label">
-                            Date d'émission
-                        </label>
-
-                        <input
-                            type="date"
-                            className="form-control"
-                            value={formData.date_emission}
-                            disabled
-                        />
-
-                    </div>
-
-                    {/* TVA */}
-                    <div className="mb-3">
-
-                        <label className="form-label">
-                            Taux TVA (%)
-                        </label>
-
-                        <input
-                            type="number"
-                            className="form-control"
-                            style={{ maxWidth: 120 }}
-                            value={formData.tva_taux}
-                            disabled
-                        />
-
                     </div>
 
                     {/* ITEMS */}
                     <label className="form-label fw-bold">
                         Lignes de facturation
                     </label>
-
-                    {errors.items && (
-
-                        <div className="text-danger small mb-2">
-                            {errors.items}
-                        </div>
-
-                    )}
 
                     {formData.items.map((item, i) => (
 
@@ -1688,9 +1383,9 @@ Date: ${date}`;
                             className="border rounded p-3 mb-2 bg-light"
                         >
 
-                            <div className="row g-2 align-items-center">
+                            <div className="row g-2">
 
-                                <div className="col-12 col-md-5">
+                                <div className="col-md-5">
 
                                     <label className="form-label">
                                         Désignation
@@ -1710,7 +1405,7 @@ Date: ${date}`;
 
                                 </div>
 
-                                <div className="col-6 col-md-2">
+                                <div className="col-md-2">
 
                                     <label className="form-label">
                                         Quantité
@@ -1718,7 +1413,6 @@ Date: ${date}`;
 
                                     <input
                                         type="number"
-                                        min={1}
                                         className="form-control"
                                         value={item.quantite}
                                         onChange={e =>
@@ -1732,7 +1426,7 @@ Date: ${date}`;
 
                                 </div>
 
-                                <div className="col-6 col-md-3">
+                                <div className="col-md-3">
 
                                     <label className="form-label">
                                         Prix Unitaire
@@ -1740,8 +1434,6 @@ Date: ${date}`;
 
                                     <input
                                         type="number"
-                                        min={0}
-                                        step="0.01"
                                         className="form-control"
                                         value={item.prix_unitaire}
                                         onChange={e =>
@@ -1755,33 +1447,13 @@ Date: ${date}`;
 
                                 </div>
 
-                                <div className="col-6 col-md-1 text-muted small">
-
-                                    <label className="form-label">
-                                        Valeur
-                                    </label>
-
-                                    <br />
-
-                                    ={' '}
-                                    {(
-                                        Number(item.quantite) *
-                                        Number(item.prix_unitaire)
-                                    ).toLocaleString()}{' '}
-                                    F
-
-                                </div>
-
-                                <div className="col-6 col-md-1">
+                                <div className="col-md-2 d-flex align-items-end">
 
                                     <button
                                         type="button"
-                                        className="btn btn-sm btn-outline-danger w-100"
+                                        className="btn btn-outline-danger w-100"
                                         onClick={() =>
                                             removeItem(i)
-                                        }
-                                        disabled={
-                                            formData.items.length === 1
                                         }
                                     >
 
@@ -1806,7 +1478,7 @@ Date: ${date}`;
 
                     </button>
 
-                    {/* TOTALS */}
+                    {/* TOTAL */}
                     <div className="card mb-3">
 
                         <div className="card-body">
@@ -1821,7 +1493,7 @@ Date: ${date}`;
 
                             </div>
 
-                            <div className="d-flex justify-content-between text-muted">
+                            <div className="d-flex justify-content-between">
 
                                 <span>
                                     TVA ({formData.tva_taux}%)
@@ -1831,8 +1503,7 @@ Date: ${date}`;
                                     {(
                                         formData.total_ttc -
                                         formData.total_ht
-                                    ).toLocaleString()}{' '}
-                                    F
+                                    ).toLocaleString()} F
                                 </span>
 
                             </div>
@@ -1841,9 +1512,7 @@ Date: ${date}`;
 
                             <div className="d-flex justify-content-between fs-5">
 
-                                <span className="fw-bold">
-                                    Total TTC
-                                </span>
+                                <strong>Total TTC</strong>
 
                                 <strong className="text-success">
                                     {formData.total_ttc.toLocaleString()} F
@@ -1857,7 +1526,7 @@ Date: ${date}`;
 
                     <button
                         type="submit"
-                        className="btn btn-success mb-5 w-100"
+                        className="btn btn-success w-100"
                         disabled={submitLoading}
                     >
 
