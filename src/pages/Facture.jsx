@@ -938,12 +938,12 @@ Date: ${date}`;
     const fieldConfig = {
 
         nom: {
-            placeholder: 'Ex: Jean Dupont',
+            placeholder: 'Ex: SANOU Norbert',
             type: 'text'
         },
 
         email: {
-            placeholder: 'Ex: jean@exemple.com',
+            placeholder: 'Ex: norbert123@exemple.com',
             type: 'email'
         },
 
@@ -953,7 +953,7 @@ Date: ${date}`;
         },
 
         adresse: {
-            placeholder: 'Ex: Bobo-Dioulasso',
+            placeholder: 'Ex: Rue 23, Bobo-Dioulasso',
             type: 'text'
         }
     };
@@ -1020,8 +1020,9 @@ Date: ${date}`;
         
                                     }}
                                 >
+                                        <i className="bi bi-chevron-left"></i>
         
-                                    ← Retour
+                                     Retour
         
                                 </button>
         
@@ -1031,18 +1032,19 @@ Date: ${date}`;
                                         handleDownloadPDF(previewFacture)
                                     }
                                 >
+                                    <i className="bi bi-download-fill"></i>
         
                                     Télécharger
         
                                 </button>
         
                                 <button
-                                    className="btn btn-primary"
+                                    className="btn btn-success"
                                     onClick={() =>
                                         handleSharePDF(previewFacture)
                                     }
                                 >
-        
+                                    <i className="bi bi-share-fill"></i>
                                     Partager
         
                                 </button>
@@ -1157,7 +1159,7 @@ Date: ${date}`;
 
                                     <button
                                         type="submit"
-                                        className="btn btn-primary"
+                                        className="btn btn-success"
                                     >
 
                                         Enregistrer
@@ -1190,7 +1192,7 @@ Date: ${date}`;
                         </h3>
 
                         <button
-                            className="btn btn-primary"
+                            className="btn btn-success"
                             onClick={() => {
 
                                 setFormData(initialFormState);
@@ -1544,8 +1546,9 @@ Date: ${date}`;
 
                             }}
                         >
+                            <i className="bi bi-chevron-left"></i>
 
-                            ← Retour
+                             Retour
 
                         </button>
 
