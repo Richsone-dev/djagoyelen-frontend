@@ -232,12 +232,12 @@ const MainLayout = () => {
                             <i className="bi bi-piggy-bank fs-3"></i><br/><small style={{fontSize: '8px'}}>Budget</small>
                         </Link>
                         <div style={{ top: '-25px', position: 'relative' }}>
-                            <Link to="/dashboard" className="btn rounded-circle shadow-lg d-flex align-items-center justify-content-center" style={{ backgroundColor: colors.darkGreen, width: '55px', height: '55px', border: `4px solid ${location.pathname === '/dashboard' ? colors.orange : colors.white}` }}>
+                            <Link to="/dashboard" className="btn rounded-circle shadow-lg d-flex align-items-center justify-content-center" style={{ backgroundColor: colors.successGreen, width: '55px', height: '55px', border: `4px solid ${location.pathname === '/dashboard' ? colors.orange : colors.white}`, background: `${location.pathname === '/dashboard' ? colors.white : colors.successGreen}` }}>
                                 <i className="bi bi-house-door-fill fs-3" style={{color: location.pathname === '/dashboard' ? colors.orange : 'white',maxWidth: '80px'}}></i>
                             </Link>
                         </div>
-                        <Link to="/rapports" className="text-center text-decoration-none" style={{ color: location.pathname === '/rapports' ? colors.orange : 'rgba(255,255,255,0.6)',maxWidth: '80px' }}>
-                            <i className="bi bi-file-earmark-bar-graph fs-3"></i><br/><small style={{fontSize: '8px'}}>Rapports</small>
+                        <Link to="/factures" className="text-center text-decoration-none" style={{ color: location.pathname === '/factures' ? colors.orange : 'rgba(255,255,255,0.6)',maxWidth: '80px' }}>
+                            <i className="bi bi-receipt fs-3"></i><br/><small style={{fontSize: '8px'}}>Factures</small>
                         </Link>
                         <Link to="/profil" className="text-center text-decoration-none" style={{ color: location.pathname === '/profil' ? colors.orange : 'rgba(255,255,255,0.6)' }}>
                             <i className="bi bi-person-fill fs-3"></i><br/><small style={{fontSize: '8px'}}>Profil</small>

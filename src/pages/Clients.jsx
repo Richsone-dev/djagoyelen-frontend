@@ -241,7 +241,7 @@ const Clients = () => {
                                                 <div className="text-muted small" style={{fontSize: '0.8rem'}}>{client.email || 'N/A'}</div>
                                             </td>
                                             <td className="text-end pe-4 py-3">
-                                                <div className="btn-group shadow-sm rounded-3 overflow-hidden border">
+                                                <div className="btn-group flex-wrap rounded-3 overflow-hidden border">
                                                     <button className="btn btn-sm btn-white px-3" onClick={() => openDetailsModal(client)} title="Détails">
                                                         <i className="bi bi-eye text-success"></i>
                                                     </button>
