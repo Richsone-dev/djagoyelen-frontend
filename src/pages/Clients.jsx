@@ -285,7 +285,7 @@ const Clients = () => {
                                                 <tr><td colSpan="3" className="text-center py-4"><div className="spinner-border spinner-border-sm text-primary"></div></td></tr>
                                             ) : clientPurchases.length > 0 ? clientPurchases.map((f) => (
                                                 <tr key={f.id}>
-                                                    <td className="ps-3 py-2 fw-bold text-dark">#{f.num_facture}</td>
+                                                    <td className="ps-3 py-2 fw-bold text-dark">#{f.numero_facture}</td>
                                                     <td className="py-2 text-center small">{new Date(f.date_emission).toLocaleDateString()}</td>
                                                     <td className="py-2 text-end pe-3 fw-bold text-success">{formatPrix(f.total_ttc)} F</td>
                                                 </tr>
