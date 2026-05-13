@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
 
 import { jsPDF } from 'jspdf';
@@ -11,9 +11,9 @@ import logo from '../assets/djago-logo.jpeg';
 
 const Facture = () => {
 
-    // =========================
+    // ─────────────────────────────────────
     // STATES
-    // =========================
+    // ─────────────────────────────────────
 
     const [factures, setFactures] = useState([]);
     const [clients, setClients] = useState([]);
@@ -28,17 +28,26 @@ const Facture = () => {
 
     const [previewUrl, setPreviewUrl] = useState('');
 
-    const [currentPdfName, setCurrentPdfName] = useState('');
-
     const [submitLoading, setSubmitLoading] = useState(false);
 
     const [isEditing, setIsEditing] = useState(false);
 
     const [errors, setErrors] = useState({});
 
-    // =========================
+    // ─────────────────────────────────────
+    // COLORS
+    // ─────────────────────────────────────
+
+    const colors = {
+        successGreen: '#198754',
+        orange: '#E97223',
+        dangerRed: '#dc3545',
+        lightGray: '#f8f9fa'
+    };
+
+    // ─────────────────────────────────────
     // CLIENT
-    // =========================
+    // ─────────────────────────────────────
 
     const [newClient, setNewClient] = useState({
         nom: '',
@@ -47,41 +56,36 @@ const Facture = () => {
         adresse: ''
     });
 
-    // =========================
-    // FORMULAIRE FACTURE
-    // =========================
+    // ─────────────────────────────────────
+    // FORMULAIRE
+    // ─────────────────────────────────────
 
     const initialFormState = {
         id: null,
         client_id: '',
-        date_emission: new Date().toISOString().split('T')[0],
-        tva_taux: 18,
-        total_ht: 0,
-        total_ttc: 0,
+        date_emission: new Date()
+            .toISOString()
+            .split('T')[0],
+
         items: [
             {
                 designation: '',
                 quantite: 1,
                 prix_unitaire: 0
             }
-        ]
+        ],
+
+        tva_taux: 18,
+        total_ht: 0,
+        total_ttc: 0
     };
 
-    const [formData, setFormData] = useState(initialFormState);
+    const [formData, setFormData] =
+        useState(initialFormState);
 
-    // =========================
-    // COLORS
-    // =========================
-
-    const colors = {
-        green: '#198754',
-        orange: '#E97223',
-        danger: '#dc3545'
-    };
-
-    // =========================
+    // ─────────────────────────────────────
     // FETCH
-    // =========================
+    // ─────────────────────────────────────
 
     useEffect(() => {
 
@@ -95,15 +99,14 @@ const Facture = () => {
 
         try {
 
-            const res = await api.get('/factures');
+            const res =
+                await api.get('/factures');
 
             const data = Array.isArray(res.data)
                 ? res.data
                 : res.data.data || [];
 
-            setFactures(
-                [...data].sort((a, b) => b.id - a.id)
-            );
+            setFactures(data);
 
         } catch (err) {
 
@@ -119,13 +122,14 @@ const Facture = () => {
 
         try {
 
-            const res = await api.get('/clients');
+            const res =
+                await api.get('/clients');
 
-            setClients(
-                Array.isArray(res.data)
-                    ? res.data
-                    : res.data.data || []
-            );
+            const data = Array.isArray(res.data)
+                ? res.data
+                : res.data.data || [];
+
+            setClients(data);
 
         } catch (err) {
 
@@ -133,24 +137,30 @@ const Facture = () => {
         }
     };
 
-    // =========================
+    // ─────────────────────────────────────
     // CALCULS
-    // =========================
+    // ─────────────────────────────────────
 
     useEffect(() => {
 
-        const ht = formData.items.reduce((sum, item) => {
+        const ht = formData.items.reduce(
+            (sum, item) => {
 
-            const qte = Number(item.quantite || 0);
+                const qte =
+                    Number(item.quantite || 0);
 
-            const pu = Number(item.prix_unitaire || 0);
+                const pu =
+                    Number(item.prix_unitaire || 0);
 
-            return sum + (qte * pu);
+                return sum + (qte * pu);
 
-        }, 0);
+            },
+            0
+        );
 
         const tva =
-            ht * (Number(formData.tva_taux) / 100);
+            ht *
+            (Number(formData.tva_taux) / 100);
 
         const ttc = ht + tva;
 
@@ -160,36 +170,44 @@ const Facture = () => {
             total_ttc: Number(ttc.toFixed(2))
         }));
 
-    }, [formData.items, formData.tva_taux]);
+    }, [
+        formData.items,
+        formData.tva_taux
+    ]);
 
-    // =========================
+    // ─────────────────────────────────────
     // FORMAT PRIX
-    // =========================
+    // ─────────────────────────────────────
 
-    const formatPrix = (value) => {
+    const formatPrix = value => {
 
         return Number(value || 0)
             .toLocaleString('fr-FR');
     };
 
-    // =========================
+    // ─────────────────────────────────────
     // AJOUT CLIENT
-    // =========================
+    // ─────────────────────────────────────
 
-    const handleAddClient = async (e) => {
+    const handleAddClient = async e => {
 
         e.preventDefault();
 
         try {
 
-            const res = await api.post(
-                '/clients',
-                newClient
-            );
+            const res =
+                await api.post(
+                    '/clients',
+                    newClient
+                );
 
-            const client = res.data.data || res.data;
+            const client =
+                res.data.data || res.data;
 
-            setClients(prev => [...prev, client]);
+            setClients(prev => [
+                ...prev,
+                client
+            ]);
 
             setFormData(prev => ({
                 ...prev,
@@ -223,9 +241,9 @@ const Facture = () => {
         }
     };
 
-    // =========================
+    // ─────────────────────────────────────
     // ITEMS
-    // =========================
+    // ─────────────────────────────────────
 
     const handleItemChange = (
         index,
@@ -261,9 +279,10 @@ const Facture = () => {
         }));
     };
 
-    const removeItem = (index) => {
+    const removeItem = index => {
 
-        if (formData.items.length === 1) return;
+        if (formData.items.length === 1)
+            return;
 
         setFormData(prev => ({
             ...prev,
@@ -273,49 +292,68 @@ const Facture = () => {
         }));
     };
 
-    // =========================
+    // ─────────────────────────────────────
     // ENREGISTREMENT FACTURE
-    // =========================
+    // ─────────────────────────────────────
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async e => {
 
         e.preventDefault();
 
-        setSubmitLoading(true);
-
         setErrors({});
+
+        setSubmitLoading(true);
 
         try {
 
             const payload = {
 
-                client_id: Number(formData.client_id),
+                client_id:
+                    Number(
+                        formData.client_id
+                    ),
 
                 date_emission:
                     formData.date_emission,
 
                 tva_taux:
-                    Number(formData.tva_taux),
+                    Number(
+                        formData.tva_taux
+                    ),
 
                 total_ht:
-                    Number(formData.total_ht),
+                    Number(
+                        formData.total_ht
+                    ),
 
                 total_ttc:
-                    Number(formData.total_ttc),
+                    Number(
+                        formData.total_ttc
+                    ),
 
-                items: formData.items.map(item => ({
-                    designation:
-                        item.designation,
+                items:
+                    formData.items.map(
+                        item => ({
+                            designation:
+                                item.designation,
 
-                    quantite:
-                        Number(item.quantite),
+                            quantite:
+                                Number(
+                                    item.quantite
+                                ),
 
-                    prix_unitaire:
-                        Number(item.prix_unitaire)
-                }))
+                            prix_unitaire:
+                                Number(
+                                    item.prix_unitaire
+                                )
+                        })
+                    )
             };
 
-            if (isEditing) {
+            if (
+                isEditing &&
+                formData.id
+            ) {
 
                 await api.put(
                     `/factures/${formData.id}`,
@@ -377,29 +415,44 @@ const Facture = () => {
         }
     };
 
-    // =========================
+    // ─────────────────────────────────────
     // SUPPRESSION
-    // =========================
+    // ─────────────────────────────────────
 
-    const handleDelete = async (id) => {
+    const handleDelete = async id => {
 
-        const result = await Swal.fire({
-            title: 'Supprimer ?',
-            text: 'Action irréversible',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Oui',
-            cancelButtonText: 'Annuler'
-        });
+        const result =
+            await Swal.fire({
 
-        if (!result.isConfirmed) return;
+                title:
+                    'Supprimer cette facture ?',
+
+                text:
+                    'Action irréversible',
+
+                icon: 'warning',
+
+                showCancelButton: true,
+
+                confirmButtonText: 'Oui',
+
+                cancelButtonText:
+                    'Annuler'
+            });
+
+        if (!result.isConfirmed)
+            return;
 
         try {
 
-            await api.delete(`/factures/${id}`);
+            await api.delete(
+                `/factures/${id}`
+            );
 
             setFactures(prev =>
-                prev.filter(f => f.id !== id)
+                prev.filter(
+                    f => f.id !== id
+                )
             );
 
             Swal.fire(
@@ -420,132 +473,109 @@ const Facture = () => {
         }
     };
 
-    // =========================
+    // ─────────────────────────────────────
     // MODIFICATION
-    // =========================
+    // ─────────────────────────────────────
 
-    const handleEdit = async (facture) => {
+    const handleEdit = facture => {
 
-        try {
+        const items =
+            typeof facture.items ===
+            'string'
+                ? JSON.parse(
+                    facture.items
+                )
+                : facture.items || [];
 
-            const res = await api.get(
-                `/factures/${facture.id}`
-            );
+        setFormData({
 
-            const data =
-                res.data.data || res.data;
+            id: facture.id,
 
-            let items = [];
+            client_id:
+                facture.client_id,
 
-            if (Array.isArray(data.items)) {
+            date_emission:
+                facture.date_emission,
 
-                items = data.items;
+            tva_taux:
+                facture.tva_taux || 18,
 
-            } else if (
-                typeof data.items === 'string'
-            ) {
+            total_ht:
+                facture.total_ht || 0,
 
-                items = JSON.parse(data.items);
+            total_ttc:
+                facture.total_ttc || 0,
 
-            } else if (data.lignes) {
+            items
+        });
 
-                items = data.lignes;
-            }
+        setIsEditing(true);
 
-            setFormData({
-
-                id: data.id,
-
-                client_id: data.client_id,
-
-                date_emission:
-                    data.date_emission,
-
-                tva_taux:
-                    data.tva_taux || 18,
-
-                total_ht:
-                    data.total_ht || 0,
-
-                total_ttc:
-                    data.total_ttc || 0,
-
-                items: items.map(item => ({
-                    designation:
-                        item.designation || '',
-
-                    quantite:
-                        Number(item.quantite || 1),
-
-                    prix_unitaire:
-                        Number(
-                            item.prix_unitaire || 0
-                        )
-                }))
-            });
-
-            setIsEditing(true);
-
-            setShowModal(true);
-
-        } catch (err) {
-
-            console.error(err);
-
-            Swal.fire(
-                'Erreur',
-                'Impossible de charger la facture',
-                'error'
-            );
-        }
+        setShowModal(true);
     };
 
-    // =========================
-    // PDF
-    // =========================
+    // ─────────────────────────────────────
+    // PDF + MOBILE FIX
+    // ─────────────────────────────────────
 
-    const generatePDF = async (
-        facture,
-        preview = true
-    ) => {
+    const generatePDF = async facture => {
 
         try {
 
-            const res = await api.get(
-                `/factures/${facture.id}`
-            );
+            const res =
+                await api.get(
+                    `/factures/${facture.id}`
+                );
 
-            const data =
+            const fullFacture =
                 res.data.data || res.data;
 
             const doc = new jsPDF();
 
             const numFacture =
-                data.numero_facture || data.id;
+                fullFacture.numero_facture ||
+                fullFacture.id;
 
             // HEADER
 
-            doc.setFontSize(20);
+            doc.setFontSize(18);
 
-            doc.setTextColor(25, 135, 84);
+            doc.setFont(
+                'helvetica',
+                'bold'
+            );
 
-            doc.text('Djago', 14, 20);
+            doc.setTextColor(
+                25,
+                135,
+                84
+            );
 
-            doc.setTextColor(233, 114, 35);
+            doc.text(
+                'DjagoYelen',
+                14,
+                20
+            );
 
-            doc.text('Yelen', 40, 20);
+            doc.setFontSize(10);
 
-            doc.setTextColor(0, 0, 0);
+            doc.setTextColor(0);
+
+            doc.text(
+                'Services Numériques & Gestion financière',
+                14,
+                27
+            );
 
             try {
 
                 doc.addImage(
                     logo,
                     'JPEG',
-                    160,
+                    165,
                     8,
-                    35,
-                    35
+                    28,
+                    28
                 );
 
             } catch (err) {
@@ -553,98 +583,104 @@ const Facture = () => {
                 console.log(err);
             }
 
+            doc.setDrawColor(
+                233,
+                114,
+                35
+            );
+
+            doc.line(
+                14,
+                35,
+                196,
+                35
+            );
+
+            // INFOS
+
+            const date =
+                new Date(
+                    fullFacture.date_emission
+                ).toLocaleDateString(
+                    'fr-FR'
+                );
+
             doc.setFontSize(11);
 
             doc.text(
-                `Facture N° ${numFacture}`,
+                `Facture : ${numFacture}`,
                 14,
                 45
             );
 
-            const date = new Date(
-                data.date_emission
-            ).toLocaleDateString('fr-FR');
-
             doc.text(
                 `Date : ${date}`,
                 14,
-                53
-            );
-
-            // CLIENT
-
-            const client = data.client || {};
-
-            doc.setFont(
-                'helvetica',
-                'bold'
-            );
-
-            doc.text('CLIENT', 130, 45);
-
-            doc.setFont(
-                'helvetica',
-                'normal'
+                52
             );
 
             doc.text(
-                client.nom || '-',
-                130,
-                53
-            );
-
-            doc.text(
-                client.telephone || '-',
-                130,
-                61
-            );
-
-            doc.text(
-                client.email || '-',
-                130,
-                69
+                `Client : ${fullFacture.client?.nom || '-'
+                }`,
+                14,
+                59
             );
 
             // ITEMS
 
             let items = [];
 
-            if (Array.isArray(data.items)) {
+            if (fullFacture.lignes) {
 
-                items = data.items;
+                items =
+                    fullFacture.lignes;
 
             } else if (
-                typeof data.items === 'string'
+                typeof fullFacture.items ===
+                'string'
             ) {
 
-                items = JSON.parse(data.items);
+                items = JSON.parse(
+                    fullFacture.items
+                );
 
-            } else if (data.lignes) {
+            } else {
 
-                items = data.lignes;
+                items =
+                    fullFacture.items || [];
             }
 
-            const rows = items.map(item => {
+            const rows = items.map(i => {
 
                 const qte =
-                    Number(item.quantite || 0);
+                    Number(
+                        i.quantite || 0
+                    );
 
                 const pu =
                     Number(
-                        item.prix_unitaire || 0
+                        i.prix_unitaire || 0
                     );
 
                 return [
-                    item.designation,
+
+                    i.designation,
+
                     qte,
-                    `${formatPrix(pu)} F`,
-                    `${formatPrix(qte * pu)} F`
+
+                    `${formatPrix(
+                        pu
+                    )} F`,
+
+                    `${formatPrix(
+                        qte * pu
+                    )} F`
                 ];
             });
 
             autoTable(doc, {
 
-                startY: 80,
+                startY: 70,
 
                 head: [[
                     'Désignation',
@@ -662,7 +698,17 @@ const Facture = () => {
                         '',
                         'HT',
                         `${formatPrix(
-                            data.total_ht
+                            fullFacture.total_ht
+                        )} F`
+                    ],
+
+                    [
+                        '',
+                        '',
+                        'TVA',
+                        `${formatPrix(
+                            fullFacture.total_ttc -
+                            fullFacture.total_ht
                         )} F`
                     ],
 
@@ -671,66 +717,92 @@ const Facture = () => {
                         '',
                         'TTC',
                         `${formatPrix(
-                            data.total_ttc
+                            fullFacture.total_ttc
                         )} F`
                     ]
                 ],
 
                 theme: 'grid',
 
+                styles: {
+
+                    fontSize: 9,
+
+                    halign: 'center'
+                },
+
                 headStyles: {
-                    fillColor: [25, 135, 84]
+
+                    fillColor: [
+                        25,
+                        135,
+                        84
+                    ]
                 },
 
                 footStyles: {
-                    fillColor: [233, 114, 35]
+
+                    fillColor: [
+                        233,
+                        114,
+                        35
+                    ]
                 }
             });
 
             // QR CODE
 
             const qrData = `
-Facture : ${numFacture}
-Client : ${client.nom}
-Montant : ${data.total_ttc} F
+Facture: ${numFacture}
+Client: ${fullFacture.client?.nom}
+Montant: ${formatPrix(fullFacture.total_ttc)} F
 `;
 
             const qrImage =
-                await QRCode.toDataURL(qrData);
+                await QRCode.toDataURL(
+                    qrData
+                );
 
             doc.addImage(
                 qrImage,
                 'PNG',
                 160,
-                240,
-                30,
-                30
+                45,
+                25,
+                25
             );
 
-            // PREVIEW
+            // ─────────────────────────────
+            // MOBILE FIX
+            // ─────────────────────────────
 
-            if (preview) {
+            const pdfBlob =
+                doc.output('blob');
 
-                const blob =
-                    doc.output('blob');
-
-                const url =
-                    URL.createObjectURL(blob);
-
-                setPreviewUrl(url);
-
-                setCurrentPdfName(
-                    `Facture_${numFacture}.pdf`
+            const pdfUrl =
+                URL.createObjectURL(
+                    pdfBlob
                 );
 
-                setShowPreview(true);
+            // MOBILE
+            if (
+                /Android|iPhone|iPad|iPod/i.test(
+                    navigator.userAgent
+                )
+            ) {
 
-            } else {
-
-                doc.save(
-                    `Facture_${numFacture}.pdf`
+                window.open(
+                    pdfUrl,
+                    '_blank'
                 );
+
+                return;
             }
+
+            // DESKTOP
+            setPreviewUrl(pdfUrl);
+
+            setShowPreview(true);
 
         } catch (err) {
 
@@ -744,25 +816,9 @@ Montant : ${data.total_ttc} F
         }
     };
 
-    // =========================
-    // DOWNLOAD PDF
-    // =========================
-
-    const handleDownloadPdf = () => {
-
-        const link =
-            document.createElement('a');
-
-        link.href = previewUrl;
-
-        link.download = currentPdfName;
-
-        link.click();
-    };
-
-    // =========================
+    // ─────────────────────────────────────
     // LOADING
-    // =========================
+    // ─────────────────────────────────────
 
     if (loading) {
 
@@ -770,24 +826,24 @@ Montant : ${data.total_ttc} F
 
             <div
                 className="d-flex justify-content-center align-items-center"
-                style={{ height: '80vh' }}
+                style={{
+                    height: '80vh'
+                }}
             >
-                <div className="spinner-border" />
+                <div className="spinner-border text-success" />
             </div>
         );
     }
 
-    // =========================
+    // ─────────────────────────────────────
     // RENDER
-    // =========================
+    // ─────────────────────────────────────
 
     return (
 
         <div className="container py-4">
 
-            {/* =========================
-                PREVIEW PDF
-            ========================= */}
+            {/* PREVIEW DESKTOP */}
 
             {showPreview && (
 
@@ -809,7 +865,7 @@ Montant : ${data.total_ttc} F
 
                             <div className="modal-header">
 
-                                <h5 className="modal-title">
+                                <h5>
                                     Prévisualisation PDF
                                 </h5>
 
@@ -840,41 +896,12 @@ Montant : ${data.total_ttc} F
                                 />
                             </div>
 
-                            <div className="modal-footer">
-
-                                <button
-                                    className="btn btn-secondary"
-                                    onClick={() => {
-
-                                        setShowPreview(false);
-
-                                        URL.revokeObjectURL(
-                                            previewUrl
-                                        );
-                                    }}
-                                >
-                                    Retour
-                                </button>
-
-                                <button
-                                    className="btn btn-success"
-                                    onClick={
-                                        handleDownloadPdf
-                                    }
-                                >
-                                    Télécharger
-                                </button>
-
-                            </div>
-
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* =========================
-                LISTE
-            ========================= */}
+            {/* LISTE */}
 
             {!showModal ? (
 
@@ -959,10 +986,7 @@ Montant : ${data.total_ttc} F
                                                 <button
                                                     className="btn btn-outline-success btn-sm"
                                                     onClick={() =>
-                                                        generatePDF(
-                                                            f,
-                                                            true
-                                                        )
+                                                        generatePDF(f)
                                                     }
                                                 >
                                                     PDF
@@ -1002,10 +1026,6 @@ Montant : ${data.total_ttc} F
                 </>
 
             ) : (
-
-                // =========================
-                // FORMULAIRE
-                // =========================
 
                 <form onSubmit={handleSubmit}>
 
@@ -1252,9 +1272,7 @@ Montant : ${data.total_ttc} F
                 </form>
             )}
 
-            {/* =========================
-                MODAL CLIENT
-            ========================= */}
+            {/* MODAL CLIENT */}
 
             {showClientModal && (
 
