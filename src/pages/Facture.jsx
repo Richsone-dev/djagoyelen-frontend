@@ -975,7 +975,31 @@ Date: ${date}`;
                     }}
                 >
 
-                    
+                    {/* HEADER */}
+                    <div
+                        className="bg-white border-bottom d-flex justify-content-between align-items-center p-3"
+                    >
+
+                        <h5 className="mb-0">
+                            Prévisualisation PDF
+                        </h5>
+
+                        <button
+                            className="btn-close"
+                            onClick={() => {
+
+                                setShowPreview(false);
+
+                                if (previewUrl) {
+                                    URL.revokeObjectURL(previewUrl);
+                                }
+
+                                setPreviewUrl(null);
+
+                            }}
+                        />
+
+                    </div>
 
                     {/* PDF */}
                     <div
