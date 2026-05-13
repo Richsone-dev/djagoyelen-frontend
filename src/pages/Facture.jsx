@@ -208,128 +208,126 @@ const Facture = () => {
     // ─────────────────────────────────────────
 
     const handleSubmit = async (e) => {
+    e.preventDefault();
 
-        e.preventDefault();
+    setErrors({});
+    setSubmitLoading(true);
 
-        setErrors({});
-        setSubmitLoading(true);
-
+    try {
+        
+        
+        Swal.fire({
+            title: 'Patientez...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+        // ✅ Validation client
         if (!formData.client_id) {
-
             setErrors({
                 client_id: 'Veuillez sélectionner un client.'
             });
-
             setSubmitLoading(false);
-
             return;
         }
-
+        Swal.close();
+        
+        // ✅ Validation items sécurisée (évite crash si undefined)
         const hasEmptyItem = formData.items.some(
-            i => !i.designation.trim()
+            i => !i.designation || !i.designation.trim()
         );
-
+        
         if (hasEmptyItem) {
-
             setErrors({
                 items: 'Chaque ligne doit avoir une désignation.'
             });
-
             setSubmitLoading(false);
-
             return;
         }
-
+        
+        // ✅ Payload sécurisé (évite NaN)
         const payload = {
-
-            client_id: parseInt(formData.client_id),
-
+            client_id: Number(formData.client_id),
             date_emission: formData.date_emission,
-
-            tva_taux: parseFloat(formData.tva_taux),
-
-            total_ht: parseFloat(formData.total_ht),
-
-            total_ttc: parseFloat(formData.total_ttc),
-
+            tva_taux: Number(formData.tva_taux ?? 0),
+            total_ht: Number(formData.total_ht ?? 0),
+            total_ttc: Number(formData.total_ttc ?? 0),
+            
             items: formData.items.map(item => ({
-
-                designation: String(item.designation || '').trim(),
-
-                quantite: parseInt(item.quantite || 0),
-
-                prix_unitaire: parseFloat(item.prix_unitaire || 0)
-
+                designation: (item.designation || '').trim(),
+                quantite: Number(item.quantite ?? 0),
+                prix_unitaire: Number(item.prix_unitaire ?? 0)
             }))
         };
+        
+        // ✅ MODE UPDATE
+        if (isEditing && formData.id) {
+            Swal.fire({
+                title: 'Patientez...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+            
+            await api.put(
+                `/factures/${formData.id}`,
+                payload
+            );
+            
+            await Swal.fire(
+                'Succès',
+                'Facture modifiée avec succès',
+                'success'
+            );
 
-        try {
-
-            if (isEditing && formData.id) {
-
-                await api.put(
-                    `/factures/${formData.id}`,
-                    payload
-                );
-
-                Swal.fire(
-                    'Succès',
-                    'Facture modifiée avec succès',
-                    'success'
-                );
-
-            } else {
-
-                await api.post('/factures', payload);
-
-                Swal.fire(
-                    'Succès',
-                    'Facture créée avec succès',
-                    'success'
-                );
-            }
-
-            setShowModal(false);
-            setFormData(initialFormState);
-            setIsEditing(false);
-
-            await fetchFactures();
-
-        } catch (err) {
-
-            console.error('Erreur submit:', err.response?.data || err.message);
-
-            if (err.response?.status === 422) {
-
-                const laravelErrors = err.response.data.errors || {};
-
-                const flat = {};
-
-                Object.entries(laravelErrors).forEach(([key, msgs]) => {
-
-                    flat[key] = Array.isArray(msgs)
-                        ? msgs[0]
-                        : msgs;
-
-                });
-
-                setErrors(flat);
-
-            } else {
-
-                Swal.fire(
-                    'Erreur',
-                    err.response?.data?.message || err.message,
-                    'error'
-                );
-            }
-
-        } finally {
-
-            setSubmitLoading(false);
-
+        } else {
+            
+            // ✅ MODE CREATE
+            await api.post('/factures', payload);
+            
+            await Swal.fire(
+                'Succès',
+                'Facture créée avec succès',
+                'success'
+            );
         }
-    };
+        
+        // ✅ RESET FORM PROPRE
+        setShowModal(false);
+        setFormData(initialFormState);
+        setIsEditing(false);
+        
+        await fetchFactures();
+        
+    } catch (err) {
+        
+        console.error('Erreur submit:', err.response?.data || err.message);
+
+        if (err.response?.status === 422) {
+            
+            const laravelErrors = err.response.data.errors || {};
+            
+            const flat = Object.fromEntries(
+                Object.entries(laravelErrors).map(([key, msgs]) => [
+                    key,
+                    Array.isArray(msgs) ? msgs[0] : msgs
+                ])
+            );
+
+            setErrors(flat);
+            
+        } else {
+
+            Swal.fire(
+                'Erreur',
+                err.response?.data?.message || err.message,
+                'error'
+            );
+        }
+        
+    } finally {
+        setSubmitLoading(false);
+    }
+    Swal.close();
+};
 
     // ─────────────────────────────────────────
     // SUPPRIMER
@@ -748,30 +746,22 @@ const Facture = () => {
         doc.text(téléphone, 130, finalY + 30);
 
         const qrData = `
-DjagoYelen FACTURATION
-
+            DjagoYelen FACTURATION
+-------------------------------------------------
 Facture: ${numFacture}
 Client: ${fullFacture.client?.nom}
 Tél: ${fullFacture.client?.telephone || '-'}
 Email: ${fullFacture.client?.email || '-'}
-
-Responsable: ${userName}
-Tél: ${téléphone}
-
 Total TTC: ${formatPrix(fullFacture.total_ttc)} F
-
-Date: ${date}`;
+Date: ${date}
+--------------------------------------------------
+Responsable: ${userName}
+Tél: ${téléphone}`;
 
         const qrImage = await QRCode.toDataURL(qrData);
 
         doc.addImage(
-            qrImage,
-            'PNG',
-            100,
-            37,
-            25,
-            25
-        );
+            qrImage,'PNG',100,37,25,25);
 
         return {
             doc,
@@ -1345,6 +1335,12 @@ Date: ${date}`;
 
         try {
 
+            Swal.fire({
+                title: 'Patientez...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
             setErrors({});
 
             setIsEditing(true);
@@ -1501,6 +1497,7 @@ Date: ${date}`;
                 'error'
             );
         }
+        Swal.close();
     }}
 >
     <i className="bi bi-pencil-square"></i>

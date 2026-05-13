@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import Swal from 'sweetalert2';
 
 // --- COMPOSANTS DE CHARGEMENT (SKELETONS) ---
 const SkeletonSidebar = () => (
@@ -123,16 +124,45 @@ const Profil = () => {
     };
 
     const handleDeleteClient = async (id) => {
-        if (window.confirm("Supprimer ce partenaire ?")) {
-            try {
-                await api.delete(`/clients/${id}`);
-                setClients(clients.filter(c => c.id !== id));
-                showFeedback('success', "Client supprimé.");
-            } catch (error) {
-                showFeedback('danger', "Erreur de suppression.");
-            }
+    const result = await Swal.fire({
+        title: 'Êtes-vous sûr ?',
+        text: 'Cette action est irréversible !',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        cancelButtonText: 'Annuler',
+        confirmButtonText: 'Oui, supprimer'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            // Suppression via l'API
+            await api.delete(`/clients/${id}`);
+
+            // Mise à jour de l'état local
+            // Utiliser (prev => ...) garantit que vous travaillez avec la liste la plus récente
+            setClients(prevClients => prevClients.filter(client => client.id !== id));
+
+            Swal.fire(
+                'Supprimé !',
+                'Le client a été supprimé.',
+                'success'
+            );
+        } catch (err) {
+            console.error(err);
+            
+            // Message d'erreur dynamique basé sur la réponse du serveur
+            const errorMessage = err.response?.data?.message || 'Une erreur est survenue lors de la suppression.';
+            
+            Swal.fire(
+                'Erreur',
+                errorMessage,
+                'error'
+            );
         }
-    };
+    }
+};
 
     const handleLogout = async () => {
         if (!window.confirm("Souhaitez-vous vraiment vous déconnecter ?")) return;
