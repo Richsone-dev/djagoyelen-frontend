@@ -718,7 +718,7 @@ const Facture = () => {
             utilisateur?.name || '---';
 
         const téléphone =
-            utilisateur?.telephone || '00000000';
+            utilisateur?.telephone || '---';
 
         doc.setFont('helvetica', 'bold');
 
@@ -738,8 +738,8 @@ const Facture = () => {
             DjagoYelen FACTURATION
 Facture: ${numFacture}
 Client: ${fullFacture.client?.nom}
-Tél: ${fullFacture.client?.telephone || '-'}
-Email: ${fullFacture.client?.email || '-'}
+Tél: ${fullFacture.client?.telephone || '---'}
+Email: ${fullFacture.client?.email || '---'}
 Total TTC: ${formatPrix(fullFacture.total_ttc)} F CFA
 Date: ${date}
 Responsable: ${userName}
