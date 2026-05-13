@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import Swal from 'sweetalert2';
 
-// --- COMPOSANTS DE CHARGEMENT (SKELETONS) ---
+// --- COMPOSANTS DE CHARGEMENT ---
 const SkeletonSidebar = () => (
     <div className="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden placeholder-glow">
         <div style={{ height: '100px', backgroundColor: '#e9ecef' }}></div>
@@ -11,10 +11,6 @@ const SkeletonSidebar = () => (
             <div className="rounded-circle mx-auto mb-3 placeholder" style={{ width: '100px', height: '100px' }}></div>
             <div className="placeholder col-8 mb-2 py-2"></div>
             <div className="placeholder col-5 py-2"></div>
-            <div className="p-3 bg-light rounded-3 mt-3">
-                <div className="placeholder col-12 mb-2"></div>
-                <div className="placeholder col-10"></div>
-            </div>
         </div>
     </div>
 );
@@ -27,9 +23,9 @@ const Profil = () => {
     const [showPasswordForm, setShowPasswordForm] = useState(false);
     const [status, setStatus] = useState({ type: '', msg: '' });
     
-    const [formData, setFormData] = useState({ name: '', email: '' });
+    // États pour les formulaires (Initialisés à vide pour éviter l'erreur "uncontrolled")
+    const [formData, setFormData] = useState({ name: '', email: '', telephone: '' });
     const [passwordData, setPasswordData] = useState({ current_password: '', password: '', password_confirmation: '' });
-
     const [clients, setClients] = useState([]);
     const [isClientModalOpen, setIsClientModalOpen] = useState(false);
     const [editingClient, setEditingClient] = useState(null);
@@ -42,6 +38,7 @@ const Profil = () => {
         bgLight: '#F8F9FA'
     };
 
+    // Chargement initial des données
     const loadData = useCallback(async (showSkeleton = true) => {
         if (showSkeleton) setLoading(true);
         try {
@@ -50,7 +47,11 @@ const Profil = () => {
                 api.get('/clients')
             ]);
             setUser(userRes.data);
-            setFormData({ name: userRes.data.name, email: userRes.data.email });
+            setFormData({ 
+                name: userRes.data.name || '', 
+                email: userRes.data.email || '', 
+                telephone: userRes.data.telephone || '' 
+            });
             setClients(clientsRes.data);
         } catch (error) {
             showFeedback('danger', "Erreur de chargement des données.");
@@ -68,18 +69,28 @@ const Profil = () => {
         setTimeout(() => setStatus({ type: '', msg: '' }), 4000);
     };
 
+    // --- MISE À JOUR DU PROFIL (NOM, EMAIL, TEL) ---
     const handleUpdateProfile = async (e) => {
         e.preventDefault();
         try {
             const response = await api.put('/user/profile', formData);
-            setUser(response.data);
+            setUser(response.data); // Mise à jour des données affichées
             setIsEditing(false);
-            showFeedback('success', "Profil mis à jour !");
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Profil mis à jour',
+                text: 'Vos nouvelles données ont été enregistrées en base de données.',
+                timer: 2000,
+                showConfirmButton: false
+            });
         } catch (error) {
-            showFeedback('danger', "Erreur lors de la mise à jour.");
+            const msg = error.response?.data?.message || "Erreur lors de la mise à jour.";
+            Swal.fire('Erreur', msg, 'error');
         }
     };
 
+    // --- CHANGEMENT DE MOT DE PASSE ---
     const handleUpdatePassword = async (e) => {
         e.preventDefault();
         if (passwordData.password !== passwordData.password_confirmation) {
@@ -89,16 +100,23 @@ const Profil = () => {
             await api.put('/user/password', passwordData);
             setShowPasswordForm(false);
             setPasswordData({ current_password: '', password: '', password_confirmation: '' });
-            showFeedback('success', "Mot de passe modifié avec succès.");
+            Swal.fire('Succès', "Mot de passe modifié avec succès.", 'success');
         } catch (error) {
-            showFeedback('danger', error.response?.data?.message || "Erreur de mise à jour.");
+            const msg = error.response?.data?.message || "Échec du changement de mot de passe.";
+            Swal.fire('Erreur', msg, 'error');
         }
     };
 
+    // --- GESTION DES CLIENTS ---
     const openClientModal = (client = null) => {
         if (client) {
             setEditingClient(client);
-            setClientFormData({ nom: client.nom, telephone: client.telephone, email: client.email || '', adresse: client.adresse || '' });
+            setClientFormData({ 
+                nom: client.nom || '', 
+                telephone: client.telephone || '', 
+                email: client.email || '', 
+                adresse: client.adresse || '' 
+            });
         } else {
             setEditingClient(null);
             setClientFormData({ nom: '', telephone: '', email: '', adresse: '' });
@@ -117,60 +135,45 @@ const Profil = () => {
                 showFeedback('success', "Client ajouté.");
             }
             setIsClientModalOpen(false);
-            loadData(false); 
+            loadData(false); // Recharger la liste
         } catch (error) {
-            showFeedback('danger', "Erreur d'enregistrement.");
+            Swal.fire('Erreur', "Impossible d'enregistrer le client.", 'error');
         }
     };
 
     const handleDeleteClient = async (id) => {
-    const result = await Swal.fire({
-        title: 'Êtes-vous sûr ?',
-        text: 'Cette action est irréversible !',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d',
-        cancelButtonText: 'Annuler',
-        confirmButtonText: 'Oui, supprimer'
-    });
+        const result = await Swal.fire({
+            title: 'Supprimer ce client ?',
+            text: "Cette action est irréversible.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Oui, supprimer'
+        });
 
-    if (result.isConfirmed) {
-        try {
-            // Suppression via l'API
-            await api.delete(`/clients/${id}`);
-
-            // Mise à jour de l'état local
-            // Utiliser (prev => ...) garantit que vous travaillez avec la liste la plus récente
-            setClients(prevClients => prevClients.filter(client => client.id !== id));
-
-            Swal.fire(
-                'Supprimé !',
-                'Le client a été supprimé.',
-                'success'
-            );
-        } catch (err) {
-            console.error(err);
-            
-            // Message d'erreur dynamique basé sur la réponse du serveur
-            const errorMessage = err.response?.data?.message || 'Une erreur est survenue lors de la suppression.';
-            
-            Swal.fire(
-                'Erreur',
-                errorMessage,
-                'error'
-            );
+        if (result.isConfirmed) {
+            try {
+                await api.delete(`/clients/${id}`);
+                setClients(prev => prev.filter(c => c.id !== id));
+                Swal.fire('Supprimé', 'Le client a été retiré.', 'success');
+            } catch (err) {
+                Swal.fire('Erreur', "Échec de la suppression.", 'error');
+            }
         }
-    }
-};
+    };
 
     const handleLogout = async () => {
-        if (!window.confirm("Souhaitez-vous vraiment vous déconnecter ?")) return;
-        try {
-            await api.post('/logout');
-        } catch (error) {
-            console.error("Erreur serveur logout", error);
-        } finally {
+        const result = await Swal.fire({
+            title: 'Déconnexion',
+            text: "Voulez-vous vraiment quitter ?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Oui',
+            cancelButtonText: 'Non'
+        });
+
+        if (result.isConfirmed) {
+            try { await api.post('/logout'); } catch {}
             localStorage.clear();
             navigate('/login');
         }
@@ -181,13 +184,13 @@ const Profil = () => {
             <div className="container" style={{ maxWidth: '1100px' }}>
                 
                 {status.msg && (
-                    <div className={`alert alert-${status.type} border-0 shadow-sm mb-4 text-center fw-bold animate__animated animate__fadeIn`}>
+                    <div className={`alert alert-${status.type} border-0 shadow-sm mb-4 text-center fw-bold`}>
                         {status.msg}
                     </div>
                 )}
 
                 <div className="row g-4 text-start">
-                    {/* --- SIDEBAR --- */}
+                    {/* SIDEBAR */}
                     <div className="col-12 col-lg-4">
                         {loading ? <SkeletonSidebar /> : (
                             <div className="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
@@ -202,31 +205,31 @@ const Profil = () => {
                                     
                                     <div className="p-3 bg-light rounded-3 mb-3">
                                         <div className="d-flex justify-content-between small mb-1">
-                                            <span className="text-muted">Statut :</span>
+                                            <span>Statut :</span>
                                             <span className="fw-bold text-success">Actif</span>
                                         </div>
                                         <div className="d-flex justify-content-between small">
-                                            <span className="text-muted">Clients :</span>
+                                            <span>Partenaires :</span>
                                             <span className="fw-bold">{clients.length}</span>
                                         </div>
                                     </div>
 
-                                    <button className="btn btn-sm btn-outline-danger w-100 rounded-pill fw-bold border-0" onClick={handleLogout}>
-                                        <i className="bi bi-box-arrow-right me-2"></i>Déconnexion
+                                    <button className="btn btn-sm btn-outline-danger w-100 rounded-pill fw-bold" onClick={handleLogout}>
+                                        Déconnexion
                                     </button>
                                 </div>
                             </div>
                         )}
 
-                        {/* SECURITE */}
+                        {/* SÉCURITÉ */}
                         <div className="card border-0 shadow-sm rounded-4 p-3 mb-4">
                             <h6 className="fw-bold mb-3"><i className="bi bi-shield-lock me-2 text-primary"></i>Sécurité</h6>
                             {!showPasswordForm ? (
-                                <button className="btn btn-sm w-100 py-2 border rounded-3 fw-bold bg-white shadow-sm" onClick={() => setShowPasswordForm(true)}>
+                                <button className="btn btn-sm w-100 py-2 border rounded-3 fw-bold bg-white" onClick={() => setShowPasswordForm(true)}>
                                     Changer le mot de passe
                                 </button>
                             ) : (
-                                <form onSubmit={handleUpdatePassword} className="animate__animated animate__fadeIn">
+                                <form onSubmit={handleUpdatePassword}>
                                     <input type="password" placeholder="Ancien mot de passe" className="form-control form-control-sm mb-2" required
                                         onChange={(e) => setPasswordData({...passwordData, current_password: e.target.value})} />
                                     <input type="password" placeholder="Nouveau" className="form-control form-control-sm mb-2" required
@@ -234,7 +237,7 @@ const Profil = () => {
                                     <input type="password" placeholder="Confirmer" className="form-control form-control-sm mb-2" required
                                         onChange={(e) => setPasswordData({...passwordData, password_confirmation: e.target.value})} />
                                     <div className="d-flex gap-2">
-                                        <button type="submit" className="btn btn-sm btn-dark flex-grow-1 fw-bold">Valider</button>
+                                        <button type="submit" className="btn btn-sm btn-dark flex-grow-1">Valider</button>
                                         <button type="button" className="btn btn-sm btn-light border" onClick={() => setShowPasswordForm(false)}>Annuler</button>
                                     </div>
                                 </form>
@@ -242,9 +245,9 @@ const Profil = () => {
                         </div>
                     </div>
 
-                    {/* --- CONTENT AREA --- */}
+                    {/* ZONE DE CONTENU */}
                     <div className="col-12 col-lg-8">
-                        {/* FORM PROFIL */}
+                        {/* FORMULAIRE PROFIL */}
                         <div className="card border-0 shadow-sm rounded-4 mb-4">
                             <div className="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
                                 <h5 className="mb-0 fw-bold" style={{ color: theme.darkGreen }}>Informations Personnelles</h5>
@@ -259,19 +262,25 @@ const Profil = () => {
                                     <div className="row g-3">
                                         <div className="col-md-6">
                                             <label className="form-label small text-muted fw-bold">Nom complet</label>
-                                            <input type="text" className={`form-control border-0 bg-light ${isEditing ? 'bg-white border-bottom' : ''}`} 
-                                                value={formData.name} readOnly={!isEditing} 
+                                            <input type="text" className={`form-control ${isEditing ? 'bg-white' : 'bg-light border-0'}`} 
+                                                value={formData.name || ''} readOnly={!isEditing} 
                                                 onChange={(e) => setFormData({...formData, name: e.target.value})} required />
                                         </div>
                                         <div className="col-md-6">
                                             <label className="form-label small text-muted fw-bold">Email</label>
-                                            <input type="email" className={`form-control border-0 bg-light ${isEditing ? 'bg-white border-bottom' : ''}`} 
-                                                value={formData.email} readOnly={!isEditing}
+                                            <input type="email" className={`form-control ${isEditing ? 'bg-white' : 'bg-light border-0'}`} 
+                                                value={formData.email || ''} readOnly={!isEditing}
                                                 onChange={(e) => setFormData({...formData, email: e.target.value})} required />
+                                        </div>
+                                        <div className="col-md-6">
+                                            <label className="form-label small text-muted fw-bold">Téléphone</label>
+                                            <input type="tel" className={`form-control ${isEditing ? 'bg-white' : 'bg-light border-0'}`} 
+                                                value={formData.telephone || ''} readOnly={!isEditing}
+                                                onChange={(e) => setFormData({...formData, telephone: e.target.value})} required />
                                         </div>
                                         {isEditing && (
                                             <div className="col-12 mt-3 d-flex gap-2">
-                                                <button type="submit" className="btn btn-sm px-4 text-white fw-bold shadow-sm" style={{ backgroundColor: theme.orange }}>Sauvegarder</button>
+                                                <button type="submit" className="btn btn-sm px-4 text-white fw-bold" style={{ backgroundColor: theme.orange }}>Sauvegarder</button>
                                                 <button type="button" className="btn btn-sm btn-light px-4 border" onClick={() => setIsEditing(false)}>Annuler</button>
                                             </div>
                                         )}
@@ -280,11 +289,11 @@ const Profil = () => {
                             </div>
                         </div>
 
-                        {/* LISTE CLIENTS */}
+                        {/* LISTE PARTENAIRES */}
                         <div className="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
                             <div className="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-                                <h5 className="mb-0 fw-bold" style={{ color: theme.darkGreen }}>Partenaires & Clients</h5>
-                                <button className="btn btn-sm px-3 text-white fw-bold rounded-pill shadow-sm" style={{ backgroundColor: theme.darkGreen }} onClick={() => openClientModal()}>
+                                <h5 className="mb-0 fw-bold" style={{ color: theme.darkGreen }}>Mes Partenaires</h5>
+                                <button className="btn btn-sm px-3 text-white fw-bold rounded-pill" style={{ backgroundColor: theme.darkGreen }} onClick={() => openClientModal()}>
                                     <i className="bi bi-plus-lg me-1"></i> Nouveau
                                 </button>
                             </div>
@@ -300,32 +309,26 @@ const Profil = () => {
                                         </thead>
                                         <tbody>
                                             {loading ? (
-                                                [...Array(3)].map((_, i) => (
-                                                    <tr key={i} className="placeholder-glow">
-                                                        <td className="ps-4"><span className="placeholder col-8"></span></td>
-                                                        <td><span className="placeholder col-6"></span></td>
-                                                        <td className="text-end pe-4"><span className="placeholder col-4"></span></td>
-                                                    </tr>
-                                                ))
+                                                <tr><td colSpan="3" className="text-center py-4">Chargement...</td></tr>
                                             ) : clients.length > 0 ? clients.map(client => (
                                                 <tr key={client.id}>
                                                     <td className="ps-4 py-3">
-                                                        <div className="fw-bold text-dark">{client.nom}</div>
-                                                        <div className="text-muted small fst-italic">{client.adresse || 'Aucune adresse'}</div>
+                                                        <div className="fw-bold">{client.nom}</div>
+                                                        <div className="text-muted small">{client.adresse || 'Pas d\'adresse'}</div>
                                                     </td>
-                                                    <td className="py-3">
+                                                    <td>
                                                         <div className="small fw-bold text-primary">{client.telephone}</div>
-                                                        <div className="text-muted" style={{fontSize: '0.75rem'}}>{client.email || 'N/A'}</div>
+                                                        <div className="text-muted small">{client.email || 'N/A'}</div>
                                                     </td>
-                                                    <td className="text-end pe-4 py-3">
-                                                        <div className="btn-group shadow-sm rounded-3">
+                                                    <td className="text-end pe-4">
+                                                        <div className="btn-group shadow-sm">
                                                             <button className="btn btn-sm btn-white border" onClick={() => openClientModal(client)}><i className="bi bi-pencil text-primary"></i></button>
                                                             <button className="btn btn-sm btn-white border" onClick={() => handleDeleteClient(client.id)}><i className="bi bi-trash text-danger"></i></button>
                                                         </div>
                                                     </td>
                                                 </tr>
                                             )) : (
-                                                <tr><td colSpan="3" className="text-center py-5 text-muted">Aucun partenaire enregistré.</td></tr>
+                                                <tr><td colSpan="3" className="text-center py-5">Aucun partenaire.</td></tr>
                                             )}
                                         </tbody>
                                     </table>
@@ -338,42 +341,42 @@ const Profil = () => {
 
             {/* MODAL CLIENT */}
             {isClientModalOpen && (
-                <div className="modal d-block animate__animated animate__fadeIn" style={{ backgroundColor: 'rgba(10,59,47,0.4)', backdropFilter: 'blur(4px)', zIndex: 1060 }}>
+                <div className="modal d-block animate__animated animate__fadeIn" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1060 }}>
                     <div className="modal-dialog modal-dialog-centered">
-                        <div className="modal-content border-0 rounded-4 shadow-lg">
+                        <div className="modal-content border-0 rounded-4">
                             <form onSubmit={handleClientSubmit}>
                                 <div className="modal-header border-0 p-4">
-                                    <h5 className="fw-bold mb-0">{editingClient ? 'Modifier Partenaire' : 'Ajouter un Partenaire'}</h5>
+                                    <h5 className="fw-bold mb-0">{editingClient ? 'Modifier Partenaire' : 'Ajouter'}</h5>
                                     <button type="button" className="btn-close" onClick={() => setIsClientModalOpen(false)}></button>
                                 </div>
                                 <div className="modal-body px-4 pb-4">
                                     <div className="row g-3">
                                         <div className="col-12">
-                                            <label className="form-label small fw-bold">Nom / Raison Sociale *</label>
-                                            <input type="text" className="form-control rounded-3" required value={clientFormData.nom}
+                                            <label className="form-label small fw-bold">Nom *</label>
+                                            <input type="text" className="form-control" required value={clientFormData.nom || ''}
                                                 onChange={(e) => setClientFormData({...clientFormData, nom: e.target.value})} />
                                         </div>
                                         <div className="col-md-6">
                                             <label className="form-label small fw-bold">Téléphone *</label>
-                                            <input type="text" className="form-control rounded-3" required value={clientFormData.telephone}
+                                            <input type="text" className="form-control" required value={clientFormData.telephone || ''}
                                                 onChange={(e) => setClientFormData({...clientFormData, telephone: e.target.value})} />
                                         </div>
                                         <div className="col-md-6">
                                             <label className="form-label small fw-bold">Email</label>
-                                            <input type="email" className="form-control rounded-3" value={clientFormData.email}
+                                            <input type="email" className="form-control" value={clientFormData.email || ''}
                                                 onChange={(e) => setClientFormData({...clientFormData, email: e.target.value})} />
                                         </div>
                                         <div className="col-12">
-                                            <label className="form-label small fw-bold">Localisation / Adresse</label>
-                                            <input type="text" className="form-control rounded-3" value={clientFormData.adresse}
+                                            <label className="form-label small fw-bold">Localisation</label>
+                                            <input type="text" className="form-control" value={clientFormData.adresse || ''}
                                                 onChange={(e) => setClientFormData({...clientFormData, adresse: e.target.value})} />
                                         </div>
                                     </div>
                                 </div>
-                                <div className="modal-footer border-0 bg-light p-3">
-                                    <button type="button" className="btn btn-link text-muted fw-bold text-decoration-none" onClick={() => setIsClientModalOpen(false)}>Annuler</button>
-                                    <button type="submit" className="btn px-4 text-white fw-bold rounded-pill shadow-sm" style={{ backgroundColor: theme.darkGreen }}>
-                                        {editingClient ? 'Mettre à jour' : 'Confirmer'}
+                                <div className="modal-footer border-0 p-3 bg-light">
+                                    <button type="button" className="btn btn-link text-muted fw-bold" onClick={() => setIsClientModalOpen(false)}>Annuler</button>
+                                    <button type="submit" className="btn px-4 text-white fw-bold rounded-pill" style={{ backgroundColor: theme.darkGreen }}>
+                                        Enregistrer
                                     </button>
                                 </div>
                             </form>
@@ -381,14 +384,6 @@ const Profil = () => {
                     </div>
                 </div>
             )}
-
-            <style>{`
-                .form-control:focus { box-shadow: none; border-color: ${theme.orange}; }
-                .table-hover tbody tr:hover { background-color: #f1f3f2; transition: 0.2s; }
-                .rounded-4 { border-radius: 1rem !important; }
-                .btn-white { background: #fff; }
-                .placeholder { border-radius: 4px; }
-            `}</style>
         </div>
     );
 };
