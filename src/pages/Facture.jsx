@@ -1,841 +1,1376 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
+
 import { jsPDF } from 'jspdf';
-import QRCode from 'qrcode';
-import 'jspdf-autotable';
 import autoTable from 'jspdf-autotable';
+import QRCode from 'qrcode';
+
 import Swal from 'sweetalert2';
+
 import logo from '../assets/djago-logo.jpeg';
 
-
-
 const Facture = () => {
+
+    // =========================
+    // STATES
+    // =========================
+
     const [factures, setFactures] = useState([]);
-    const [user, setUser] = useState(null);
     const [clients, setClients] = useState([]);
+
     const [loading, setLoading] = useState(true);
+
     const [showModal, setShowModal] = useState(false);
+
     const [showClientModal, setShowClientModal] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
-    const [errors, setErrors] = useState({});
+
+    const [showPreview, setShowPreview] = useState(false);
+
+    const [previewUrl, setPreviewUrl] = useState('');
+
+    const [currentPdfName, setCurrentPdfName] = useState('');
+
     const [submitLoading, setSubmitLoading] = useState(false);
 
+    const [isEditing, setIsEditing] = useState(false);
+
+    const [errors, setErrors] = useState({});
+
+    // =========================
+    // CLIENT
+    // =========================
+
     const [newClient, setNewClient] = useState({
-        nom: '', email: '', telephone: '', adresse: ''
+        nom: '',
+        email: '',
+        telephone: '',
+        adresse: ''
     });
 
-
-    const colors = {
-        darkGreen: '#0A3B2F',
-        red1: '#FF0000',
-        orange: '#E97223',
-        successGreen: '#198754',
-        blue: '#2196f3',
-        purple: '#9c27b0',
-        lightGray: '#f8f9fa',
-        bgLight: '#f8f9fa',
-        redLight: '#f8d7da',
-        greenLight: '#d1e7dd',
-        purpleLight: '#f3ccff',
-        orangeLight: '#fff3cd',
-        yellowLight: '#fff9db',
-        orangeHover: '#ff7f50',
-        dangerRed: '#dc3545'
-    };
-
+    // =========================
+    // FORMULAIRE FACTURE
+    // =========================
 
     const initialFormState = {
         id: null,
         client_id: '',
         date_emission: new Date().toISOString().split('T')[0],
-        items: [{ designation: '', quantite: 1, prix_unitaire: 0 }],
         tva_taux: 18,
         total_ht: 0,
-        total_ttc: 0
+        total_ttc: 0,
+        items: [
+            {
+                designation: '',
+                quantite: 1,
+                prix_unitaire: 0
+            }
+        ]
     };
 
     const [formData, setFormData] = useState(initialFormState);
 
+    // =========================
+    // COLORS
+    // =========================
+
+    const colors = {
+        green: '#198754',
+        orange: '#E97223',
+        danger: '#dc3545'
+    };
+
+    // =========================
+    // FETCH
+    // =========================
+
     useEffect(() => {
+
         fetchFactures();
+
         fetchClients();
+
     }, []);
 
-    // ✅ Calcul automatique HT / TTC
-    useEffect(() => {
-        const ht = formData.items.reduce((sum, item) => {
-            const qte = Number(item.quantite) || 0;
-            const pu = Number(item.prix_unitaire) || 0;
-            return sum + qte * pu;
-        }, 0);
-
-        const tva = ht * (Number(formData.tva_taux) / 100);
-        const ttc = ht + tva;
-
-        setFormData(prev => {
-            if (prev.total_ht === ht && prev.total_ttc === ttc) return prev;
-            return { ...prev, total_ht: parseFloat(ht.toFixed(2)), total_ttc: parseFloat(ttc.toFixed(2)) };
-        });
-    }, [formData.items, formData.tva_taux]);
-
-    // ─────────────────────────────────────────
-    // FETCH
-    // ─────────────────────────────────────────
     const fetchFactures = async () => {
+
         try {
+
             const res = await api.get('/factures');
-            // Laravel retourne souvent { data: [...] } avec pagination, ou directement un tableau
-            setFactures(Array.isArray(res.data) ? res.data : res.data.data || []);
-        } catch (e) {
-            console.error('Erreur fetchFactures:', e.response?.data || e.message);
+
+            const data = Array.isArray(res.data)
+                ? res.data
+                : res.data.data || [];
+
+            setFactures(
+                [...data].sort((a, b) => b.id - a.id)
+            );
+
+        } catch (err) {
+
+            console.error(err);
+
         } finally {
+
             setLoading(false);
         }
     };
 
     const fetchClients = async () => {
+
         try {
+
             const res = await api.get('/clients');
-            setClients(Array.isArray(res.data) ? res.data : res.data.data || []);
-        } catch (e) {
-            console.error('Erreur fetchClients:', e.response?.data || e.message);
+
+            setClients(
+                Array.isArray(res.data)
+                    ? res.data
+                    : res.data.data || []
+            );
+
+        } catch (err) {
+
+            console.error(err);
         }
     };
 
-    // ─────────────────────────────────────────
-    // AJOUTER CLIENT
-    // ─────────────────────────────────────────
+    // =========================
+    // CALCULS
+    // =========================
+
+    useEffect(() => {
+
+        const ht = formData.items.reduce((sum, item) => {
+
+            const qte = Number(item.quantite || 0);
+
+            const pu = Number(item.prix_unitaire || 0);
+
+            return sum + (qte * pu);
+
+        }, 0);
+
+        const tva =
+            ht * (Number(formData.tva_taux) / 100);
+
+        const ttc = ht + tva;
+
+        setFormData(prev => ({
+            ...prev,
+            total_ht: Number(ht.toFixed(2)),
+            total_ttc: Number(ttc.toFixed(2))
+        }));
+
+    }, [formData.items, formData.tva_taux]);
+
+    // =========================
+    // FORMAT PRIX
+    // =========================
+
+    const formatPrix = (value) => {
+
+        return Number(value || 0)
+            .toLocaleString('fr-FR');
+    };
+
+    // =========================
+    // AJOUT CLIENT
+    // =========================
+
     const handleAddClient = async (e) => {
+
         e.preventDefault();
+
         try {
-            const res = await api.post('/clients', newClient);
-            // Laravel retourne souvent { data: {...} } ou directement l'objet
-            const created = res.data.data || res.data;
-            setClients(prev => [...prev, created]);
-            setFormData(prev => ({ ...prev, client_id: created.id }));
+
+            const res = await api.post(
+                '/clients',
+                newClient
+            );
+
+            const client = res.data.data || res.data;
+
+            setClients(prev => [...prev, client]);
+
+            setFormData(prev => ({
+                ...prev,
+                client_id: client.id
+            }));
+
+            setNewClient({
+                nom: '',
+                email: '',
+                telephone: '',
+                adresse: ''
+            });
+
             setShowClientModal(false);
-            setNewClient({ nom: '', email: '', telephone: '', adresse: '' });
-        } catch (e) {
-            console.error('Erreur addClient:', e.response?.data || e.message);
-            alert("Erreur lors de l'ajout du client : " + (e.response?.data?.message || e.message));
+
+            Swal.fire(
+                'Succès',
+                'Client ajouté',
+                'success'
+            );
+
+        } catch (err) {
+
+            console.error(err);
+
+            Swal.fire(
+                'Erreur',
+                'Impossible d’ajouter le client',
+                'error'
+            );
         }
     };
 
-    // ─────────────────────────────────────────
-    // SUBMIT FACTURE — correction principale
-    // ─────────────────────────────────────────
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setErrors({});
-        setSubmitLoading(true);
+    // =========================
+    // ITEMS
+    // =========================
 
-        // Validation côté client
-        if (!formData.client_id) {
-            setErrors({ client_id: 'Veuillez sélectionner un client.' });
-            setSubmitLoading(false);
-            return;
-        }
+    const handleItemChange = (
+        index,
+        field,
+        value
+    ) => {
 
-        const hasEmptyItem = formData.items.some(i => !i.designation.trim());
-        if (hasEmptyItem) {
-            setErrors({ items: 'Chaque ligne doit avoir une désignation.' });
-            setSubmitLoading(false);
-            return;
-        }
-
-        // ✅ Payload propre pour Laravel
-        // Laravel s'attend à des types corrects, les items sont souvent envoyés
-        // en JSON ou comme tableau imbriqué selon votre contrôleur
-        const payload = {
-            client_id:     parseInt(formData.client_id),
-            date_emission: formData.date_emission,
-            tva_taux:      parseFloat(formData.tva_taux),
-            total_ht:      parseFloat(formData.total_ht),
-            total_ttc:     parseFloat(formData.total_ttc),
-            items: formData.items.map(item => ({
-                designation:   String(item.designation || '').trim(),
-                quantite:      parseInt(item.quantite || 0),
-                prix_unitaire: parseFloat(item.prix_unitaire || 0)
-            }))
-        };
-
-        try {
-            if (isEditing && formData.id) {
-                // ✅ Laravel : PUT ou PATCH selon votre route
-                await api.put(`/factures/${formData.id}`, payload);
-            } else {
-                await api.post('/factures', payload);
-            }
-
-            setShowModal(false);
-            setFormData(initialFormState);
-            setIsEditing(false);
-            await fetchFactures();
-
-        } catch (err) {
-            console.error('Erreur submit:', err.response?.data || err.message);
-
-            // ✅ Laravel retourne les erreurs de validation sous err.response.data.errors
-            if (err.response?.status === 422) {
-                const laravelErrors = err.response.data.errors || {};
-                // Convertir { 'items.0.designation': [...] } en messages lisibles
-                const flat = {};
-                Object.entries(laravelErrors).forEach(([key, msgs]) => {
-                    flat[key] = Array.isArray(msgs) ? msgs[0] : msgs;
-                });
-                setErrors(flat);
-            } else {
-                alert("Erreur serveur : " + (err.response?.data?.message || err.message));
-            }
-        } finally {
-            setSubmitLoading(false);
-        }
-    };
-
-    // ─────────────────────────────────────────
-    // SUPPRIMER
-    // ─────────────────────────────────────────
-    const handleDelete = async (id) => {
-    // 1. Vérification de la confirmation
-    const result = await Swal.fire({
-        title: 'Êtes-vous sûr ?',
-        text: "Cette action est irréversible !",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33', // Assure-toi que cette couleur est définie
-        cancelButtonColor: '#6c757d',
-        cancelButtonText: 'Annuler',
-        confirmButtonText: 'Oui, supprimer'
-    });
-
-    if (result.isConfirmed) {
-        try {
-            // 2. Appel API
-            await api.delete(`/factures/${id}`);
-            
-            // 3. Mise à jour optimisée de l'interface (plus rapide que fetchData())
-            setFactures(prevFactures => prevFactures.filter(f => f.id !== id));
-            
-            // 4. Feedback utilisateur
-            await Swal.fire('Supprimé !', 'La facture a été supprimée avec succès.', 'success');
-        } catch (err) {
-            console.error("Erreur suppression:", err);
-            // Affichage du message d'erreur spécifique si disponible
-            const errorMessage = err.response?.data?.message || "Impossible de supprimer la facture.";
-            Swal.fire('Erreur', errorMessage, 'error');
-        }
-    }
-};
-
-
-    // ─────────────────────────────────────────
-    // MODIFIER ITEM
-    // ─────────────────────────────────────────
-    const handleItemChange = (index, field, value) => {
         const items = [...formData.items];
-        items[index] = {
-            ...items[index],
-            [field]: field === 'designation' ? value : Number(value)
-        };
-        setFormData(prev => ({ ...prev, items }));
+
+        items[index][field] =
+            field === 'designation'
+                ? value
+                : Number(value);
+
+        setFormData(prev => ({
+            ...prev,
+            items
+        }));
     };
 
     const addItem = () => {
+
         setFormData(prev => ({
             ...prev,
-            items: [...prev.items, { designation: '', quantite: 1, prix_unitaire: 0 }]
+            items: [
+                ...prev.items,
+                {
+                    designation: '',
+                    quantite: 1,
+                    prix_unitaire: 0
+                }
+            ]
         }));
     };
 
     const removeItem = (index) => {
+
         if (formData.items.length === 1) return;
+
         setFormData(prev => ({
             ...prev,
-            items: prev.items.filter((_, i) => i !== index)
+            items: prev.items.filter(
+                (_, i) => i !== index
+            )
         }));
     };
 
-    // ─────────────────────────────────────────
-    // PDF
-    // ─────────────────────────────────────────
+    // =========================
+    // ENREGISTREMENT FACTURE
+    // =========================
 
-    // ✅ FORMAT PRIX PRO (20 000)
-// ✅ FORMAT PRIX PRO (23 000)
-const formatPrix = (value, separator = ' ') => {
-    if (isNaN(value)) return '0';
+    const handleSubmit = async (e) => {
 
-    return Number(value)
-        .toFixed(0)
-        .replace(/\B(?=(\d{3})+(?!\d))/g, separator);
-};
+        e.preventDefault();
 
+        setSubmitLoading(true);
 
-const generatePDF = async (facture) => {
-    try {
-    const res = await api.get(`/factures/${facture.id}`);
-    const fullFacture = res.data.data || res.data;
+        setErrors({});
 
-    const doc = new jsPDF();
-    const numFacture = fullFacture.numero_facture || fullFacture.id;
-
-    // 🎨 Couleurs
-    const successGreen = [25, 135, 84];
-    const orange = [233, 114, 35];
-
-    // ─────────────────────────────
-    // 🧾 HEADER ALIGNÉ PRO
-    // ─────────────────────────────
-    const headerY = 30;
-
-    doc.setFontSize(18);
-    doc.setFont("helvetica", "bold");
-
-    // Texte DjagoYelen
-    doc.setTextColor(...successGreen);
-    doc.text("Djago", 14, headerY - 4);
-
-    const widthDjago = doc.getTextWidth("Djago");
-
-    doc.setTextColor(...orange);
-    // On utilise l'espacement calculé pour coller "Yelen" après "Djago"
-    doc.text("Yelen", 14 + widthDjago, headerY - 4); 
-    
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(0, 0, 0);
-
-    doc.setFontSize(10);
-    doc.text('Services Numériques & Gestion financière', 14, headerY +2);
-
-        // 🖼️ Logo aligné horizontalement
         try {
-            doc.addImage(logo, 'JPEG', 165, headerY - 22, 30, 30);
-        } catch {
-            console.warn("Logo non chargé");
-        }
 
-        // 🟩 Ligne horizontale sous header
-        doc.setDrawColor(...orange);
-        doc.setLineWidth(0.3);
-        doc.line(14, headerY + 5, 196, headerY + 5);
+            const payload = {
 
-        // ─────────────────────────────
-        // 📄 INFOS FACTURE
-        // ─────────────────────────────
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "bold");
-        doc.text(`DETAILS DE LA FACTURE`,14, 45);
+                client_id: Number(formData.client_id),
 
-        doc.setFont("helvetica", "normal");
-        doc.text(`Référence : ${numFacture}`, 14, 50);
+                date_emission:
+                    formData.date_emission,
 
-        const date = new Date(fullFacture.date_emission).toLocaleDateString('fr-FR', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
-            });
-        doc.text(`Date : ${date || '-'}`, 14, 55);
+                tva_taux:
+                    Number(formData.tva_taux),
 
-        doc.setFont("helvetica", "bold");
-        doc.text(`STATUT: Payé`, 14, 60);
+                total_ht:
+                    Number(formData.total_ht),
 
-        doc.setFont("helvetica", "bold");
-        doc.text(`CLIENT`, 130, 45);
-        doc.setFont("helvetica", "bold");
-        // 2. Récupérer le nom et le transformer en majuscules
-        const nomClient = (fullFacture.client_nom || fullFacture.client?.nom || '---').toUpperCase();
-        
-        doc.text(`${nomClient}`, 130, 50);
-        doc.setFont("helvetica", "normal");
-        doc.text(`Tél : ${fullFacture.client?.telephone || '---'}`, 130, 55);
-        doc.text(`Email : ${fullFacture.client?.email || '---'}`, 130, 60);
-        
+                total_ttc:
+                    Number(formData.total_ttc),
 
-        // ─────────────────────────────
-        // 📦 ITEMS
-        // ─────────────────────────────
-        let items = [];
+                items: formData.items.map(item => ({
+                    designation:
+                        item.designation,
 
-        if (fullFacture.lignes) {
-            items = fullFacture.lignes;
-        } else if (typeof fullFacture.items === 'string') {
-            try {
-                items = JSON.parse(fullFacture.items);
-            } catch {
-                items = [];
+                    quantite:
+                        Number(item.quantite),
+
+                    prix_unitaire:
+                        Number(item.prix_unitaire)
+                }))
+            };
+
+            if (isEditing) {
+
+                await api.put(
+                    `/factures/${formData.id}`,
+                    payload
+                );
+
+                Swal.fire(
+                    'Succès',
+                    'Facture modifiée',
+                    'success'
+                );
+
+            } else {
+
+                await api.post(
+                    '/factures',
+                    payload
+                );
+
+                Swal.fire(
+                    'Succès',
+                    'Facture créée',
+                    'success'
+                );
             }
-        } else {
-            items = fullFacture.items || [];
+
+            setShowModal(false);
+
+            setFormData(initialFormState);
+
+            setIsEditing(false);
+
+            fetchFactures();
+
+        } catch (err) {
+
+            console.error(err);
+
+            if (
+                err.response?.status === 422
+            ) {
+
+                setErrors(
+                    err.response.data.errors || {}
+                );
+
+            } else {
+
+                Swal.fire(
+                    'Erreur',
+                    'Erreur serveur',
+                    'error'
+                );
+            }
+
+        } finally {
+
+            setSubmitLoading(false);
         }
+    };
 
-        // ─────────────────────────────
-        // 📊 TABLE DATA
-        // ─────────────────────────────
-        const rows = items.map(i => {
-            const qte = Number(i.quantite || 0);
-            const pu = Number(i.prix_unitaire || i.prix || 0);
+    // =========================
+    // SUPPRESSION
+    // =========================
 
-            return [
-                i.designation || i.description || 'N/A',
-                qte,
-                `${formatPrix(pu)} F`,
-                `${formatPrix(qte * pu)} F`
-            ];
+    const handleDelete = async (id) => {
+
+        const result = await Swal.fire({
+            title: 'Supprimer ?',
+            text: 'Action irréversible',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Oui',
+            cancelButtonText: 'Annuler'
         });
 
-        // ─────────────────────────────
-        // 📊 TABLEAU
-        // ─────────────────────────────
-        autoTable(doc, {
-            startY: 65,
-            head: [['Désignation', 'Quantité', 'Prix Unitaire', 'Montant']],
-            body: rows,
-            foot: [
-                ['', '', 'Total HT', `${formatPrix(fullFacture.total_ht)} F`],
-                ['', '', `TVA (${fullFacture.tva_taux || 18}%)`,
-                    `${formatPrix(fullFacture.total_ttc - fullFacture.total_ht)} F`
-                ],
-                ['', '', 'TOTAL TTC', `${formatPrix(fullFacture.total_ttc)} F`]
-            ],
-            theme: 'grid',
-            styles: {
-                lineColor: [230,230,230],
-                lineWidth: 0.1,
-                fontSize: 9,
-                halign: 'center'
-            },
-            columnStyles: {
-                0: { halign: 'center' },
-                1: { halign: 'center' },
-                2: { halign: 'center' },
-                3: { halign: 'center' }
-            },
-            headStyles: {
-                fillColor: successGreen,
-                textColor: 255,
-                fontStyle: 'bold',
-                textAlign: 'center'
-            },
-            footStyles: {
-              lineWidth: 0,
-              fillColor: orange,
-              textColor: 255,
-                fontStyle: 'bold',
-                textAlign: 'center'
+        if (!result.isConfirmed) return;
+
+        try {
+
+            await api.delete(`/factures/${id}`);
+
+            setFactures(prev =>
+                prev.filter(f => f.id !== id)
+            );
+
+            Swal.fire(
+                'Succès',
+                'Facture supprimée',
+                'success'
+            );
+
+        } catch (err) {
+
+            console.error(err);
+
+            Swal.fire(
+                'Erreur',
+                'Suppression impossible',
+                'error'
+            );
+        }
+    };
+
+    // =========================
+    // MODIFICATION
+    // =========================
+
+    const handleEdit = async (facture) => {
+
+        try {
+
+            const res = await api.get(
+                `/factures/${facture.id}`
+            );
+
+            const data =
+                res.data.data || res.data;
+
+            let items = [];
+
+            if (Array.isArray(data.items)) {
+
+                items = data.items;
+
+            } else if (
+                typeof data.items === 'string'
+            ) {
+
+                items = JSON.parse(data.items);
+
+            } else if (data.lignes) {
+
+                items = data.lignes;
             }
-          });
-          // ─────────────────────────────
-          // 📝 FOOTER
-          // ─────────────────────────────
-          const finalY = doc.lastAutoTable.finalY || 100;
 
-          doc.setFontSize(8);
-          doc.setTextColor(120);
-          doc.setFont('times', 'italic');
-          doc.text("Factrure générée par DjagoYelen", 14, finalY + 10);
+            setFormData({
 
-          doc.setFontSize(10);
-          doc.setTextColor(0);
-          doc.setFont('helvetica', 'italic');
-          //doc.text(`Générée le ${fullFacture.date_emission}`, 150, finalY + 10);
+                id: data.id,
 
-          
+                client_id: data.client_id,
 
-            // Utilisation des backticks ` et du symbole $ pour la variable
-            doc.text(`Générée le ${date}`, 150, finalY + 15);
+                date_emission:
+                    data.date_emission,
 
-          const utilisateur= JSON.parse(localStorage.getItem('user'));
-          const userName = utilisateur? utilisateur.name : '---';
-          const téléphone = utilisateur? utilisateur.telephone : '00000000';
-          doc.setFont('helvetica', 'bold');
-          doc.text(`Responsable commercial :`, 130, finalY + 20);
-          doc.setFont('helvetica', 'normal');
-          doc.text(`${userName}`, 130, finalY + 25);
-          doc.text(`${téléphone}`, 130, finalY + 30);
+                tva_taux:
+                    data.tva_taux || 18,
 
+                total_ht:
+                    data.total_ht || 0,
 
-          // 🖼️ Logo avec opacité réduite (Correction sécurisée)
-            {/*try {
-                // Vérifier si GState est disponible pour éviter le crash
-                if (typeof doc.GState === 'function') {
-                    const gs1 = new doc.GState({ opacity: 0.3 });
-                    doc.setGState(gs1);
-                    doc.addImage(logo, 'PNG', 20, finalY + 15, 20, 20);
-                    // Toujours remettre l'opacité à 1.0
-                    doc.setGState(new doc.GState({ opacity: 1.0 }));
-                } else {
-                    // Fallback : affiche le logo normalement si GState n'est pas supporté
-                    doc.addImage(logo, 'PNG', 20, finalY + 15, 5, 5);
+                total_ttc:
+                    data.total_ttc || 0,
+
+                items: items.map(item => ({
+                    designation:
+                        item.designation || '',
+
+                    quantite:
+                        Number(item.quantite || 1),
+
+                    prix_unitaire:
+                        Number(
+                            item.prix_unitaire || 0
+                        )
+                }))
+            });
+
+            setIsEditing(true);
+
+            setShowModal(true);
+
+        } catch (err) {
+
+            console.error(err);
+
+            Swal.fire(
+                'Erreur',
+                'Impossible de charger la facture',
+                'error'
+            );
+        }
+    };
+
+    // =========================
+    // PDF
+    // =========================
+
+    const generatePDF = async (
+        facture,
+        preview = true
+    ) => {
+
+        try {
+
+            const res = await api.get(
+                `/factures/${facture.id}`
+            );
+
+            const data =
+                res.data.data || res.data;
+
+            const doc = new jsPDF();
+
+            const numFacture =
+                data.numero_facture || data.id;
+
+            // HEADER
+
+            doc.setFontSize(20);
+
+            doc.setTextColor(25, 135, 84);
+
+            doc.text('Djago', 14, 20);
+
+            doc.setTextColor(233, 114, 35);
+
+            doc.text('Yelen', 40, 20);
+
+            doc.setTextColor(0, 0, 0);
+
+            try {
+
+                doc.addImage(
+                    logo,
+                    'JPEG',
+                    160,
+                    8,
+                    35,
+                    35
+                );
+
+            } catch (err) {
+
+                console.log(err);
+            }
+
+            doc.setFontSize(11);
+
+            doc.text(
+                `Facture N° ${numFacture}`,
+                14,
+                45
+            );
+
+            const date = new Date(
+                data.date_emission
+            ).toLocaleDateString('fr-FR');
+
+            doc.text(
+                `Date : ${date}`,
+                14,
+                53
+            );
+
+            // CLIENT
+
+            const client = data.client || {};
+
+            doc.setFont(
+                'helvetica',
+                'bold'
+            );
+
+            doc.text('CLIENT', 130, 45);
+
+            doc.setFont(
+                'helvetica',
+                'normal'
+            );
+
+            doc.text(
+                client.nom || '-',
+                130,
+                53
+            );
+
+            doc.text(
+                client.telephone || '-',
+                130,
+                61
+            );
+
+            doc.text(
+                client.email || '-',
+                130,
+                69
+            );
+
+            // ITEMS
+
+            let items = [];
+
+            if (Array.isArray(data.items)) {
+
+                items = data.items;
+
+            } else if (
+                typeof data.items === 'string'
+            ) {
+
+                items = JSON.parse(data.items);
+
+            } else if (data.lignes) {
+
+                items = data.lignes;
+            }
+
+            const rows = items.map(item => {
+
+                const qte =
+                    Number(item.quantite || 0);
+
+                const pu =
+                    Number(
+                        item.prix_unitaire || 0
+                    );
+
+                return [
+                    item.designation,
+                    qte,
+                    `${formatPrix(pu)} F`,
+                    `${formatPrix(qte * pu)} F`
+                ];
+            });
+
+            autoTable(doc, {
+
+                startY: 80,
+
+                head: [[
+                    'Désignation',
+                    'Qté',
+                    'PU',
+                    'Montant'
+                ]],
+
+                body: rows,
+
+                foot: [
+
+                    [
+                        '',
+                        '',
+                        'HT',
+                        `${formatPrix(
+                            data.total_ht
+                        )} F`
+                    ],
+
+                    [
+                        '',
+                        '',
+                        'TTC',
+                        `${formatPrix(
+                            data.total_ttc
+                        )} F`
+                    ]
+                ],
+
+                theme: 'grid',
+
+                headStyles: {
+                    fillColor: [25, 135, 84]
+                },
+
+                footStyles: {
+                    fillColor: [233, 114, 35]
                 }
-            } catch (error) {
-                console.warn("Erreur lors de l'insertion du logo :", error);
-            }*/}
+            });
 
-        // ─────────────────────────────
-        // 📱 QR CODE
-        // ─────────────────────────────
-        const qrData = `
-DjagoYelen FACTURATION
+            // QR CODE
 
-Facture: ${numFacture}
-Client: ${fullFacture.client?.nom}
-Tél: ${fullFacture.client?.telephone || '-'}
-Email: ${fullFacture.client?.email || '-'}
+            const qrData = `
+Facture : ${numFacture}
+Client : ${client.nom}
+Montant : ${data.total_ttc} F
+`;
 
-Responsable: ${userName}
-Tél: ${téléphone}
-Total TTC: ${formatPrix(fullFacture.total_ttc)} F
-Date: ${date}`;
+            const qrImage =
+                await QRCode.toDataURL(qrData);
 
-        const qrImage = await QRCode.toDataURL(qrData);
+            doc.addImage(
+                qrImage,
+                'PNG',
+                160,
+                240,
+                30,
+                30
+            );
 
-        doc.addImage(qrImage, 'PNG', 100, 37, 25, 25);
+            // PREVIEW
 
+            if (preview) {
 
-        // ─────────────────────────────
-        // 💾 EXPORT
-        // ─────────────────────────────
-        doc.save(`Facture_${numFacture}.pdf`);
+                const blob =
+                    doc.output('blob');
 
-    } catch (error) {
-        console.error("Erreur PDF:", error);
-        alert("Impossible de générer le PDF");
-    }
-};
+                const url =
+                    URL.createObjectURL(blob);
 
-    // ─────────────────────────────────────────
-    // RENDER
-    // ─────────────────────────────────────────
+                setPreviewUrl(url);
+
+                setCurrentPdfName(
+                    `Facture_${numFacture}.pdf`
+                );
+
+                setShowPreview(true);
+
+            } else {
+
+                doc.save(
+                    `Facture_${numFacture}.pdf`
+                );
+            }
+
+        } catch (err) {
+
+            console.error(err);
+
+            Swal.fire(
+                'Erreur',
+                'Impossible de générer le PDF',
+                'error'
+            );
+        }
+    };
+
+    // =========================
+    // DOWNLOAD PDF
+    // =========================
+
+    const handleDownloadPdf = () => {
+
+        const link =
+            document.createElement('a');
+
+        link.href = previewUrl;
+
+        link.download = currentPdfName;
+
+        link.click();
+    };
+
+    // =========================
+    // LOADING
+    // =========================
+
     if (loading) {
+
         return (
-            <div className="d-flex justify-content-center align-items-center" style={{ height: '80vh', backgroundColor: colors.lightGray}}>
-                <div className="spinner-border" style={{ color: colors.orange }} role="status">
-                    <span className="visually-hidden">Chargement des factures...</span>
-                </div>
+
+            <div
+                className="d-flex justify-content-center align-items-center"
+                style={{ height: '80vh' }}
+            >
+                <div className="spinner-border" />
             </div>
         );
     }
 
-    const fieldConfig = {
-        nom: { placeholder: "Ex: Jean Dupont", type: "text" },
-        email: { placeholder: "Ex: jean@exemple.com", type: "email" },
-        telephone: { placeholder: "Ex: 70 00 00 00", type: "tel" },
-        adresse: { placeholder: "Ex: Bobo-Dioulasso, Burkina Faso", type: "text" }
-    };
-
+    // =========================
+    // RENDER
+    // =========================
 
     return (
-        <div className="container p-3 mb-5">
 
-            {/* ── MODAL CLIENT ── */}
-            {showClientModal && (
-                <div className="modal show d-block text-align-left" style={{ background: 'rgba(0,0,0,0.5)' }}>
-                    <div className="modal-dialog">
-                        <div className="modal-content text-align-left">
+        <div className="container py-4">
+
+            {/* =========================
+                PREVIEW PDF
+            ========================= */}
+
+            {showPreview && (
+
+                <div
+                    className="modal show d-block"
+                    style={{
+                        background:
+                            'rgba(0,0,0,0.7)',
+                        zIndex: 9999
+                    }}
+                >
+                    <div
+                        className="modal-dialog modal-xl"
+                        style={{
+                            maxWidth: '95%'
+                        }}
+                    >
+                        <div className="modal-content">
+
                             <div className="modal-header">
-                                <h5 className="modal-title">Nouveau Client</h5>
-                                <button className="btn-close" onClick={() => setShowClientModal(false)} />
+
+                                <h5 className="modal-title">
+                                    Prévisualisation PDF
+                                </h5>
+
+                                <button
+                                    className="btn-close"
+                                    onClick={() => {
+
+                                        setShowPreview(false);
+
+                                        URL.revokeObjectURL(
+                                            previewUrl
+                                        );
+                                    }}
+                                />
                             </div>
-                            <form onSubmit={handleAddClient}>
-                                <div className="modal-body" style={{ textAlign: 'left' }}>
-                                    {Object.keys(fieldConfig).map(field => (
-                                        <div className="mb-2" key={field}>
-                                            <label className="form-label text-capitalize">{field}</label>
-                                            <input
-                                                type={fieldConfig[field].type}
-                                                className="form-control"
-                                                value={newClient[field] || ''}
-                                                onChange={e => setNewClient(p => ({ ...p, [field]: e.target.value }))}
-                                                required={field === 'nom'}
-                                                placeholder={fieldConfig[field].placeholder}
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="modal-footer">
-                                    <button 
-                                        type="button" 
-                                        className="btn btn-secondary" 
-                                        onClick={() => setShowClientModal(false)}
-                                    >
-                                        Annuler
-                                    </button>
-                                    <button type="submit" className="btn btn-primary">
-                                        Enregistrer
-                                    </button>
-                                </div>
-                            </form>
+
+                            <div
+                                className="modal-body p-0"
+                                style={{
+                                    height: '80vh'
+                                }}
+                            >
+                                <iframe
+                                    src={previewUrl}
+                                    width="100%"
+                                    height="100%"
+                                    title="PDF"
+                                />
+                            </div>
+
+                            <div className="modal-footer">
+
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={() => {
+
+                                        setShowPreview(false);
+
+                                        URL.revokeObjectURL(
+                                            previewUrl
+                                        );
+                                    }}
+                                >
+                                    Retour
+                                </button>
+
+                                <button
+                                    className="btn btn-success"
+                                    onClick={
+                                        handleDownloadPdf
+                                    }
+                                >
+                                    Télécharger
+                                </button>
+
+                            </div>
+
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* ── LISTE ── */}
+            {/* =========================
+                LISTE
+            ========================= */}
+
             {!showModal ? (
+
                 <>
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                        <h3 className="mb-0">Factures</h3>
-                        <button className="btn btn-primary" onClick={() => {
-                            setFormData(initialFormState);
-                            setIsEditing(false);
-                            setErrors({});
-                            setShowModal(true);
-                        }}>
+
+                    <div className="d-flex justify-content-between align-items-center mb-4">
+
+                        <h3>
+                            Factures
+                        </h3>
+
+                        <button
+                            className="btn btn-primary"
+                            onClick={() => {
+
+                                setShowModal(true);
+
+                                setIsEditing(false);
+
+                                setFormData(
+                                    initialFormState
+                                );
+                            }}
+                        >
                             + Nouvelle facture
                         </button>
                     </div>
 
-                    {factures.length === 0 ? (
-                        <p className="text-muted">Aucune facture enregistrée.</p>
-                    ) : (
-                        <div className="table-responsive">
-                          <table className="table table-hover align-middle">
-                              <thead className="bg-green text-white">
-                                  <tr>
-                                      <th>N°</th>
-                                      <th>Client</th>
-                                      <th className="d-none d-md-table-cell">Date</th>
-                                      <th>Total TTC</th>
-                                      <th className="text-end">Actions</th>
-                                  </tr>
-                              </thead>
+                    <div className="table-responsive">
 
-                              <tbody>
-                                  {factures.length === 0 ? (
-                                      <tr>
-                                          <td colSpan="5" className="text-center py-4 text-muted">
-                                              Aucune facture disponible
-                                          </td>
-                                      </tr>
-                                  ) : (
-                                      factures.map(f => (
-                                          <tr key={f.id}>
+                        <table className="table table-hover align-middle">
 
-                                              {/* N° */}
-                                              <td className="fw-bold text-primary">
-                                                  #{f.numero_facture || f.num_facture || f.id}
-                                              </td>
+                            <thead className="table-dark">
 
-                                              {/* Client + date mobile */}
-                                              <td>
-                                                  <div className="fw-semibold">
-                                                      {f.client?.nom || '-'}
-                                                  </div>
+                                <tr>
 
-                                                  {/* Date visible seulement mobile */}
-                                                  <small className="text-muted d-md-none">
-                                                      {f.date_emission || '-'}
-                                                  </small>
-                                              </td>
+                                    <th>N°</th>
 
-                                              {/* Date desktop */}
-                                              <td className="d-none d-md-table-cell">
-                                                  {f.date_emission || '-'}
-                                              </td>
+                                    <th>Client</th>
 
-                                              {/* Total */}
-                                              <td className="fw-bold text-success">
-                                                  {formatPrix(f.total_ttc)} F
-                                              </td>
+                                    <th>Date</th>
 
-                                              {/* Actions */}
-                                              <td className="text-end">
-                                                  <div className="btn-group">
+                                    <th>Total</th>
 
-                                                      {/* PDF */}
-                                                      <button
-                                                          className="btn btn-sm btn-outline-success"
-                                                          title="Télécharger PDF"
-                                                          onClick={() => generatePDF(f)}
-                                                      >
-                                                          <i className="bi bi-file-earmark-pdf"></i>
-                                                      </button>
+                                    <th>
+                                        Actions
+                                    </th>
 
-                                                      {/* Modifier */}
-                                                      <button
-                                                          className="btn btn-sm btn-outline-warning"
-                                                          title="Modifier"
-                                                          onClick={() => {
-                                                              setIsEditing(true);
-                                                              setErrors({});
+                                </tr>
 
-                                                              const items = typeof f.items === 'string'
-                                                                  ? JSON.parse(f.items)
-                                                                  : f.items || initialFormState.items;
+                            </thead>
 
-                                                              setFormData({ ...f, items });
-                                                              setShowModal(true);
-                                                          }}
-                                                      >
-                                                          <i className="bi bi-pencil-square"></i>
-                                                      </button>
+                            <tbody>
 
-                                                      {/* Supprimer */}
-                                                      <button
-                                                          className="btn btn-sm btn-outline-danger"
-                                                          title="Supprimer"
-                                                          onClick={() => handleDelete(f.id)}
-                                                      >
-                                                          <i className="bi bi-trash"></i>
-                                                      </button>
+                                {factures.map(f => (
 
-                                                  </div>
-                                              </td>
+                                    <tr key={f.id}>
 
-                                          </tr>
-                                      ))
-                                  )}
-                              </tbody>
-                          </table>
-                          
-                      </div>
-                    )}
-                </>
-            ) : (
-                // ── FORMULAIRE ──
-                <form onSubmit={handleSubmit} className='mb-10' style={{textAlign: 'left'}}>
-                    <div className="d-flex justify-content-between align-items-center mb-10 text-align-left">
-                        <button type="button" className="btn btn-secondary" onClick={() => {
-                            setShowModal(false);
-                            setErrors({});
-                        }}>
-                            ← Retour
-                        </button>
-                        <h4>{isEditing ? 'Modifier la facture' : 'Nouvelle facture'}</h4>
-                    </div>
+                                        <td>
+                                            #
+                                            {f.numero_facture || f.id}
+                                        </td>
 
-                    {/* Client */}
-                    <div className="mb-3">
-                        <label className="form-label">Client <span className="text-danger"  style={{color: colors.dangerRed}}>*</span></label>
-                        <div className="d-flex gap-2">
-                            <select
-                                className={`form-control ${errors.client_id ? 'is-invalid' : ''}`}
-                                value={formData.client_id}
-                                onChange={e => setFormData(p => ({ ...p, client_id: Number(e.target.value) }))}
-                            >
-                                <option value="">-- Choisir un client --</option>
-                                {clients.map(c => (
-                                    <option key={c.id} value={c.id}>{c.nom}</option>
+                                        <td>
+                                            {f.client?.nom}
+                                        </td>
+
+                                        <td>
+                                            {f.date_emission}
+                                        </td>
+
+                                        <td className="fw-bold text-success">
+                                            {formatPrix(
+                                                f.total_ttc
+                                            )} F
+                                        </td>
+
+                                        <td>
+
+                                            <div className="btn-group">
+
+                                                <button
+                                                    className="btn btn-outline-success btn-sm"
+                                                    onClick={() =>
+                                                        generatePDF(
+                                                            f,
+                                                            true
+                                                        )
+                                                    }
+                                                >
+                                                    PDF
+                                                </button>
+
+                                                <button
+                                                    className="btn btn-outline-warning btn-sm"
+                                                    onClick={() =>
+                                                        handleEdit(f)
+                                                    }
+                                                >
+                                                    Modifier
+                                                </button>
+
+                                                <button
+                                                    className="btn btn-outline-danger btn-sm"
+                                                    onClick={() =>
+                                                        handleDelete(f.id)
+                                                    }
+                                                >
+                                                    Supprimer
+                                                </button>
+
+                                            </div>
+
+                                        </td>
+
+                                    </tr>
                                 ))}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </>
+
+            ) : (
+
+                // =========================
+                // FORMULAIRE
+                // =========================
+
+                <form onSubmit={handleSubmit}>
+
+                    <div className="d-flex justify-content-between align-items-center mb-4">
+
+                        <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={() => {
+
+                                setShowModal(false);
+
+                                setErrors({});
+                            }}
+                        >
+                            Retour
+                        </button>
+
+                        <h4>
+                            {isEditing
+                                ? 'Modifier facture'
+                                : 'Nouvelle facture'}
+                        </h4>
+
+                    </div>
+
+                    {/* CLIENT */}
+
+                    <div className="mb-3">
+
+                        <label className="form-label">
+                            Client
+                        </label>
+
+                        <div className="d-flex gap-2">
+
+                            <select
+                                className="form-control"
+                                value={
+                                    formData.client_id
+                                }
+                                onChange={e =>
+                                    setFormData(prev => ({
+                                        ...prev,
+                                        client_id:
+                                            Number(
+                                                e.target.value
+                                            )
+                                    }))
+                                }
+                            >
+
+                                <option value="">
+                                    Choisir
+                                </option>
+
+                                {clients.map(c => (
+
+                                    <option
+                                        key={c.id}
+                                        value={c.id}
+                                    >
+                                        {c.nom}
+                                    </option>
+                                ))}
+
                             </select>
-                            <button type="button" className="btn btn-outline-primary text-nowrap"
-                                onClick={() => setShowClientModal(true)}>
-                                + Nouveau
+
+                            <button
+                                type="button"
+                                className="btn btn-outline-primary"
+                                onClick={() =>
+                                    setShowClientModal(true)
+                                }
+                            >
+                                +
                             </button>
+
                         </div>
-                        {errors.client_id && <div className="text-danger small mt-1">{errors.client_id}</div>}
+
                     </div>
 
-                    {/* Date */}
-                    <div className="mb-3">
-                        <label className="form-label">Date d'émission</label>
-                        <input
-                            type="date"
-                            className="form-control"
-                            value={formData.date_emission}
-                            onChange={e => setFormData(p => ({ ...p, date_emission: e.target.value }))} disabled
-                        />
-                    </div>
-
-                    {/* Taux TVA */}
-                    <div className="mb-3">
-                        <label className="form-label">Taux TVA (%)</label>
-                        <input
-                            type="number"
-                            className="form-control"
-                            style={{ maxWidth: 120 }}
-                            value={formData.tva_taux}
-                            min={0}
-                            onChange={e => setFormData(p => ({ ...p, tva_taux: Number(e.target.value) }))}
-                            disabled
-                        />
-                    </div>
-
-                    {/* Lignes */}
-                    <label className="form-label fw-bold">Lignes de facturation</label>
-                    {errors.items && <div className="text-danger small mb-2">{errors.items}</div>}
+                    {/* ITEMS */}
 
                     {formData.items.map((item, i) => (
-                        <div key={i} className="border rounded p-3 mb-2 bg-light">
-                            <div className="row g-2 align-items-center">
-                                <div className="col-12 col-md-5 d-flex flex-column text-align-start">
-                                    <label className="form-label">Designation : <span className="text-danger"  style={{color: colors.dangerRed}}>*</span></label>
+
+                        <div
+                            className="border rounded p-3 mb-3"
+                            key={i}
+                        >
+
+                            <div className="row g-2">
+
+                                <div className="col-md-5">
+
                                     <input
-                                        className={`form-control ${errors[`items.${i}.designation`] ? 'is-invalid' : ''}`}
+                                        className="form-control"
                                         placeholder="Désignation"
-                                        value={item.designation}
-                                        onChange={e => handleItemChange(i, 'designation', e.target.value)}
+                                        value={
+                                            item.designation
+                                        }
+                                        onChange={e =>
+                                            handleItemChange(
+                                                i,
+                                                'designation',
+                                                e.target.value
+                                            )
+                                        }
                                     />
-                                    {errors[`items.${i}.designation`] && (
-                                        <div className="invalid-feedback">{errors[`items.${i}.designation`]}</div>
-                                    )}
+
                                 </div>
-                                <div className="col-6 col-md-2">
-                                    <label className="form-label">Quantité :</label>
+
+                                <div className="col-md-2">
+
                                     <input
-                                        type="number" min={1}
+                                        type="number"
                                         className="form-control"
-                                        placeholder="Qté"
-                                        value={item.quantite}
-                                        onChange={e => handleItemChange(i, 'quantite', e.target.value)}
+                                        value={
+                                            item.quantite
+                                        }
+                                        onChange={e =>
+                                            handleItemChange(
+                                                i,
+                                                'quantite',
+                                                e.target.value
+                                            )
+                                        }
                                     />
+
                                 </div>
-                                <div className="col-6 col-md-3">
-                                    <label className="form-label">Prix Unitaire : <span className="text-danger"  style={{color: colors.dangerRed}}>*</span></label>
+
+                                <div className="col-md-3">
+
                                     <input
-                                        type="number" min={0} step="0.01"
+                                        type="number"
                                         className="form-control"
-                                        placeholder="Prix unitaire"
-                                        value={item.prix_unitaire}
-                                        onChange={e => handleItemChange(i, 'prix_unitaire', e.target.value)}
+                                        value={
+                                            item.prix_unitaire
+                                        }
+                                        onChange={e =>
+                                            handleItemChange(
+                                                i,
+                                                'prix_unitaire',
+                                                e.target.value
+                                            )
+                                        }
                                     />
+
                                 </div>
-                                    <div className="col-6 col-md-1 text-muted small">
-                                        <label className="form-label">Valeur : </label><br></br>
-                                        = {(Number(item.quantite) * Number(item.prix_unitaire)).toLocaleString()} F
-                                    </div>
-                                <div className="col-6 col-md-1">
-                                    <button type="button" className="btn btn-sm btn-outline-danger w-100"
-                                        onClick={() => removeItem(i)}
-                                        disabled={formData.items.length === 1}>
-                                        ✕
+
+                                <div className="col-md-2">
+
+                                    <button
+                                        type="button"
+                                        className="btn btn-danger w-100"
+                                        onClick={() =>
+                                            removeItem(i)
+                                        }
+                                    >
+                                        X
                                     </button>
+
                                 </div>
+
                             </div>
+
                         </div>
                     ))}
 
-                    <button type="button" className="btn btn-outline-info btn-sm mb-4" onClick={addItem}>
-                        + Ajouter une ligne
+                    <button
+                        type="button"
+                        className="btn btn-outline-info mb-4"
+                        onClick={addItem}
+                    >
+                        + Ajouter ligne
                     </button>
 
-                    {/* Totaux */}
-                    <div className="card mb-3">
+                    {/* TOTAL */}
+
+                    <div className="card mb-4">
+
                         <div className="card-body">
+
                             <div className="d-flex justify-content-between">
-                                <span>Total HT</span>
-                                <strong>{formData.total_ht.toLocaleString()} F</strong>
+
+                                <span>
+                                    HT
+                                </span>
+
+                                <strong>
+                                    {formatPrix(
+                                        formData.total_ht
+                                    )} F
+                                </strong>
+
                             </div>
-                            <div className="d-flex justify-content-between text-muted">
-                                <span>TVA ({formData.tva_taux}%)</span>
-                                <span>{(formData.total_ttc - formData.total_ht).toLocaleString()} F</span>
+
+                            <div className="d-flex justify-content-between">
+
+                                <span>
+                                    TVA
+                                </span>
+
+                                <strong>
+                                    {formatPrix(
+                                        formData.total_ttc -
+                                        formData.total_ht
+                                    )} F
+                                </strong>
+
                             </div>
+
                             <hr />
+
                             <div className="d-flex justify-content-between fs-5">
-                                <span className="fw-bold">Total TTC</span>
-                                <strong className="text-success">{formData.total_ttc.toLocaleString()} F</strong>
+
+                                <span>
+                                    TTC
+                                </span>
+
+                                <strong className="text-success">
+                                    {formatPrix(
+                                        formData.total_ttc
+                                    )} F
+                                </strong>
+
                             </div>
+
                         </div>
+
                     </div>
 
-                    <button type="submit" className="btn btn-success mb-5 w-100" disabled={submitLoading}>
-                        {submitLoading ? 'Enregistrement...' : (isEditing ? 'Mettre à jour' : 'Enregistrer la facture')}
+                    <button
+                        className="btn btn-success w-100"
+                        disabled={submitLoading}
+                    >
+                        {submitLoading
+                            ? 'Chargement...'
+                            : isEditing
+                                ? 'Mettre à jour'
+                                : 'Enregistrer'}
                     </button>
+
                 </form>
             )}
-        </div>
 
-        
+            {/* =========================
+                MODAL CLIENT
+            ========================= */}
+
+            {showClientModal && (
+
+                <div
+                    className="modal show d-block"
+                    style={{
+                        background:
+                            'rgba(0,0,0,0.5)'
+                    }}
+                >
+                    <div className="modal-dialog">
+
+                        <div className="modal-content">
+
+                            <div className="modal-header">
+
+                                <h5>
+                                    Nouveau client
+                                </h5>
+
+                                <button
+                                    className="btn-close"
+                                    onClick={() =>
+                                        setShowClientModal(false)
+                                    }
+                                />
+
+                            </div>
+
+                            <form onSubmit={handleAddClient}>
+
+                                <div className="modal-body">
+
+                                    <input
+                                        className="form-control mb-2"
+                                        placeholder="Nom"
+                                        value={newClient.nom}
+                                        onChange={e =>
+                                            setNewClient(prev => ({
+                                                ...prev,
+                                                nom:
+                                                    e.target.value
+                                            }))
+                                        }
+                                    />
+
+                                    <input
+                                        className="form-control mb-2"
+                                        placeholder="Email"
+                                        value={newClient.email}
+                                        onChange={e =>
+                                            setNewClient(prev => ({
+                                                ...prev,
+                                                email:
+                                                    e.target.value
+                                            }))
+                                        }
+                                    />
+
+                                    <input
+                                        className="form-control mb-2"
+                                        placeholder="Téléphone"
+                                        value={newClient.telephone}
+                                        onChange={e =>
+                                            setNewClient(prev => ({
+                                                ...prev,
+                                                telephone:
+                                                    e.target.value
+                                            }))
+                                        }
+                                    />
+
+                                    <input
+                                        className="form-control"
+                                        placeholder="Adresse"
+                                        value={newClient.adresse}
+                                        onChange={e =>
+                                            setNewClient(prev => ({
+                                                ...prev,
+                                                adresse:
+                                                    e.target.value
+                                            }))
+                                        }
+                                    />
+
+                                </div>
+
+                                <div className="modal-footer">
+
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary"
+                                        onClick={() =>
+                                            setShowClientModal(false)
+                                        }
+                                    >
+                                        Annuler
+                                    </button>
+
+                                    <button className="btn btn-success">
+
+                                        Enregistrer
+
+                                    </button>
+
+                                </div>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+                </div>
+            )}
+
+        </div>
     );
 };
 
