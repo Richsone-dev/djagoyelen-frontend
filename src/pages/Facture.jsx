@@ -24,11 +24,10 @@ const Facture = () => {
 
     const [showClientModal, setShowClientModal] = useState(false);
 
-    const [showPreview, setShowPreview] = useState(false);
+    // ✅ PAGE PREVIEW
+    const [showPreviewPage, setShowPreviewPage] = useState(false);
 
     const [previewUrl, setPreviewUrl] = useState('');
-
-    const [previewBase64, setPreviewBase64] = useState('');
 
     const [currentPdfName, setCurrentPdfName] = useState('');
 
@@ -413,7 +412,87 @@ const Facture = () => {
     };
 
     // =========================
-    // PDF
+    // MODIFICATION
+    // =========================
+
+    const handleEdit = async (facture) => {
+
+        try {
+
+            const res = await api.get(
+                `/factures/${facture.id}`
+            );
+
+            const data =
+                res.data.data || res.data;
+
+            let items = [];
+
+            if (Array.isArray(data.items)) {
+
+                items = data.items;
+
+            } else if (
+                typeof data.items === 'string'
+            ) {
+
+                items = JSON.parse(data.items);
+
+            } else if (data.lignes) {
+
+                items = data.lignes;
+            }
+
+            setFormData({
+
+                id: data.id,
+
+                client_id: data.client_id,
+
+                date_emission:
+                    data.date_emission,
+
+                tva_taux:
+                    data.tva_taux || 18,
+
+                total_ht:
+                    data.total_ht || 0,
+
+                total_ttc:
+                    data.total_ttc || 0,
+
+                items: items.map(item => ({
+                    designation:
+                        item.designation || '',
+
+                    quantite:
+                        Number(item.quantite || 1),
+
+                    prix_unitaire:
+                        Number(
+                            item.prix_unitaire || 0
+                        )
+                }))
+            });
+
+            setIsEditing(true);
+
+            setShowModal(true);
+
+        } catch (err) {
+
+            console.error(err);
+
+            Swal.fire(
+                'Erreur',
+                'Impossible de charger la facture',
+                'error'
+            );
+        }
+    };
+
+    // =========================
+    // GENERATE PDF
     // =========================
 
     const generatePDF = async (
@@ -435,11 +514,9 @@ const Facture = () => {
             const numFacture =
                 data.numero_facture || data.id;
 
-            // =========================
             // HEADER
-            // =========================
 
-            doc.setFontSize(20);
+            doc.setFontSize(22);
 
             doc.setTextColor(25, 135, 84);
 
@@ -447,7 +524,7 @@ const Facture = () => {
 
             doc.setTextColor(233, 114, 35);
 
-            doc.text('Yelen', 40, 20);
+            doc.text('Yelen', 42, 20);
 
             doc.setTextColor(0, 0, 0);
 
@@ -467,7 +544,7 @@ const Facture = () => {
                 console.log(err);
             }
 
-            doc.setFontSize(11);
+            doc.setFontSize(12);
 
             doc.text(
                 `Facture N° ${numFacture}`,
@@ -482,12 +559,10 @@ const Facture = () => {
             doc.text(
                 `Date : ${date}`,
                 14,
-                53
+                55
             );
 
-            // =========================
             // CLIENT
-            // =========================
 
             const client = data.client || {};
 
@@ -506,24 +581,22 @@ const Facture = () => {
             doc.text(
                 client.nom || '-',
                 130,
-                53
+                55
             );
 
             doc.text(
                 client.telephone || '-',
                 130,
-                61
+                65
             );
 
             doc.text(
                 client.email || '-',
                 130,
-                69
+                75
             );
 
-            // =========================
             // ITEMS
-            // =========================
 
             let items = [];
 
@@ -562,7 +635,7 @@ const Facture = () => {
 
             autoTable(doc, {
 
-                startY: 80,
+                startY: 90,
 
                 head: [[
                     'Désignation',
@@ -596,6 +669,10 @@ const Facture = () => {
 
                 theme: 'grid',
 
+                styles: {
+                    fontSize: 10
+                },
+
                 headStyles: {
                     fillColor: [25, 135, 84]
                 },
@@ -605,9 +682,7 @@ const Facture = () => {
                 }
             });
 
-            // =========================
             // QR CODE
-            // =========================
 
             const qrData = `
 Facture : ${numFacture}
@@ -627,39 +702,39 @@ Montant : ${data.total_ttc} F
                 30
             );
 
-            // =========================
-            // PREVIEW MOBILE FIX
-            // =========================
+            // ✅ BLOB URL COMPATIBLE MOBILE
 
-            const blob = doc.output('blob');
+            const pdfBlob = doc.output('blob');
 
-            const blobUrl =
-                URL.createObjectURL(blob);
-
-            // IMPORTANT :
-            // datauristring fonctionne sur Android,
-            // tablette, Samsung, Huawei, etc.
-
-            const pdfBase64 =
-                doc.output('datauristring');
+            const pdfUrl =
+                URL.createObjectURL(pdfBlob);
 
             if (preview) {
 
-                setPreviewUrl(blobUrl);
-
-                setPreviewBase64(pdfBase64);
+                setPreviewUrl(pdfUrl);
 
                 setCurrentPdfName(
                     `Facture_${numFacture}.pdf`
                 );
 
-                setShowPreview(true);
+                // ✅ PAGE COMPLETE
+                setShowPreviewPage(true);
 
             } else {
 
-                doc.save(
-                    `Facture_${numFacture}.pdf`
-                );
+                const link =
+                    document.createElement('a');
+
+                link.href = pdfUrl;
+
+                link.download =
+                    `Facture_${numFacture}.pdf`;
+
+                document.body.appendChild(link);
+
+                link.click();
+
+                document.body.removeChild(link);
             }
 
         } catch (err) {
@@ -675,17 +750,23 @@ Montant : ${data.total_ttc} F
     };
 
     // =========================
-    // CLOSE PREVIEW
+    // DOWNLOAD PDF
     // =========================
 
-    const closePreview = () => {
+    const handleDownloadPdf = () => {
 
-        setShowPreview(false);
+        const link =
+            document.createElement('a');
 
-        if (previewUrl) {
+        link.href = previewUrl;
 
-            URL.revokeObjectURL(previewUrl);
-        }
+        link.download = currentPdfName;
+
+        document.body.appendChild(link);
+
+        link.click();
+
+        document.body.removeChild(link);
     };
 
     // =========================
@@ -706,7 +787,88 @@ Montant : ${data.total_ttc} F
     }
 
     // =========================
-    // RENDER
+    // PAGE PREVIEW PDF
+    // =========================
+
+    if (showPreviewPage) {
+
+        return (
+
+            <div
+                style={{
+                    width: '100%',
+                    height: '100vh',
+                    background: '#f4f4f4',
+                    display: 'flex',
+                    flexDirection: 'column'
+                }}
+            >
+
+                {/* HEADER */}
+
+                <div
+                    style={{
+                        background: '#fff',
+                        padding: '10px',
+                        borderBottom: '1px solid #ddd',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        gap: '10px'
+                    }}
+                >
+
+                    <button
+                        className="btn btn-secondary"
+                        onClick={() => {
+
+                            setShowPreviewPage(false);
+
+                            URL.revokeObjectURL(
+                                previewUrl
+                            );
+                        }}
+                    >
+                        ← Retour
+                    </button>
+
+                    <h5
+                        style={{
+                            margin: 0
+                        }}
+                    >
+                        Aperçu PDF
+                    </h5>
+
+                    <button
+                        className="btn btn-success"
+                        onClick={handleDownloadPdf}
+                    >
+                        Télécharger
+                    </button>
+
+                </div>
+
+                {/* PDF FULL PAGE */}
+
+                <iframe
+                    src={previewUrl}
+                    title="Aperçu PDF"
+                    style={{
+                        flex: 1,
+                        width: '100%',
+                        border: 'none',
+                        background: '#fff'
+                    }}
+                />
+
+            </div>
+        );
+    }
+
+    // =========================
+    // RENDER NORMAL
     // =========================
 
     return (
@@ -714,113 +876,7 @@ Montant : ${data.total_ttc} F
         <div className="container py-4">
 
             {/* =========================
-                PREVIEW PDF
-            ========================= */}
-
-            {showPreview && (
-
-                <div
-                    className="modal show d-block"
-                    style={{
-                        background:
-                            'rgba(0,0,0,0.7)',
-                        zIndex: 9999
-                    }}
-                >
-                    <div
-                        className="modal-dialog modal-xl modal-fullscreen-md-down modal-dialog-centered"
-                        style={{
-                            maxWidth: '98%'
-                        }}
-                    >
-                        <div
-                            className="modal-content"
-                            style={{
-                                height: '95vh'
-                            }}
-                        >
-
-                            {/* HEADER */}
-
-                            <div className="modal-header">
-
-                                <h5 className="modal-title">
-                                    Prévisualisation PDF
-                                </h5>
-
-                                <button
-                                    className="btn-close"
-                                    onClick={closePreview}
-                                />
-
-                            </div>
-
-                            {/* BODY */}
-
-                            <div
-                                className="modal-body p-0"
-                                style={{
-                                    height: '100%',
-                                    background: '#e9ecef'
-                                }}
-                            >
-
-                                {/* 
-                                   IMPORTANT :
-                                   Utiliser base64 au lieu de blob
-                                   pour Android/Tablette
-                                */}
-
-                                <iframe
-                                    src={previewBase64}
-                                    title="PDF Preview"
-                                    width="100%"
-                                    height="100%"
-                                    style={{
-                                        border: 'none',
-                                        background: '#fff'
-                                    }}
-                                />
-
-                            </div>
-
-                            {/* FOOTER */}
-
-                            <div className="modal-footer">
-
-                                <button
-                                    className="btn btn-secondary"
-                                    onClick={closePreview}
-                                >
-                                    Fermer
-                                </button>
-
-                                <a
-                                    href={previewBase64}
-                                    download={currentPdfName}
-                                    className="btn btn-success"
-                                >
-                                    Télécharger
-                                </a>
-
-                                <a
-                                    href={previewBase64}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="btn btn-primary"
-                                >
-                                    Ouvrir
-                                </a>
-
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* =========================
-                LISTE FACTURES
+                LISTE
             ========================= */}
 
             {!showModal ? (
@@ -848,7 +904,6 @@ Montant : ${data.total_ttc} F
                         >
                             + Nouvelle facture
                         </button>
-
                     </div>
 
                     <div className="table-responsive">
@@ -867,7 +922,9 @@ Montant : ${data.total_ttc} F
 
                                     <th>Total</th>
 
-                                    <th>Actions</th>
+                                    <th>
+                                        Actions
+                                    </th>
 
                                 </tr>
 
@@ -916,6 +973,9 @@ Montant : ${data.total_ttc} F
 
                                                 <button
                                                     className="btn btn-outline-warning btn-sm"
+                                                    onClick={() =>
+                                                        handleEdit(f)
+                                                    }
                                                 >
                                                     Modifier
                                                 </button>
