@@ -6,6 +6,7 @@ import 'jspdf-autotable';
 import autoTable from 'jspdf-autotable';
 import Swal from 'sweetalert2';
 import logo from '../assets/djago-logo.jpeg';
+import { Colors } from 'chart.js';
 
 const Facture = () => {
 
@@ -977,7 +978,7 @@ Date: ${date}`;
 
                     {/* HEADER */}
                     <div
-                        className="bg-white border-bottom d-flex justify-content-between align-items-center p-3"
+                        className=" bg-success border-bottom d-flex justify-content-between align-items-center p-3" style={{backgroundColor: Colors.successGreen, color: 'white'}}
                     >
 
                         <h5 className="mb-0">
@@ -985,7 +986,7 @@ Date: ${date}`;
                         </h5>
 
                         <button
-                            className="btn-close"
+                            className="btn-close" style={{color: 'white'}}
                             onClick={() => {
 
                                 setShowPreview(false);
@@ -1000,6 +1001,53 @@ Date: ${date}`;
                         />
 
                     </div>
+                            {/* FOOTER */}
+                            <div
+                                className="bg-white border-top p-2 d-flex gap-2 justify-content-center flex-wrap"
+                            >
+        
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={() => {
+        
+                                        setShowPreview(false);
+        
+                                        if (previewUrl) {
+                                            URL.revokeObjectURL(previewUrl);
+                                        }
+        
+                                        setPreviewUrl(null);
+        
+                                    }}
+                                >
+        
+                                    ← Retour
+        
+                                </button>
+        
+                                <button
+                                    className="btn btn-success"
+                                    onClick={() =>
+                                        handleDownloadPDF(previewFacture)
+                                    }
+                                >
+        
+                                    Télécharger
+        
+                                </button>
+        
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={() =>
+                                        handleSharePDF(previewFacture)
+                                    }
+                                >
+        
+                                    Partager
+        
+                                </button>
+        
+                            </div>
 
                     {/* PDF */}
                     <div
@@ -1018,53 +1066,6 @@ Date: ${date}`;
                                 border: 'none'
                             }}
                         />
-
-                    </div>
-                    {/* FOOTER */}
-                    <div
-                        className="bg-white border-top p-2 d-flex gap-2 justify-content-center flex-wrap"
-                    >
-
-                        <button
-                            className="btn btn-secondary"
-                            onClick={() => {
-
-                                setShowPreview(false);
-
-                                if (previewUrl) {
-                                    URL.revokeObjectURL(previewUrl);
-                                }
-
-                                setPreviewUrl(null);
-
-                            }}
-                        >
-
-                            ← Retour
-
-                        </button>
-
-                        <button
-                            className="btn btn-success"
-                            onClick={() =>
-                                handleDownloadPDF(previewFacture)
-                            }
-                        >
-
-                            Télécharger
-
-                        </button>
-
-                        <button
-                            className="btn btn-primary"
-                            onClick={() =>
-                                handleSharePDF(previewFacture)
-                            }
-                        >
-
-                            Partager
-
-                        </button>
 
                     </div>
 
