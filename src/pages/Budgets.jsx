@@ -142,8 +142,8 @@ const Budgets = () => {
             {/* HEADER - Toujours visible */}
             <div className="row mb-4 align-items-center">
                 <div className="col-md-8 text-start">
-                    <h2 className="fw-bold h4" style={{ color: colors.darkGreen }}>
-                        <i className="bi bi-target me-2 text-success"></i>Budgets & Objectifs
+                    <h2 className="fw-bold h-auto mb-4" style={{ color: colors.darkGreen }}>
+                        <i className="bi bi-piggy-bank fs-3 me-2"></i>Budgets & Objectifs
                     </h2>
                     <p className="text-muted small">Contrôlez vos dépenses pour mieux épargner.</p>
                 </div>
