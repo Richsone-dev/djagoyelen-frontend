@@ -293,7 +293,7 @@ const Category = () => {
                                                     border: `1px solid ${bgColor}`
                                                 }}
                                             >
-                                                <Icon size={10} strokeWidth={2} />
+                                                <Icon size={20} strokeWidth={2} />
                                             </div>
                                             
                                             <div className="flex-grow-1 overflow-hidden">
