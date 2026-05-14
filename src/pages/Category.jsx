@@ -446,7 +446,7 @@ const Category = () => {
                                     </div>
 
                                     {/* Champs du formulaire */}
-                                    <div className="mb-3">
+                                    <div className="mb-3 text-start">
                                         <label className="form-label small fw-bold text-muted">NOM</label>
                                         <input 
                                             type="text" 
@@ -457,7 +457,7 @@ const Category = () => {
                                         />
                                     </div>
 
-                                    <div className="mb-3">
+                                    <div className="mb-3 text-start">
                                         <label className="form-label small fw-bold text-muted">TYPE</label>
                                         <select 
                                             className="form-select form-select-lg border-0 bg-light rounded-3 shadow-none"
