@@ -220,7 +220,7 @@ const MainLayout = () => {
 
                 {!isMobile && (
                     <footer className="text-center d-flex align-items-center justify-content-center text-muted small border-top bg-white mt-auto" style={{ height: footerHeight, width: '100%' }}>
-                        <div>&copy; 2026 <strong>DjagoYelen</strong> — <span className="ms-2"><em>Karim & Françoise, Ingénieurs en Génie Logiciel</em></span></div>
+                        <div>&copy; 2026 <strong>DjagoYelen</strong> tout droit réservé. {/*} <span className="ms-2"><em>Karim & Françoise, Ingénieurs en Génie Logiciel</em></span>*/}</div>
                     </footer>
                 )}
 

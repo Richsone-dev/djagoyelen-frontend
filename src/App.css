@@ -6,6 +6,11 @@
   animation: slideDown 0.4s ease-out; 
 }
 
+/* On cible le conteneur principal de SweetAlert2 */
+.swal2-container {
+    z-index: 10000 !important; /* Ajustez ce nombre si nécessaire */
+}
+
 @keyframes fadeIn { 
   from { opacity: 0; } 
   to { opacity: 1; } 

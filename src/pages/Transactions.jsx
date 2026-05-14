@@ -5,6 +5,7 @@ import logo from '../assets/djago-logo.jpeg';
 import Select from 'react-select';
 import Swal from 'sweetalert2';
 import { Colors } from 'chart.js';
+import {motion, AnimatePresence} from 'framer-motion';
 
 // --- COMPOSANT DE GESTION DU CONTENU DU TABLEAU (OPTION 2) ---
 const TableContent = ({ loading, data, columns, renderRow }) => {
@@ -188,6 +189,8 @@ const Transactions = () => {
                                 </div>
 
                                 <form onSubmit={handleSubmit} className="modal-body p-4 text-start">
+                                 
+                                    
                                     {errorMsg && <div className="alert alert-danger py-2 small mb-3 rounded-3">{errorMsg}</div>}
                                     <div className="row g-3">
                                         <div className="col-12 col-md-6">
@@ -210,7 +213,7 @@ const Transactions = () => {
                                                             options={categories.map(c => ({ value: c.id, label: c.nom || c.name }))}
                                                             onChange={(s) => setFormData({...formData, category_id: s?.value})}
                                                             value={categories.find(c => c.id === formData.category_id) ? { value: formData.category_id, label: categories.find(c => c.id === formData.category_id).nom || categories.find(c => c.id === formData.category_id).name } : null}
-                                                            styles={{ control: (b) => ({ ...b, borderRadius: '25px' }) }}
+                                                            styles={{ control: (b) => ({ ...b, borderRadius: '25px' }) }} required
                                                         />
                                                     </div>
                                                     <button type="button" className="btn btn-outline-success rounded-circle ms-2" onClick={() => setIsAddingCategory(true)}><i className="bi bi-plus-lg"></i></button>

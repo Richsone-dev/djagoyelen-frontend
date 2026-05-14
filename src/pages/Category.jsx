@@ -139,7 +139,7 @@ const Category = () => {
         } finally {
             setIsSubmitting(false);
         }
-        await Swal.close();
+         Swal.close();
     };
 
     const handleDelete = async (id) => {
@@ -221,7 +221,7 @@ const Category = () => {
                 style={{ borderLeftColor: stat.color + ' !important' }}
             >
                 <div className="d-flex flex-column flex-md-row align-items-center justify-content-md-between gap-2">
-                    <div className="text-md-start">
+                    <div className="text-md-start" >
                         <div 
                             className="text-muted text-uppercase fw-bold mb-1 d-none d-md-block" 
                             style={{ fontSize: '0.80rem', letterSpacing: '0.5px' }}
@@ -244,7 +244,9 @@ const Category = () => {
                             width: '38px', 
                             height: '38px', 
                             backgroundColor: stat.bg,
-                            color: stat.color 
+                            color: stat.color,
+                            border: `1px solid ${stat.bg}`,
+                            marginTop: '4px'
                         }}
                     >
                         <stat.icon size={18} strokeWidth={2.5} />
@@ -390,7 +392,7 @@ const Category = () => {
                                 right: 0, 
                                 bottom: 0, 
                                 backdropFilter: 'blur(4px)',
-                                zIndex: 9999 
+                                zIndex: -99999 
                             }}
                             initial={{ opacity: 0 }} 
                             animate={{ opacity: 1 }} 
