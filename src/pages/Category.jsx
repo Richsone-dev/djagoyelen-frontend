@@ -54,8 +54,8 @@ const Category = () => {
     };
 
     const api = useMemo(() => axios.create({
-        baseURL: 'https://djagoyelen-backend.onrender.com/api' || 'http://localhost:8000/api',
-        //baseURL: 'http://localhost:8000/api',
+        //baseURL: 'https://djagoyelen-backend.onrender.com/api' || 'http://localhost:8000/api',
+        baseURL: 'http://localhost:8000/api',
         headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -81,6 +81,7 @@ const Category = () => {
         e.preventDefault();
         if (!formData.nom.trim()) return;
         try {
+            Swal.fire({ title: editingCategory ? 'Enregistrement...' : 'Création...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             setIsSubmitting(true);
             const payload = { ...formData, nom: formData.nom.trim() };
             if (editingCategory) {
@@ -99,6 +100,7 @@ const Category = () => {
         } finally {
             setIsSubmitting(false);
         }
+        await Swal.close();
     };
 
     const handleDelete = async (id) => {
@@ -111,11 +113,13 @@ const Category = () => {
         });
         if (result.isConfirmed) {
             try {
+                Swal.fire({ title: 'Suppression...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                 await api.delete(`/categories/${id}`);
                 setCategories(prev => prev.filter(c => c.id !== id));
             } catch (error) {
                 Swal.fire({ icon: 'error', title: 'Erreur' });
             }
+            await Swal.close();
         }
     };
 
@@ -181,9 +185,10 @@ const Category = () => {
                     <div className="text-md-start">
                         <div 
                             className="text-muted text-uppercase fw-bold mb-1 d-none d-md-block" 
-                            style={{ fontSize: '0.65rem', letterSpacing: '0.5px' }}
+                            style={{ fontSize: '0.80rem', letterSpacing: '0.5px' }}
                         >
                             {stat.label}
+                            
                         </div>
                         <div className="h4 fw-bold mb-0" style={{ color: '#1F2937' }}>
                             {stat.count}
