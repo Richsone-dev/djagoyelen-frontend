@@ -973,7 +973,7 @@ Tél: ${téléphone}`;
                     >
 
                         <h5 className="mb-0">
-                            Prévisualisation PDF
+                            Prévisualisation de la facture #{previewFacture.numero_facture || previewFacture.id}
                         </h5>
 
                         <button
@@ -1154,9 +1154,7 @@ Tél: ${téléphone}`;
                                     >
 
                                         Enregistrer
-
                                     </button>
-
                                 </div>
 
                             </form>

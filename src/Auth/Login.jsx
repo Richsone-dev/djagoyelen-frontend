@@ -88,6 +88,7 @@ const Login = () => {
                         <Link to="/register" className="fw-bold text-decoration-none" style={{ color: colors.successGreen }}>
                             Créer un compte
                         </Link>
+                        <small className="text-muted" style={{color:colors.orange}}><br /><em>Nous avons bloqué la création de compte pour l'instant!</em> </small>
                     </div>
                 </form>
             </div>
