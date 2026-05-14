@@ -14,6 +14,7 @@ import Apropos from './pages/Apropos';
 import Notifications from './pages/Notifications';
 import Login from './Auth/Login';
 import Register from './Auth/Register';
+import Category from './pages/Category';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
@@ -54,6 +55,7 @@ function App() {
           <Route path="parametres" element={<Parametres />} />
           <Route path="apropos" element={<Apropos />} />
           <Route path="factures" element={<Facture />} />
+          <Route path="category" element={<Category />} />
           {/*<Route path="dettes" element={<Dettes />} />
           <Route path="notifications" element={<Notifications />} />*/}
         </Route>

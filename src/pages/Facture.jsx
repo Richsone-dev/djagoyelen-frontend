@@ -951,7 +951,7 @@ Tél: ${téléphone}`;
 
     return (
 
-        <div className="container p-3 mb-5">
+        <div className="container p-1 mb-5">
 
             {/* ───────────────────────────── */}
             {/* PREVIEW PDF */}

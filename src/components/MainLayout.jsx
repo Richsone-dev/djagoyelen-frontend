@@ -66,6 +66,7 @@ const MainLayout = () => {
         links: [
             { path: 'dashboard', label: 'Tableau de bord', icon: 'speedometer2' },
             { path: 'transactions', label: 'Transactions', icon: 'cash-stack' },
+            {path: 'category', label: 'Catégories', icon: 'tags' },
             { path: 'budgets', label: 'Budgets', icon: 'piggy-bank' },
             { path: 'rapports', label: 'Rapports', icon: 'file-earmark-bar-graph' },
             { path: 'profil', label: 'Profil', icon: 'person' },
