@@ -307,7 +307,7 @@ const Category = () => {
                                             
                                             <div className="flex-grow-1 overflow-hidden">
                                                 <div className="d-flex align-items-center gap-2 mb-1">
-                                                    <h6 className="fw-bold mb-0 text-truncate" style={{ color: colors.text, fontSize: '0.80rem' }}>
+                                                    <h6 className="fw-bold mb-0 text-truncate" style={{ color: colors.text, fontSize: '1.25rem' }}>
                                                         {cat.nom}
                                                     </h6>
                                                     
@@ -319,7 +319,8 @@ const Category = () => {
                                                         backgroundColor: bgColor, 
                                                         color: themeColor,
                                                         letterSpacing: '0.5px',
-                                                        textTransform: 'uppercase'
+                                                        textTransform: 'uppercase',
+                                                        textAlign:'left'
                                                     }}
                                                 >
                                                     {cat.type}
