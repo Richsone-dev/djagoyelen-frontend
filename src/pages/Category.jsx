@@ -4,10 +4,35 @@ import Swal from 'sweetalert2';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import {
+    // --- Vos icônes actuelles ---
     Tag, ShoppingBag, CreditCard, Wrench, HelpCircle, Car, Utensils, 
     HeartPulse, Tv, Coffee, Zap, Home, Plane, Briefcase, 
     GraduationCap, Plus, Edit, Trash2, Loader2, Bike, 
-    Motorbike, TrendingUp, TrendingDown, LayoutGrid, X, Music, Film, Book, Gamepad, Camera, Gift, Heart, Star, User, Users
+    Motorbike, TrendingUp, TrendingDown, LayoutGrid, X, Music, Film, Book, Gamepad, Camera, Gift, Heart, Star, User, Users,
+
+    // --- 20 nouvelles icônes utiles ---
+    PiggyBank,      // Épargne / Économies
+    Banknote,       // Argent liquide / Cash
+    Receipt,        // Factures / Reçus
+    Wallet,         // Portefeuille / Budget personnel
+    Landmark,       // Banque / Institutions / État
+    Smartphone,     // Forfait mobile / Abonnements tech
+    Wifi,           // Internet / Télécoms
+    Droplets,       // Eau / Services publics
+    Flame,          // Gaz / Chauffage
+    Truck,          // Livraison / Logistique
+    ShieldCheck,    // Assurances / Sécurité
+    Stethoscope,    // Consultations médicales / Soins
+    ShoppingCart,   // Courses / Supermarché
+    Shirt,          // Vêtements / Mode
+    Dumbbell,       // Sport / Salle de gym
+    Wine,           // Sorties / Restaurants / Alcool
+    Brush,          // Décoration / Entretien maison
+    Hammer,         // Travaux / Réparations lourdes
+    Globe,          // Services en ligne / International
+    Coins,           // Revenus passifs / Dividendes / Monnaie
+    Computer,   // Matériel informatique / Logiciels
+    SquareCenterlineDashedVertical, // Catégorie "Autre" moderne
 } from 'lucide-react';
 import { Colors } from 'chart.js';
 
@@ -20,6 +45,7 @@ const Category = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [editingCategory, setEditingCategory] = useState(null);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
     const [formData, setFormData] = useState({
         nom: '',
@@ -50,7 +76,12 @@ const Category = () => {
         Loisirs: Tv, Education: GraduationCap, Banque: CreditCard,
         Travail: Briefcase, Autre: HelpCircle, Musique: Music, Film: Film, 
         Livre: Book, Jeux: Gamepad, Photo: Camera, Cadeau: Gift, Amour: Heart, 
-        Etoile: Star, Personne: User, Groupe: Users
+        Etoile: Star, Personne: User, Groupe: Users,
+        Economie: PiggyBank, Argent: Banknote, Facture: Receipt, Portefeuille: Wallet,
+        Banque: Landmark, Mobile: Smartphone, Internet: Wifi, Eau: Droplets, Gaz: Flame,
+        Livraison: Truck, Assurance: ShieldCheck, Soin: Stethoscope, Courses: ShoppingCart,
+        Vetements: Shirt, Sport: Dumbbell, Sorties: Wine, Maison: Brush, Travaux: Hammer,
+        International: Globe, Passif: Coins, Informatique: Computer, AutreModerne: SquareCenterlineDashedVertical
     };
 
     const api = useMemo(() => axios.create({
@@ -150,10 +181,10 @@ const Category = () => {
                     <div className="row align-items-center g-3">
                         <div className="col-12 col-md-8 text-center text-md-start">
                             <div className="d-flex flex-column flex-md-row align-items-center gap-3">
-                                <div className="p-3 rounded-4 bg-white bg-opacity-10 backdrop-blur d-none d-sm-block">
-                                    <LayoutGrid size={28} />
+                                <div className="p-3 m-2 rounded-4 bg-white bg-opacity-10 backdrop-blur d-sm-block">
+                                    <LayoutGrid  size={isMobile? 20: 28} padding={isMobile? 1: 3}/>
                                 </div>
-                                <div>
+                                <div className='m-1'>
                                     <h1 className="fw-bold mb-1 h3 h1-md">Mes Catégories</h1>
                                     <p className="opacity-75 mb-0 small">Gérez vos revenus et dépenses</p>
                                 </div>
@@ -290,7 +321,7 @@ const Category = () => {
                                             <div className="btn-group flex-wrap">
                                                 <button 
                                                     onClick={() => openEditModal(cat)} 
-                                                    className="btn btn-link p-2 text-muted hover-primary rounded-circle transition-all"
+                                                    className="btn btn-link p-2 text-muted hover-primary rounded-circle transition-all color: #0d6efd !important;"
                                                     title="Modifier"
                                                 >
                                                     <Edit size={16} />
@@ -298,6 +329,7 @@ const Category = () => {
                                                 <button 
                                                     onClick={() => handleDelete(cat.id)} 
                                                     className="btn btn-link p-2 text-muted hover-danger rounded-circle transition-all"
+                                                    style={{color: colors.dangerRed}}
                                                     title="Supprimer"
                                                 >
                                                     <Trash2 size={16} />
@@ -438,7 +470,7 @@ const Category = () => {
                                                     className={`btn w-100 py-3 rounded-3 border-0 transition-all ${formData.icone === name ? 'text-white' : 'bg-light text-muted'}`}
                                                     style={{ backgroundColor: formData.icone === name ? colors.orange : '' }}
                                                 >
-                                                    <Icon size={20} className="mx-auto" />
+                                                    <Icon size={20} className="mx-auto color-success" style={{color: Colors.successGreen}} />
                                                 </button>
                                             </div>
                                         ))}

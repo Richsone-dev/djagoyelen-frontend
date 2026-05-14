@@ -212,7 +212,7 @@ const MainLayout = () => {
                     </div>
                 </header>
 
-                <main className="flex-grow-1 bg-light" style={{ marginTop: headerHeight, backgroundColor: colors.white, marginBottom: isMobile ? '70px' : '0' }}>
+                <main className="flex-grow-1 bg-light overflow-auto" style={{ marginTop: headerHeight, marginBottom: isMobile ? '70px' : '0' }}>
                     <div className="container-fluid py-3 py-md-2">
                         <Outlet />
                     </div>
