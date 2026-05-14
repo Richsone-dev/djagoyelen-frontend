@@ -32,7 +32,10 @@ import {
     Globe,          // Services en ligne / International
     Coins,           // Revenus passifs / Dividendes / Monnaie
     Computer,   // Matériel informatique / Logiciels
-    SquareCenterlineDashedVertical, // Catégorie "Autre" moderne
+    SquareCenterlineDashedVertical,
+    Phone, // Catégorie "Autre" moderne
+    Sword, // Catégorie "Autre" moderne
+    SquareRoundCorner,
 } from 'lucide-react';
 import { Colors } from 'chart.js';
 
@@ -81,7 +84,12 @@ const Category = () => {
         Banque: Landmark, Mobile: Smartphone, Internet: Wifi, Eau: Droplets, Gaz: Flame,
         Livraison: Truck, Assurance: ShieldCheck, Soin: Stethoscope, Courses: ShoppingCart,
         Vetements: Shirt, Sport: Dumbbell, Sorties: Wine, Maison: Brush, Travaux: Hammer,
-        International: Globe, Passif: Coins, Informatique: Computer, AutreModerne: SquareCenterlineDashedVertical
+        International: Globe, Passif: Coins, Informatique: Computer, AutreModerne: SquareCenterlineDashedVertical,
+        Phone: Phone,
+        Bookmark: Tag, // Alias pour "Autre" si besoin
+        Autre: HelpCircle,
+        Sword: Sword,
+        SquareRoundCorner: SquareRoundCorner
     };
 
     const api = useMemo(() => axios.create({

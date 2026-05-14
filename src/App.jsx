@@ -58,6 +58,7 @@ function App() {
           <Route path="category" element={<Category />} />
           {/*<Route path="dettes" element={<Dettes />} />
           <Route path="notifications" element={<Notifications />} />*/}
+          {/*<Route path="admindashboard" element={<Navigate to="/AdminDashboard" replace />} />*/}
         </Route>
 
         {/* --- 404 --- */}
