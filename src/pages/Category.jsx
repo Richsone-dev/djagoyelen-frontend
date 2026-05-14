@@ -172,7 +172,7 @@ const Category = () => {
     const depensesCount = categories.filter(c => c.type === 'depense').length;
 
     return (
-        <div className="min-vh-100 py-3 mb-5 py-md-2 px-md-1" style={{ backgroundColor: colors.bg }}>
+        <div className="min-vh-100 py-1 mb-5 py-md-1 px-md-1" style={{ backgroundColor: colors.bg }}>
             <div className="container-fluid" style={{ maxWidth: '1200px' }}>
                 
                 {/* HEADER RESPONSIVE */}
@@ -225,7 +225,7 @@ const Category = () => {
                             {stat.count}
                         </div>
                         {/* Label version mobile (plus petit) */}
-                        <div className="text-muted fw-medium d-md-none" style={{ fontSize: '0.55rem' }}>
+                        <div className="text-muted fw-medium d-md-none" style={{ fontSize: '0.75rem' }}>
                             {stat.label}
                         </div>
                     </div>
@@ -243,6 +243,7 @@ const Category = () => {
                     </div>
                 </div>
             </motion.div>
+                    
         </div>
     ))}
 </div>
