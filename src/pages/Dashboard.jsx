@@ -81,7 +81,7 @@ const Dashboard = () => {
                 setTransactions(data.recent);
 
                 const moisLabels = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
-                const labelsLine = Object.keys(data.chart.revenus).map(m => moisLabels[m - 1]);
+                const labelsLine = Object.keys(data.chart.revenus).map(m => moisLabels[m]);
                 
                 setLineData({
                     labels: labelsLine,
@@ -91,14 +91,14 @@ const Dashboard = () => {
                             data: Object.values(data.chart.revenus),
                             borderColor: colors.successGreen,
                             backgroundColor: 'rgba(25, 135, 84, 0.1)',
-                            fill: true, tension: 0.4, pointRadius: 4
+                            fill: true, tension: 0.4, pointRadius: 4, pointHoverRadius: 12
                         },
                         {
                             label: 'Dépenses',
                             data: Object.values(data.chart.depenses),
                             borderColor: colors.red1,
                             backgroundColor: 'rgba(255, 0, 0, 0.1)',
-                            fill: true, tension: 0.4, pointRadius: 4
+                            fill: true, tension: 0.4, pointRadius: 4, pointHoverRadius: 12
                         }
                     ]
                 });

@@ -77,7 +77,7 @@ const Login = () => {
                                onChange={handleChange} required />
                     </div>
 
-                    <button type="submit" disabled={loading} 
+                    <button type="submit" disabled={loading}
                             className="btn w-100 text-white fw-bold mt-2"
                             style={{ backgroundColor: colors.orange, borderRadius: '10px', height: '50px' }}>
                         {loading ? 'Connexion...' : 'Se connecter'}

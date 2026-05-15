@@ -20,7 +20,15 @@ const MainLayout = () => {
         white: '#ffffff',
         successGreen: '#198754',
         accentPurple: '#6f42c1',
-        primaryBlue: '#0d6efd'
+        primaryBlue: '#0d6efd',
+        blue: '#0dcaf0',
+        blueLight: 'rgba(13, 110, 253, 0.1)',
+        blueDark: 'rgba(13, 110, 253, 0.2)',
+        redLight: 'rgba(220, 53, 69, 0.1)',
+        greenLight: 'rgba(25, 135, 84, 0.1)',
+        purpleLight: 'rgba(111, 66, 193, 0.1)',
+        orangeLight: 'rgba(233, 114, 35, 0.1)',
+        yellowLight: 'rgba(255, 193, 7, 0.1)',
     };
 
     useEffect(() => {
