@@ -268,13 +268,13 @@ const Facture = () => {
             });
             
             await api.put(
-                `/factures/${formData.id}`,
+                `/facturess/${formData.id}`,
                 payload
             );
             
             await Swal.fire(
                 'Succès',
-                'Facture modifiée avec succès',
+                'facturelignes modifiée avec succès',
                 'success'
             );
 
