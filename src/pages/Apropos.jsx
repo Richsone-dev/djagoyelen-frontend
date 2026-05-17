@@ -50,7 +50,7 @@ const AproposDetails = () => {
         <div className="container-fluid px-0 px-md-5 py-5">
             {/* HERO */}
             <section ref={heroRef} className={`fade ${heroVisible ? 'show' : ''}`}>
-                <div className="mb-5 text-center">
+                <div className="mb-5 text-center border-1 border-success p-4 rounded-4 shadow-sm" style={{ backgroundColor: colors.cardBg }}>
                     {/* Titre : un peu plus petit sur mobile avec display-4 */}
                     <h1 className="display-4 display-md-3 fw-bold mb-4">
                         <span style={{ color: colors.darkGreen }}>Djago</span> 
@@ -79,13 +79,13 @@ const AproposDetails = () => {
             </section>
 
             {/* VISION */}
-            <Section
+            <Section className="mb-5 border-1 border-success p-4 rounded-4 shadow-sm"
                 title="Notre Vision"
                 img={visuel2}
                 text="DjagoYelen vise à transformer la gestion financière en Afrique en apportant clarté, transparence et performance aux entreprises."
                 colors={colors}
             />
-            <Section
+            <Section className="mb-5 border-1 border-success p-4 rounded-4 shadow-sm"   
                 title="Architecte de la Prospérité"
                 img={visuel3}
                 text="Nous structurons l'avenir financier en offrant à chaque idée la solidité technologique nécessaire pour passer de l'ambition à la performance durable."
