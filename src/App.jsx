@@ -35,10 +35,10 @@ function App() {
           path="/login" 
           element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />} 
         />
-        <Route 
+        {/*<Route 
           path="/register" 
           element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />} 
-        />
+        />*/}
 
         {/* --- ROUTES PROTÉGÉES --- */}
         <Route 
