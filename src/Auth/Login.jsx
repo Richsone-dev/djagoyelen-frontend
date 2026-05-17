@@ -44,7 +44,7 @@ const Login = () => {
     };
 
     return (
-        <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center p-3"
+        <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center p-3 border-1 border-success"
          
              style={{ backgroundColor: colors.degradé }}>
             
@@ -114,7 +114,7 @@ const Login = () => {
 
                     <div className="text-center mt-3 small">
                         <span className="text-muted">Pas de compte ? </span>
-                        <Link to="/register" className="fw-bold text-decoration-none" style={{ color: colors.successGreen }}>
+                        <Link to="/register" className="fw-bold text-decoration-none" style={{ color: colors.successGreen,pointerEvents: 'none', opacity: 0.6 }}>
                             Créer un compte
                         </Link>
                     </div>
