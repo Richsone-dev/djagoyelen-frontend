@@ -20,15 +20,12 @@ const Login = () => {
 
         try {
             const { data } = await api.post('/login', credentials);
-            
             localStorage.setItem('token', data.token);
             if (data.user) {
                 localStorage.setItem('user', JSON.stringify(data.user));
             }
-            
-            // Plutôt qu'un navigate + setTimeout instable, on redirige proprement
-            // et on force l'application globale à s'initialiser avec les nouvelles clés du localStorage.
-            window.location.href = '/dashboard';
+            navigate('/dashboard', { replace: true });
+            setTimeout(() => { window.location.reload(); }, 100);
         } catch (err) {
             setError(err.response?.data?.message || 'Email ou mot de passe incorrect.');
         } finally {
@@ -39,15 +36,15 @@ const Login = () => {
     const colors = {
         darkGreen: '#0A3B2F',
         orange: '#E97223',
-        successGreen: '#198754',
-        degradé: 'linear-gradient(135deg, #198754 0%, #E97223 100%)'
+        successGreen: '#198754'
     };
 
     return (
-        <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center p-3 border-1 border-success"
-         
-             style={{ backgroundColor: colors.degradé }}>
+        // min-vh-100 garantit que la page prend toute la hauteur de l'écran
+        <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center p-3" 
+             style={{ backgroundColor: '#f8f9fa' }}>
             
+            {/* La card s'adapte automatiquement : 100% sur mobile, max 450px sur PC */}
             <div className="card border-0 p-4 p-md-5 shadow-sm"
                  style={{ maxWidth: '450px', width: '100%', borderRadius: '15px' }}>
                 
@@ -67,54 +64,33 @@ const Login = () => {
                 )}
 
                 <form onSubmit={handleLogin}>
+                    {/* Utilisation de text-start pour aligner les labels à gauche */}
                     <div className="mb-3 text-start">
-                        <label className="form-label small fw-bold text-muted">
-                            <i className="fas fa-envelope me-1"></i> Email
-                        </label>
-                        <input 
-                            name="email" 
-                            type="email" 
-                            className="form-control" 
-                            placeholder="exemple@mail.com"
-                            onChange={handleChange} 
-                            required 
-                        />
+                        <label className="form-label small fw-bold text-muted"><i className="fas fa-envelope"></i> Email</label>
+                        <input name="email" type="email" className="form-control" placeholder="exemple@mail.com"
+                               onChange={handleChange} required />
                     </div>
 
                     <div className="mb-3 text-start">
-                        <label className="form-label small fw-bold text-muted">
-                            <i className="fas fa-lock me-1"></i> Mot de passe
-                        </label>
-                        <input 
-                            name="password" 
-                            type="password" 
-                            className="form-control" 
-                            placeholder="**********"
-                            onChange={handleChange} 
-                            required 
-                        />
+                        <label className="form-label small fw-bold text-muted"> <i className="fas fa-lock"></i> Mot de passe</label>
+                        <input name="password" type="password" className="form-control" placeholder="**********"
+                               onChange={handleChange} required />
                     </div>
 
-                    <button 
-                        type="submit" 
-                        disabled={loading}
-                        className="btn w-100 text-white fw-bold mt-2"
-                        style={{ backgroundColor: colors.orange, borderRadius: '10px', height: '50px' }}
-                    >
+                    <button type="submit" disabled={loading}
+                            className="btn w-100 text-white fw-bold mt-2"
+                            style={{ backgroundColor: colors.orange, borderRadius: '10px', height: '50px' }}>
                         {loading ? 'Connexion...' : 'Se connecter'}
                     </button>
-
-                    {/* Structure HTML sémantique corrigée pour l'alerte de maintenance */}
-                    <div className="alert alert-warning mt-4 py-2 text-center small rounded-3 border-1 border-warning">
-                        <em className="text-muted small" style={{ fontSize: '0.82rem' }}> 
-                            <i className="bi bi-exclamation-circle text-warning me-1"></i> 
-                            Nous avons bloqué la création de compte pour l'instant, raison de maintenance. Merci !
-                        </em>
-                    </div>
+                        <small className="text-muted" style={{color:colors.orange}}><br />
+                        <div className="alert alert-warning mt-3 py-1 text-center small rounded-3 border-1 border-warning" >
+                        <em className='text-small'> <i className='bi bi-exclamation-circle color-warning'></i> Nous avons bloqué la création de compte pour l'instant, raison de maintenances. Merci!</em>
+                        </div>
+                         </small>
 
                     <div className="text-center mt-3 small">
                         <span className="text-muted">Pas de compte ? </span>
-                        <Link to="/register" className="fw-bold text-decoration-none" style={{ color: colors.successGreen,pointerEvents: 'none', opacity: 0.6 }}>
+                        <Link to="/register" className="fw-bold text-decoration-none" style={{ color: colors.successGreen }}>
                             Créer un compte
                         </Link>
                     </div>
