@@ -15,6 +15,12 @@ import Notifications from './pages/Notifications';
 import Login from './Auth/Login';
 import Register from './Auth/Register';
 import Category from './pages/Category';
+import AdminLogin from './pages/admin/AdminLogin';
+import AdminLayout from './components/AdminLayout';
+import AdminRoute from './components/AdminRoute';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminUserDetail from './pages/admin/AdminUserDetail';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
@@ -35,6 +41,26 @@ function App() {
           path="/login" 
           element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />} 
         />
+
+        {/* --- ESPACE ADMINISTRATION --- */}
+        <Route
+          path="/admin/login"
+          element={
+            localStorage.getItem('admin_token') ? (
+              <Navigate to="/admin/dashboard" replace />
+            ) : (
+              <AdminLogin />
+            )
+          }
+        />
+        <Route path="/admin" element={<AdminRoute />}>
+          <Route element={<AdminLayout />}>
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="users/:id" element={<AdminUserDetail />} />
+          </Route>
+        </Route>
         {/*<Route 
           path="/register" 
           element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />} 
@@ -56,8 +82,8 @@ function App() {
           <Route path="apropos" element={<Apropos />} />
           <Route path="factures" element={<Facture />} />
           <Route path="category" element={<Category />} />
-          {/*<Route path="dettes" element={<Dettes />} />
-          <Route path="notifications" element={<Notifications />} />*/}
+          <Route path="notifications" element={<Notifications />} />
+          {/*<Route path="dettes" element={<Dettes />} />*/}
           {/*<Route path="admindashboard" element={<Navigate to="/AdminDashboard" replace />} />*/}
         </Route>
 

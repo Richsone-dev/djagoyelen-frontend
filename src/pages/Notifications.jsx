@@ -1,142 +1,195 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import api from '../api/axios';
-import { useTheme } from '../context/ThemeContext';
+import { useState } from 'react';
+import Swal from 'sweetalert2';
+import {
+    useNotifications,
+    getNotificationIcon,
+    formatNotificationDate,
+    dispatchNotificationsUpdated,
+} from '../hooks/useNotifications';
 
 const Notifications = () => {
-    const [notifications, setNotifications] = useState([]);
-    const [unreadCount, setUnreadCount] = useState(0);
-    
-    // Sécurité : Vérifie si useTheme existe pour éviter la page blanche
-    const themeContext = useTheme();
-    const theme = themeContext ? themeContext.theme : 'light';
+    const [filter, setFilter] = useState('all');
+    const {
+        notifications,
+        unreadCount,
+        loading,
+        fetchNotifications,
+        markAsRead,
+        markAllAsRead,
+        removeNotification,
+    } = useNotifications({ limit: 100, pollInterval: 90000 });
 
     const colors = {
         darkGreen: '#0A3B2F',
         orange: '#E97223',
-        white: '#ffffff',
-        lightGray: '#f8f9fa'
+        successGreen: '#198754',
     };
 
-    const fetchNotificationsData = useCallback(async () => {
-        try {
-            const [listRes, countRes] = await Promise.all([
-                api.get('/notifications'),
-                api.get('/notifications/unread-count')
-            ]);
+    const filtered =
+        filter === 'unread'
+            ? notifications.filter((n) => !n.is_read)
+            : notifications;
 
-            if (listRes.data && Array.isArray(listRes.data)) {
-                setNotifications(listRes.data);
-            }
-            
-            // Sécurité sur le count
-            if (countRes.data && typeof countRes.data.count !== 'undefined') {
-                setUnreadCount(countRes.data.count);
-            }
-        } catch (error) {
-            console.error("Erreur notifications:", error);
+    const handleDelete = async (notif) => {
+        const result = await Swal.fire({
+            title: 'Supprimer cette notification ?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            confirmButtonText: 'Supprimer',
+            cancelButtonText: 'Annuler',
+        });
+
+        if (result.isConfirmed) {
+            await removeNotification(notif.id);
+            dispatchNotificationsUpdated();
         }
-    }, []);
-
-    useEffect(() => {
-        fetchNotificationsData();
-        const interval = setInterval(fetchNotificationsData, 60000);
-        return () => clearInterval(interval);
-    }, [fetchNotificationsData]);
-
-    // ... garder markAsRead et markAllAsRead identiques ...
+    };
 
     return (
-        <div className="dropdown">
-            <button 
-                className="btn position-relative p-1 border-0" 
-                data-bs-toggle="dropdown" 
-                aria-expanded="false"
-                type="button"
-                id="notificationsDropdown"
-            >
-                <i className="bi bi-bell fs-4" style={{ color: colors.white }}></i>
-                {unreadCount > 0 && (
-                    <span 
-                        className="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger"
-                        style={{ 
-                            fontSize: '0.65rem', 
-                            minWidth: '18px', 
-                            height: '18px', 
-                            padding: '4px',
-                            border: `2px solid ${colors.darkGreen}`,
-                            zIndex: 1050
-                        }}
-                    >
-                        {unreadCount > 9 ? '9+' : unreadCount}
-                    </span>
-                )}
-            </button>
-
-            <ul className="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2 p-0" aria-labelledby="notificationsDropdown" style={{ width: '320px', borderRadius: '12px', overflow: 'hidden' }}>
-                <li className="p-3 border-bottom d-flex justify-content-between align-items-center" style={{ backgroundColor: colors.lightGray }}>
-                    <h6 className="mb-0 fw-bold" style={{ color: colors.darkGreen }}>Notifications</h6>
-                    {unreadCount > 0 && (
-                        <button 
-                            className="btn btn-link p-0 text-decoration-none small fw-bold" 
-                            style={{ fontSize: '0.75rem', color: colors.orange }}
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                markAllAsRead(e);
-                            }}
-                        >
-                            Tout marquer lu
-                        </button>
-                    )}
-                </li>
-                
-                <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
-                    {/* Vérification si notifications est bien un tableau avant le .map */}
-                    {Array.isArray(notifications) && notifications.length === 0 ? (
-                        <li className="p-4 text-center text-muted">
-                            <i className="bi bi-check2-circle fs-2 d-block mb-2" style={{ color: '#ccc' }}></i>
-                            <span className="small">Aucune notification</span>
-                        </li>
-                    ) : (
-                        notifications.map(notif => (
-                            <li 
-                                key={notif.id} 
-                                className={`dropdown-item p-3 border-bottom text-wrap ${!notif.is_read ? 'bg-light' : ''}`} 
-                                style={{ 
-                                    transition: '0.3s', 
-                                    cursor: 'pointer',
-                                    borderLeft: !notif.is_read ? `4px solid ${colors.orange}` : '4px solid transparent',
-                                    whiteSpace: 'normal'
-                                }}
-                                onClick={() => !notif.is_read && markAsRead(notif.id)}
-                            >
-                                <div className="d-flex align-items-start">
-                                    <div className="me-2 mt-1">
-                                        <i className={`bi ${notif.type === 'danger' ? 'bi-exclamation-octagon-fill text-danger' : 'bi-info-circle-fill text-primary'}`}></i>
-                                    </div>
-                                    <div className="w-100">
-                                        <div className="d-flex justify-content-between align-items-center">
-                                            <p className={`mb-0 small ${!notif.is_read ? 'fw-bold' : ''} text-dark`}>
-                                                {notif.title || "Information"}
-                                            </p>
-                                        </div>
-                                        <p className="mb-1 text-muted" style={{ fontSize: '0.8rem', lineHeight: '1.2' }}>
-                                            {notif.message}
-                                        </p>
-                                    </div>
-                                </div>
-                            </li>
-                        ))
-                    )}
+        <div className="pb-4">
+            <div className="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+                <div>
+                    <h3 className="fw-bold mb-1" style={{ color: colors.successGreen }}>
+                        <i className="bi bi-bell me-2" />
+                        Notifications
+                    </h3>
+                    <p className="text-muted mb-0">
+                        {unreadCount > 0
+                            ? `${unreadCount} non lue(s) sur ${notifications.length}`
+                            : `${notifications.length} notification(s)`}
+                    </p>
                 </div>
 
-                <li className="text-center p-2 border-top" style={{ backgroundColor: colors.lightGray }}>
-                    <Link to="/notifications" className="text-decoration-none small fw-bold" style={{ color: colors.darkGreen, fontSize: '0.75rem' }}>
-                        Voir tout l'historique
-                    </Link>
-                </li>
-            </ul>
+                <div className="d-flex flex-wrap gap-2">
+                    <div className="btn-group btn-group-sm">
+                        <button
+                            type="button"
+                            className={`btn ${filter === 'all' ? 'btn-success' : 'btn-outline-success'}`}
+                            onClick={() => setFilter('all')}
+                        >
+                            Toutes
+                        </button>
+                        <button
+                            type="button"
+                            className={`btn ${filter === 'unread' ? 'btn-success' : 'btn-outline-success'}`}
+                            onClick={() => setFilter('unread')}
+                        >
+                            Non lues
+                            {unreadCount > 0 && (
+                                <span className="badge bg-danger ms-1">{unreadCount}</span>
+                            )}
+                        </button>
+                    </div>
+
+                    {unreadCount > 0 && (
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={markAllAsRead}
+                        >
+                            <i className="bi bi-check2-all me-1" />
+                            Tout marquer comme lu
+                        </button>
+                    )}
+
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-primary"
+                        onClick={fetchNotifications}
+                    >
+                        <i className="bi bi-arrow-clockwise" />
+                    </button>
+                </div>
+            </div>
+
+            {loading ? (
+                <div className="text-center py-5">
+                    <div className="spinner-border text-success" role="status" />
+                </div>
+            ) : filtered.length === 0 ? (
+                <div className="card border-0 shadow-sm text-center py-5">
+                    <i
+                        className="bi bi-bell-slash display-4 text-muted mb-3 d-block"
+                    />
+                    <h5 className="text-muted">
+                        {filter === 'unread'
+                            ? 'Aucune notification non lue'
+                            : 'Aucune notification'}
+                    </h5>
+                    <p className="text-muted small mb-0">
+                        Les alertes budget et messages système apparaîtront ici.
+                    </p>
+                </div>
+            ) : (
+                <div className="d-flex flex-column gap-2">
+                    {filtered.map((notif) => {
+                        const { icon, className } = getNotificationIcon(notif.type);
+                        return (
+                            <div
+                                key={notif.id}
+                                className={`card border-0 shadow-sm ${
+                                    !notif.is_read ? 'border-start border-4 border-warning' : ''
+                                }`}
+                            >
+                                <div className="card-body d-flex gap-3 align-items-start">
+                                    <div
+                                        className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                                        style={{
+                                            width: 44,
+                                            height: 44,
+                                            backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                                        }}
+                                    >
+                                        <i className={`bi ${icon} fs-5 ${className}`} />
+                                    </div>
+
+                                    <div className="flex-grow-1 min-w-0">
+                                        <div className="d-flex flex-wrap justify-content-between gap-2">
+                                            <h6
+                                                className={`mb-1 ${
+                                                    !notif.is_read ? 'fw-bold' : ''
+                                                }`}
+                                            >
+                                                {notif.title || 'Information'}
+                                                {!notif.is_read && (
+                                                    <span className="badge bg-warning text-dark ms-2 small">
+                                                        Nouveau
+                                                    </span>
+                                                )}
+                                            </h6>
+                                            <small className="text-muted">
+                                                {formatNotificationDate(notif.created_at)}
+                                            </small>
+                                        </div>
+                                        <p className="text-muted mb-2 mb-md-1">{notif.message}</p>
+
+                                        <div className="d-flex flex-wrap gap-2">
+                                            {!notif.is_read && (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-sm btn-outline-success"
+                                                    onClick={() => markAsRead(notif.id)}
+                                                >
+                                                    <i className="bi bi-check2 me-1" />
+                                                    Marquer lu
+                                                </button>
+                                            )}
+                                            <button
+                                                type="button"
+                                                className="btn btn-sm btn-outline-danger"
+                                                onClick={() => handleDelete(notif)}
+                                            >
+                                                <i className="bi bi-trash" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
         </div>
     );
 };

@@ -2,6 +2,7 @@ import { Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import api from '../api/axios';
 import logo from '../assets/djago-logo.jpeg';
+import NotificationBell from './NotificationBell';
 
 
 const MainLayout = () => {
@@ -84,7 +85,7 @@ const MainLayout = () => {
             
             { path: 'factures', label: 'Factures', icon: 'receipt'},
             { path: 'aide', label: 'Aide', icon: 'question-circle', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
-            { path: 'notifications', label: 'Notifications', icon: 'bell', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
+            { path: 'notifications', label: 'Notifications', icon: 'bell' },
             { path: 'dettes', label: 'Dettes', icon: 'person-dash', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
         ],
     },
@@ -92,7 +93,7 @@ const MainLayout = () => {
     ...(user?.role === 'admin' ? [{
         title: "Administration",
         links: [
-            { path: 'admin', label: 'Espace Admin', icon: 'shield-lock', color: colors.orange }
+            { path: '/admin/dashboard', label: 'Espace Admin', icon: 'shield-lock', color: colors.orange, external: true }
         ]
     }] : []),
     // Injection conditionnelle pour Manager
@@ -162,8 +163,8 @@ const MainLayout = () => {
                                             </span>
                                         ) : (
                                             <Link 
-                                                to={`/${link.path}`} 
-                                                className={`nav-link text-white d-flex align-items-center ${isCollapsed && !isMobile ? 'justify-content-center' : ''} p-2 ${location.pathname === `/${link.path}` ? 'bg-white bg-opacity-10 shadow-sm' : ''}`}
+                                                to={link.path.startsWith('/') ? link.path : `/${link.path}`}
+                                                className={`nav-link text-white d-flex align-items-center ${isCollapsed && !isMobile ? 'justify-content-center' : ''} p-2 ${location.pathname === (link.path.startsWith('/') ? link.path : `/${link.path}`) ? 'bg-white bg-opacity-10 shadow-sm' : ''}`}
                                                 onClick={() => isMobile && setIsSidebarOpen(false)}
                                                 style={{ borderRadius: '10px', transition: '0.3s' }}
                                             >
@@ -202,14 +203,14 @@ const MainLayout = () => {
                                 </h5>
                             )}
                             <h5 className="mb-0 d-none d-md-block fw-bold text-white" style={{ fontSize: '1.1rem', textTransform: 'capitalize'}}>
-                                {menuSections.flatMap(s => s.links).find(l => `/${l.path}` === location.pathname)?.label || "Bienvenue"}
+                                {menuSections.flatMap(s => s.links).find(l => {
+                                    const p = l.path.startsWith('/') ? l.path : `/${l.path}`;
+                                    return p === location.pathname;
+                                })?.label || "Bienvenue"}
                             </h5>
                         </div>
-                        <div className="d-flex align-items-center ms-auto">
-                            {/*<div className="position-relative me-3 me-md-4">
-                                <i className="bi bi-bell fs-4" style={{ color: 'white' }}></i>
-                                <span className="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger" style={{ fontSize: '0.6rem' }}>2</span>
-                            </div>*/}
+                        <div className="d-flex align-items-center ms-auto gap-1">
+                            <NotificationBell variant="header" />
                             <Link to="/profil" className="text-decoration-none d-flex align-items-center p-1 pe-2 pe-md-3 rounded-pill border-0" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
                                 <div className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-2" style={{ width: '32px', height: '32px', backgroundColor: colors.orange }}>
                                     {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
