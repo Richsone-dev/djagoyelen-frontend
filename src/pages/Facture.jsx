@@ -128,6 +128,14 @@ const Facture = () => {
 
             console.error('Erreur fetchFactures:', e.response?.data || e.message);
 
+            Swal.fire(
+                'Erreur',
+                e.response?.data?.message ||
+                    e.response?.data?.error ||
+                    'Impossible de charger les factures',
+                'error'
+            );
+
         } finally {
 
             setLoading(false);
