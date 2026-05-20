@@ -1296,7 +1296,7 @@ Tél: ${téléphone}`;
                                                         }
                                                     >
 
-                                                        <i className="bi bi-file-earmark-pdf"></i>
+                                                        <i className="bi bi-download"></i>
 
                                                     </button>
 
