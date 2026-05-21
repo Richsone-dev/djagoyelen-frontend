@@ -82,11 +82,11 @@ const Login = () => {
                             style={{ backgroundColor: colors.orange, borderRadius: '10px', height: '50px' }}>
                         {loading ? 'Connexion...' : 'Se connecter'}
                     </button>
-                        <small className="text-muted" style={{color:colors.orange}}><br />
+                        {/*<small className="text-muted" style={{color:colors.orange}}><br />
                         <div className="alert alert-warning mt-3 py-1 text-center small rounded-3 border-1 border-warning" >
                         <em className='text-small'> <i className='bi bi-exclamation-circle color-warning'></i> Nous avons bloqué la création de compte pour l'instant, raison de maintenances. Merci!</em>
                         </div>
-                         </small>
+                         </small>*/}
 
                     <div className="text-center mt-3 small">
                         <span className="text-muted">Pas de compte ? </span>

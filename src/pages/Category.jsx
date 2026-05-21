@@ -93,8 +93,8 @@ const Category = () => {
     };
 
     const api = useMemo(() => axios.create({
-        baseURL: 'https://djagoyelen-backend.onrender.com/api' || 'http://localhost:8000/api',
-        //baseURL: 'http://localhost:8000/api',
+        //baseURL: 'https://djagoyelen-backend.onrender.com/api' || 'http://localhost:8000/api',
+        baseURL: 'http://localhost:8000/api',
         headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`

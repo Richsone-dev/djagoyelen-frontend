@@ -41,6 +41,10 @@ function App() {
           path="/login" 
           element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />} 
         />
+        <Route 
+          path="/register" 
+          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />} 
+        />
 
         {/* --- ESPACE ADMINISTRATION --- */}
         <Route
@@ -61,10 +65,6 @@ function App() {
             <Route path="users/:id" element={<AdminUserDetail />} />
           </Route>
         </Route>
-        {/*<Route 
-          path="/register" 
-          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />} 
-        />*/}
 
         {/* --- ROUTES PROTÉGÉES --- */}
         <Route 
@@ -84,7 +84,6 @@ function App() {
           <Route path="category" element={<Category />} />
           <Route path="notifications" element={<Notifications />} />
           {/*<Route path="dettes" element={<Dettes />} />*/}
-          {/*<Route path="admindashboard" element={<Navigate to="/AdminDashboard" replace />} />*/}
         </Route>
 
         {/* --- 404 --- */}
