@@ -56,7 +56,7 @@ const Register = () => {
                         <div className="col-12 mb-3">
                             <label className="form-label fw-bold text-muted small ps-1">Nom complet</label>
                             <input name="name" type="text" className="form-control form-control-lg" 
-                                   placeholder="Jean Dupont" onChange={handleChange} required 
+                                   placeholder="Coulibaly Natacha" onChange={handleChange} required 
                                    style={{ borderRadius: '12px' }} />
                         </div>
                         {/* Email */}
@@ -70,7 +70,7 @@ const Register = () => {
                         <div className="col-12 mb-3">
                             <label className="form-label fw-bold text-muted small ps-1">Numéro de téléphone</label>
                             <input name="telephone" type="tel" className="form-control form-control-lg" 
-                                   placeholder="06 12 34 56 78" onChange={handleChange} required 
+                                   placeholder="06 12 34 56" onChange={handleChange} required 
                                    style={{ borderRadius: '12px' }} />
                         </div>
                         {/* Mot de passe */}
