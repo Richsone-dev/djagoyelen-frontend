@@ -46,7 +46,7 @@ const AproposDetails = () => {
             {/* Hero */}
             <section ref={heroRef} className={`fade ${heroVisible ? 'show' : ''}`}>
                 <div
-                    className="mb-5 text-center p-4 p-md-5 rounded-4 shadow-sm"
+                    className="mb-5 text-center p-4 p-md-5 rounded-4 shadow-sm status-card-toggle"
                     style={{ backgroundColor: colors.cardBg }}
                 >
                     <p
@@ -60,7 +60,7 @@ const AproposDetails = () => {
                         <span style={{ color: colors.orange }}>Yelen</span>
                     </h1>
                     <p
-                        className="lead col-lg-9 mx-auto mb-4 opacity-75"
+                        className="lead col-lg-9 mx-auto mb-4 opacity-75 text-adaptive"
                         style={{ lineHeight: 1.7 }}
                     >
                         DjagoYelen est une solution numérique de gestion financière conçue pour
@@ -69,10 +69,10 @@ const AproposDetails = () => {
                         indicateurs et faciliter vos décisions au quotidien.
                     </p>
                     <div className="d-flex flex-wrap justify-content-center gap-2 mb-4">
-                        {['Transactions', 'Budgets', 'Facturation', 'Rapports'].map((tag) => (
+                        {[ 'Tableau de bord', 'Transactions', 'Budgets', 'Facturation', 'Rapports', 'Categories', 'Clients', 'Notifications', '...'].map((tag) => (
                             <span
                                 key={tag}
-                                className="badge rounded-pill px-3 py-2"
+                                className="badge rounded-pill px-3 py-2 badge-adaptive"
                                 style={{
                                     backgroundColor: 'rgba(25, 135, 84, 0.12)',
                                     color: colors.darkGreen,
@@ -85,7 +85,7 @@ const AproposDetails = () => {
                     <img
                         src={img2}
                         className="img-fluid shadow rounded-4"
-                        style={{ maxHeight: 320, objectFit: 'cover', width: '100%' }}
+                        style={{ maxHeight: 'auto', objectFit: 'cover', width: '100%' }}
                         alt="Interface DjagoYelen"
                     />
                 </div>
@@ -125,11 +125,43 @@ const AproposDetails = () => {
                     transform: translateY(0);
                 }
                 .premium-card {
-                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
                 }
                 .premium-card:hover {
                     transform: translateY(-4px);
                     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+                }
+
+                /* Adaptations spécifiques pour le Mode Nuit natif de Bootstrap */
+                [data-bs-theme="dark"] .premium-card {
+                    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+                }
+                [data-bs-theme="dark"] .premium-card:hover {
+                    border-color: rgba(255, 255, 255, 0.15) !important;
+                    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4) !important;
+                }
+                [data-bs-theme="dark"] .status-card-toggle {
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                }
+                [data-bs-theme="dark"] .text-adaptive {
+                    color: rgba(255, 255, 255, 0.85) !important;
+                }
+                [data-bs-theme="dark"] .badge-adaptive {
+                    background-color: rgba(25, 135, 84, 0.25) !important;
+                    color: #4dfd96 !important;
+                }
+                [data-bs-theme="dark"] .btn-outline-success {
+                    color: #4dfd96;
+                    border-color: #4dfd96;
+                }
+                [data-bs-theme="dark"] .btn-outline-success:hover {
+                    background-color: #4dfd96;
+                    color: #000;
+                }
+                [data-bs-theme="dark"] .cta-section-adaptive {
+                    background-color: rgba(233, 114, 35, 0.15) !important;
+                    border: 1px solid rgba(233, 114, 35, 0.2);
                 }
             `}</style>
         </div>
@@ -150,7 +182,7 @@ const Section = ({ title, text, img, colors, reverse = false }) => {
                     <h2 className="fw-bold mb-3" style={{ color: colors.darkGreen }}>
                         {title}
                     </h2>
-                    <p className="mb-0 opacity-75" style={{ lineHeight: 1.75, fontSize: '1.05rem' }}>
+                    <p className="mb-0 opacity-75 text-adaptive" style={{ lineHeight: 1.75, fontSize: '1.05rem' }}>
                         {text}
                     </p>
                 </div>
@@ -159,7 +191,7 @@ const Section = ({ title, text, img, colors, reverse = false }) => {
                         src={img}
                         className="img-fluid rounded-4 shadow"
                         alt={title}
-                        style={{ objectFit: 'cover', maxHeight: 280, width: '100%' }}
+                        style={{ objectFit: 'cover', maxHeight: 'auto', width: '100%' }}
                     />
                 </div>
             </div>
@@ -188,7 +220,7 @@ const ProblemSolution = ({ colors, cardStyle }) => {
                             style={{ width: 48, height: 48 }}
                         />
                         <h5 className="text-danger fw-bold mb-2">Les difficultés rencontrées</h5>
-                        <ul className="mb-0 ps-3 opacity-75" style={{ lineHeight: 1.7 }}>
+                        <ul className="mb-0 ps-3 opacity-75 text-adaptive" style={{ lineHeight: 1.7 }}>
                             <li>Données financières dispersées (cahiers, fichiers, outils isolés)</li>
                             <li>Manque de visibilité sur les dépenses par catégorie</li>
                             <li>Facturation et suivi clients peu structurés</li>
@@ -208,7 +240,7 @@ const ProblemSolution = ({ colors, cardStyle }) => {
                             style={{ width: 48, height: 48 }}
                         />
                         <h5 className="text-success fw-bold mb-2">La réponse DjagoYelen</h5>
-                        <ul className="mb-0 ps-3 opacity-75" style={{ lineHeight: 1.7 }}>
+                        <ul className="mb-0 ps-3 opacity-75 text-adaptive" style={{ lineHeight: 1.7 }}>
                             <li>Plateforme unique pour piloter finances, budgets et factures</li>
                             <li>Tableaux de bord et rapports pour une lecture immédiate</li>
                             <li>Alertes et notifications sur l&apos;évolution des budgets</li>
@@ -226,31 +258,73 @@ const FEATURES = [
         icon: 'cash-stack',
         title: 'Transactions',
         desc: 'Enregistrez revenus et dépenses, classez-les par catégorie et consultez l\'historique complet.',
+        bouton: {
+            label: 'Voir plus',
+            link: '/transactions',
+        },
     },
     {
         icon: 'piggy-bank',
         title: 'Budgets',
         desc: 'Définissez des plafonds par période et suivez votre consommation avec des alertes automatiques.',
+        bouton: {
+            label: 'Voir plus',
+            link: '/budgets',
+        },
     },
     {
         icon: 'receipt',
         title: 'Facturation',
         desc: 'Créez des factures professionnelles, gérez vos clients et exportez vos documents en PDF.',
+        bouton: {
+            label: 'Voir plus',
+            link: '/factures',
+        },
     },
     {
         icon: 'file-earmark-bar-graph',
         title: 'Rapports',
         desc: 'Visualisez vos performances financières grâce à des synthèses et graphiques clairs.',
+        bouton: {
+            label: 'Voir plus',
+            link: '/rapports',
+        },
     },
     {
         icon: 'people',
         title: 'Clients',
         desc: 'Centralisez les coordonnées et l\'historique de vos relations commerciales.',
+        bouton: {
+            label: 'Voir plus',
+            link: '/clients',
+        },
     },
     {
         icon: 'bell',
         title: 'Notifications',
         desc: 'Recevez des alertes utiles pour ne pas dépasser vos budgets et rester informé.',
+        bouton: {
+            label: 'Voir plus',
+            link: '/notifications',
+        },
+    },
+    {
+        icon: 'gear',
+        title: 'Paramètres',
+        desc: 'Personnalisez votre expérience, gérez vos préférences et sécurisez votre compte.',
+        bouton: {
+            label: 'Voir plus',
+            link: '/parametres',
+        },
+    },
+    {
+        icon: 'shield-lock',
+        title: 'Sécurité',
+        desc: 'Vos données sont protégées par des protocoles modernes et un chiffrement robuste.',
+        bouton: {
+            label: 'Voir plus',
+            link: '/securite',
+        },
     },
 ];
 
@@ -262,20 +336,20 @@ const Features = ({ colors, cardStyle }) => {
             <h2 className="text-center fw-bold mb-2" style={{ color: colors.darkGreen }}>
                 Fonctionnalités principales
             </h2>
-            <p className="text-center text-muted mb-4 col-lg-8 mx-auto">
+            <p className="text-center text-muted mb-4 col-lg-8 mx-auto text-adaptive">
                 Des modules pensés pour couvrir l&apos;essentiel de la gestion financière
                 d&apos;une activité moderne.
             </p>
             <div className="row g-3 g-md-4">
                 {FEATURES.map((f, i) => (
-                    <FeatureCard key={f.title} f={f} i={i} cardStyle={cardStyle} colors={colors} />
+                    <FeatureCard key={f.title} f={f} i={i} cardStyle={cardStyle} colors={colors} bouton={f.bouton} />
                 ))}
             </div>
         </section>
     );
 };
 
-const FeatureCard = ({ f, i, cardStyle, colors }) => {
+const FeatureCard = ({ f, i, cardStyle, colors, bouton }) => {
     const [ref, visible] = useScrollAnimation();
 
     return (
@@ -286,7 +360,7 @@ const FeatureCard = ({ f, i, cardStyle, colors }) => {
         >
             <div className="p-4 rounded-4 shadow-sm h-100 premium-card text-start" style={cardStyle}>
                 <div
-                    className="rounded-3 d-inline-flex align-items-center justify-content-center mb-3"
+                    className="rounded-3 d-inline-flex align-items-center justify-content-center mb-3 badge-adaptive"
                     style={{
                         width: 48,
                         height: 48,
@@ -296,9 +370,17 @@ const FeatureCard = ({ f, i, cardStyle, colors }) => {
                     <i className={`bi bi-${f.icon} fs-5`} style={{ color: colors.successGreen }} />
                 </div>
                 <h5 className="fw-bold mb-2">{f.title}</h5>
-                <p className="small mb-0 opacity-75" style={{ lineHeight: 1.6 }}>
+                <p className="small mb-0 opacity-75 text-adaptive" style={{ lineHeight: 1.6 }}>
                     {f.desc}
                 </p>
+                {bouton && (
+                    <a
+                        href={bouton.link}
+                        className="btn btn-outline-success mt-3"
+                    >
+                        {bouton.label}
+                    </a>
+                )}
             </div>
         </div>
     );
@@ -341,7 +423,7 @@ const Values = ({ colors, cardStyle }) => {
                             <h6 className="fw-bold mb-2" style={{ color: colors.orange }}>
                                 {v.title}
                             </h6>
-                            <p className="small mb-0 opacity-75">{v.desc}</p>
+                            <p className="small mb-0 opacity-75 text-adaptive">{v.desc}</p>
                         </div>
                     </div>
                 ))}
@@ -357,11 +439,12 @@ const WhyUs = ({ colors }) => {
         { icon: 'shield-check', label: 'Connexion sécurisée et espace personnel protégé' },
         { icon: 'phone', label: 'Interface adaptée au mobile comme au bureau' },
         { icon: 'graph-up-arrow', label: 'Indicateurs pour piloter, pas seulement enregistrer' },
-        { icon: 'globe2', label: 'Conçu pour le contexte ouest-africain (FCFA, usages locaux)' },
+        { icon: 'globe2', label: 'Conçu pour le contexte ouest-africain (FCFA, usages locales)' },
     ];
 
     return (
         <section
+            box-id="why-us"
             ref={ref}
             className={`mb-5 fade ${visible ? 'show' : ''} p-4 p-md-5 rounded-4 text-white`}
             style={{ backgroundColor: colors.darkGreen }}
@@ -404,7 +487,7 @@ const Roadmap = ({ colors, cardStyle }) => {
                             <h6 className="fw-bold mb-3" style={{ color: colors.orange }}>
                                 {step.phase}
                             </h6>
-                            <ul className="small mb-0 ps-3 opacity-75" style={{ lineHeight: 1.8 }}>
+                            <ul className="small mb-0 ps-3 opacity-75 text-adaptive" style={{ lineHeight: 1.8 }}>
                                 {step.items.map((item) => (
                                     <li key={item}>{item}</li>
                                 ))}
@@ -440,7 +523,7 @@ const Team = ({ colors, cardStyle }) => {
             <h2 className="fw-bold mb-2" style={{ color: colors.darkGreen }}>
                 L&apos;équipe projet
             </h2>
-            <p className="text-muted mb-4 col-lg-7 mx-auto">
+            <p className="text-muted mb-4 col-lg-7 mx-auto text-adaptive">
                 DjagoYelen est porté par une équipe d&apos;ingénieurs en génie logiciel,
                 engagés pour des solutions numériques utiles et durables.
             </p>
@@ -469,7 +552,7 @@ const Team = ({ colors, cardStyle }) => {
                             >
                                 {member.title}
                             </p>
-                            <p className="small mb-0 opacity-75" style={{ lineHeight: 1.65 }}>
+                            <p className="small mb-0 opacity-75 text-adaptive" style={{ lineHeight: 1.65 }}>
                                 {member.profil}
                             </p>
                         </div>
@@ -487,13 +570,13 @@ const CTA = ({ colors }) => {
     return (
         <section
             ref={ref}
-            className={`py-5 px-4 text-center rounded-4 fade ${visible ? 'show' : ''}`}
+            className={`py-5 px-4 text-center rounded-4 fade ${visible ? 'show' : ''} cta-section-adaptive`}
             style={{ backgroundColor: 'rgba(233, 114, 35, 0.08)' }}
         >
             <h3 className="fw-bold mb-2" style={{ color: colors.darkGreen }}>
                 Prêt à structurer vos finances ?
             </h3>
-            <p className="text-muted mb-4 col-lg-6 mx-auto">
+            <p className="text-muted mb-4 col-lg-6 mx-auto text-adaptive">
                 Accédez à votre tableau de bord et commencez à suivre vos opérations dès
                 aujourd&apos;hui.
             </p>
