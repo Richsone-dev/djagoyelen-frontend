@@ -191,6 +191,7 @@ const Public = () => {
                 <div className="container py-4">
                     <div className="row justify-content-center g-5 mb-5">
                         <div className="col-lg-10 text-center">
+                            <i className="bi bi-graph-up-arrow display-4 text-white"></i>
                             <h2 className="display-5 fw-bold mb-3">
                                 <span style={{ color: 'whitesmoke' }}>Djago</span>
                                 <span style={{ color: Colors.orange }}>Yelen</span>
