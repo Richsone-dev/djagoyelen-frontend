@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import Swal from 'sweetalert2';
+import Login from '../Auth/Login';
+import Public from '../PublicPages/Public';
 
 // --- SKELETON ---
 const SkeletonSidebar = () => (
@@ -392,15 +394,16 @@ const Profil = () => {
             cancelButtonText: 'Annuler'
         });
 
-        if (!result.isConfirmed) return;
-
         try {
             await api.post('/logout');
         } catch (error) {
-            console.error(error);
+            // Même si erreur, on déconnecte côté frontend
         } finally {
             localStorage.clear();
-            navigate('/login');
+            navigate('/login', { replace: true });
+            setTimeout(() => {
+                window.location.reload();
+            }, 100);
         }
     };
 
