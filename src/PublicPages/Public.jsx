@@ -62,7 +62,7 @@ const Public = () => {
     };
 
     return (
-        <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: Colors.bodyBg }}>
+        <div className="min-vh-100 d-flex m-0 p-0 flex-column" style={{ backgroundColor: Colors.bodyBg, padding: 0, margin: 0 }}>
             
             {/* 1. BARRE DE NAVIGATION */}
             <nav 
@@ -70,17 +70,24 @@ const Public = () => {
                 style={{ 
                     backgroundColor: Colors.darkGreen, 
                     borderBottom: '2px solid ' + Colors.orange, 
-                    borderRadius: '0 0 15px 15px', 
-                    zIndex: 1050 
+                    borderRadius: '0 0 20px 20px', 
+                    zIndex: 1050,
+                    height: '100%',
+                    transition: 'all 0.3s ease-in-out',
+                    margin: -5
                 }}
-            >
+
+                
+                
+                >
                 <div className="container">
                     {/* LOGO & NOM DE L'APPLI */}
                     <Link className="navbar-brand d-flex align-items-center text-decoration-none" to="/">
-                        <img src={logo} alt="DjagoYelen Logo" style={{ width: '42px', height: '42px', borderRadius: '10px', objectFit: 'cover' }} />
-                        <span className="fw-bold ms-2 fs-4 tracking-tight">
-                            <span style={{ color: Colors.White }}>Djago</span><span style={{ color: Colors.orange }}>Yelen</span>
-                        </span>
+                        <img src={logo} alt="DjagoYelen Logo" style={{ width: '40px', height: '40px', borderRadius: '10px', objectFit: 'cover' }} />
+                        <h5 className="fw-bold mb-0" style={{ fontSize: '1.1rem', marginLeft: '10px' }}>
+                            <span style={{ color: 'white' }}>Djago</span>
+                            <span style={{ color: colors.orange }}>Yelen</span>
+                        </h5>
                     </Link>
                     
                     {/* BOUTON BURGER POUR MOBILE */}
