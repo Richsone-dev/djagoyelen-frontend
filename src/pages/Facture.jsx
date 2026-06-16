@@ -1179,353 +1179,124 @@ Tél: ${téléphone}`;
             {/* ───────────────────────────── */}
 
             {!showModal ? (
-
                 <>
-
                     <div className="d-flex justify-content-between align-items-center mb-3">
-
-                        <h3 className="mb-0" style={{color:Colors.successGreen}}>
-                            <i className="bi bi-receipt w-100 m-2"></i>
-                            Factures
+                        <h3 className="mb-0" style={{ color: colors.successGreen }}>
+                            <i className="bi bi-receipt m-2"></i>Factures
                         </h3>
-
                         <button
                             className="btn btn-success"
                             onClick={() => {
-
                                 setFormData(initialFormState);
-
                                 setIsEditing(false);
-
                                 setErrors({});
-
                                 setShowModal(true);
-
                             }}
                         >
-
                             + Nouvelle facture
-
                         </button>
-
                     </div>
 
                     {factures.length === 0 ? (
-
-                        <p className="text-muted">
-                            Aucune facture enregistrée.
-                        </p>
-
+                        <p className="text-muted">Aucune facture enregistrée.</p>
                     ) : (
-
-                        <div className="table-responsive">
-
-                            <table className="table table-hover align-middle shadow-sm">
-
-                                <thead className="bg-success text-white">
-
-                                    <tr>
-
-                                        <th>N°</th>
-
-                                        <th>Client</th>
-
-                                        <th className="d-none d-md-table-cell">
-                                            Date
-                                        </th>
-
-                                        <th>Total TTC</th>
-
-                                        <th className="text-end">
-                                            Actions
-                                        </th>
-
-                                    </tr>
-
-                                </thead>
-
-                                <tbody className='table-light' style={{backgroundColor: colors.red100}}>
-
-                                    {factures.map(f => (
-
-                                        <tr key={f.id}>
-
-                                            <td className="fw-bold text-primary">
-                                                #
-                                                {
-                                                    f.numero_facture ||
-                                                    f.id
-                                                }
-                                            </td>
-
-                                            <td>
-
-                                                <div className="fw-semibold">
-                                                    {f.client?.nom || '-'}
-                                                </div>
-
-                                                <small className="text-muted d-md-none">
-                                                    {f.date_emission || '-'}
-                                                </small>
-
-                                            </td>
-
-                                            <td className="d-none d-md-table-cell">
-                                                {f.date_emission || '-'}
-                                            </td>
-
-                                            <td className="fw-bold text-success">
-                                                {formatPrix(f.total_ttc)} F
-                                            </td>
-
-                                            <td className="text-end">
-
-                                                <div className="btn-group flex-wrap">
-
-                                                    {/* PREVIEW */}
-                                                    <button
-                                                        className="btn btn-sm btn-outline-primary"
-                                                        title="Prévisualiser"
-                                                        onClick={() =>
-                                                            handlePreviewPDF(f)
-                                                        }
-                                                    >
-
-                                                        <i className="bi bi-eye"></i>
-
-                                                    </button>
-
-                                                    {/* DOWNLOAD */}
-                                                    <button
-                                                        className="btn btn-sm btn-outline-success"
-                                                        title="Télécharger"
-                                                        onClick={() =>
-                                                            handleDownloadPDF(f)
-                                                        }
-                                                    >
-
-                                                        <i className="bi bi-download"></i>
-
-                                                    </button>
-
-                                                    {/* SHARE */}
-                                                    <button
-                                                        className="btn btn-sm btn-outline-info"
-                                                        title="Partager"
-                                                        onClick={() =>
-                                                            handleSharePDF(f)
-                                                        }
-                                                    >
-
-                                                        <i className="bi bi-share"></i>
-
-                                                    </button>
-
-                                                    {/* EDIT */}
-                                                    <button
-    className="btn btn-sm btn-outline-warning"
-    title="Modifier"
-    onClick={async () => {
-
-        try {
-
-            Swal.fire({
-                title: 'Patientez...',
-                allowOutsideClick: false,
-                didOpen: () => Swal.showLoading()
-            });
-
-            setErrors({});
-
-            setIsEditing(true);
-
-            // ✅ Charger la facture complète depuis Laravel
-            const res = await api.get(`/factures/${f.id}`);
-
-            const factureComplete = res.data.data || res.data;
-
-            // ✅ Gestion sécurisée des lignes
-            let items = [];
-
-            // Cas 1 : lignes relation Laravel
-            if (
-                factureComplete.lignes &&
-                Array.isArray(factureComplete.lignes)
-            ) {
-
-                items = factureComplete.lignes.map(item => ({
-                    designation:
-                        item.designation ||
-                        item.description ||
-                        '',
-
-                    quantite:
-                        Number(item.quantite) || 1,
-
-                    prix_unitaire:
-                        Number(
-                            item.prix_unitaire ||
-                            item.prix ||
-                            0
-                        )
-                }));
-
-            }
-
-            // Cas 2 : items JSON string
-            else if (
-                typeof factureComplete.items === 'string'
-            ) {
-
-                try {
-
-                    const parsed = JSON.parse(
-                        factureComplete.items
-                    );
-
-                    items = parsed.map(item => ({
-                        designation:
-                            item.designation ||
-                            item.description ||
-                            '',
-
-                        quantite:
-                            Number(item.quantite) || 1,
-
-                        prix_unitaire:
-                            Number(
-                                item.prix_unitaire ||
-                                item.prix ||
-                                0
-                            )
-                    }));
-
-                } catch {
-
-                    items = [];
-
-                }
-
-            }
-
-            // Cas 3 : items tableau
-            else if (
-                Array.isArray(factureComplete.items)
-            ) {
-
-                items = factureComplete.items.map(item => ({
-                    designation:
-                        item.designation ||
-                        item.description ||
-                        '',
-
-                    quantite:
-                        Number(item.quantite) || 1,
-
-                    prix_unitaire:
-                        Number(
-                            item.prix_unitaire ||
-                            item.prix ||
-                            0
-                        )
-                }));
-
-            }
-
-            // ✅ Sécurité si aucune ligne
-            if (items.length === 0) {
-
-                items = [
-                    {
-                        designation: '',
-                        quantite: 1,
-                        prix_unitaire: 0
-                    }
-                ];
-            }
-
-            // ✅ Pré-remplissage COMPLET du formulaire
-            setFormData({
-
-                id: factureComplete.id,
-
-                client_id:
-                    factureComplete.client_id || '',
-
-                date_emission:
-                    factureComplete.date_emission
-                        ?.split('T')[0] ||
-                    new Date()
-                        .toISOString()
-                        .split('T')[0],
-
-                items,
-
-                tva_taux:
-                    Number(
-                        factureComplete.tva_taux
-                    ) || 18,
-
-                total_ht:
-                    Number(
-                        factureComplete.total_ht
-                    ) || 0,
-
-                total_ttc:
-                    Number(
-                        factureComplete.total_ttc
-                    ) || 0
-
-            });
-
-            // ✅ Ouvrir le formulaire
-            setShowModal(true);
-
-        } catch (error) {
-
-            console.error(error);
-
-            Swal.fire(
-                'Erreur',
-                'Impossible de charger la facture',
-                'error'
-            );
-        }
-        Swal.close();
-    }}
->
-    <i className="bi bi-pencil-square"></i>
-</button>
-
-                                                    {/* DELETE */}
-                                                    <button
-                                                        className="btn btn-sm btn-outline-danger"
-                                                        title="Supprimer"
-                                                        onClick={() =>
-                                                            handleDelete(f.id)
-                                                        }
-                                                    >
-
-                                                        <i className="bi bi-trash"></i>
-
-                                                    </button>
-
-                                                </div>
-
-                                            </td>
-
+                        <div>
+                            {/* ÉCRAN LARGE : Rendu sous forme de tableau standard */}
+                            <div className="table-responsive d-none d-md-block">
+                                <table className="table table-hover align-middle shadow-sm">
+                                    <thead className="text-white" style={{ backgroundColor: colors.successGreen }}>
+                                        <tr>
+                                            <th>N°</th>
+                                            <th>Client</th>
+                                            <th>Date</th>
+                                            <th>Total TTC</th>
+                                            <th className="text-end">Actions</th>
                                         </tr>
-                                    ))}
+                                    </thead>
+                                    <tbody>
+                                        {factures.map((facture) => (
+                                            <tr key={facture.id}>
+                                                <td>#{facture.numero_facture || facture.id}</td>
+                                                <td>{facture.client?.nom || facture.client_nom || '---'}</td>
+                                                <td>{new Date(facture.date_emission).toLocaleDateString('fr-FR')}</td>
+                                                <td className="fw-bold">{formatPrix(facture.total_ttc)} F CFA</td>
+                                                <td className="text-end">
+                                                    <div className="btn-group gap-1">
+                                                        <button className="btn btn-sm btn-outline-primary" onClick={() => handlePreviewPDF(facture)}>
+                                                            <i className="bi bi-eye"></i>
+                                                        </button>
+                                                        <button className="btn btn-sm btn-outline-success" onClick={() => handleDownloadPDF(facture)}>
+                                                            <i className="bi bi-download"></i>
+                                                        </button>
+                                                        <button className="btn btn-sm btn-outline-secondary" onClick={() => handleSharePDF(facture)}>
+                                                            <i className="bi bi-share"></i>
+                                                        </button>
+                                                        <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(facture.id)}>
+                                                            <i className="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
 
-                                </tbody>
+                            {/* ÉCRAN MOBILE : Rendu sous forme de cartes avec actions figées horizontalement en bas */}
+                            <div className="d-block d-md-none">
+                                {factures.map((facture) => (
+                                    <div key={facture.id} className="card mb-3 shadow-sm border-0" style={{ position: 'relative', overflow: 'hidden' }}>
+                                        <div className="card-body pb-5"> {/* pb-5 pour ne pas surcharger le contenu sous la barre d'action */}
+                                            <div className="d-flex justify-content-between align-items-center mb-2">
+                                                <span className="fw-bold text-success">#{facture.numero_facture || facture.id}</span>
+                                                <small className="text-muted">{new Date(facture.date_emission).toLocaleDateString('fr-FR')}</small>
+                                            </div>
+                                            <h6 className="card-title mb-1 text-uppercase fw-semibold">
+                                                {facture.client?.nom || facture.client_nom || '---'}
+                                            </h6>
+                                            <p className="card-text fw-bold text-dark mb-0">
+                                                Total TTC : <span style={{ color: colors.orange }}>{formatPrix(facture.total_ttc)} F CFA</span>
+                                            </p>
 
-                            </table>
+                                            {/* Barre d'action horizontale alignée tout en bas de la carte mobile */}
+                                            <div className="position-absolute bottom-0 start-0 w-100 d-flex bg-light border-top" style={{ height: '40px' }}>
+                                                <button 
+                                                    className="btn btn-link flex-grow-1 text-center text-primary border-end p-0 m-0" 
+                                                    style={{ textDecoration: 'none', borderRadius: '0' }}
+                                                    onClick={() => handlePreviewPDF(facture)}
+                                                >
+                                                    <i className="bi bi-eye-fill"></i>
+                                                </button>
+                                                <button 
+                                                    className="btn btn-link flex-grow-1 text-center text-success border-end p-0 m-0" 
+                                                    style={{ textDecoration: 'none', borderRadius: '0' }}
+                                                    onClick={() => handleDownloadPDF(facture)}
+                                                >
+                                                    <i className="bi bi-download"></i>
+                                                </button>
+                                                <button 
+                                                    className="btn btn-link flex-grow-1 text-center text-secondary border-end p-0 m-0" 
+                                                    style={{ textDecoration: 'none', borderRadius: '0' }}
+                                                    onClick={() => handleSharePDF(facture)}
+                                                >
+                                                    <i className="bi bi-share-fill"></i>
+                                                </button>
+                                                <button 
+                                                    className="btn btn-link flex-grow-1 text-center text-danger p-0 m-0" 
+                                                    style={{ textDecoration: 'none', borderRadius: '0' }}
+                                                    onClick={() => handleDelete(facture.id)}
+                                                >
+                                                    <i className="bi bi-trash-fill"></i>
+                                                </button>
+                                            </div>
 
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
-
                 </>
-
             ) : (
 
                 // ─────────────────────────────
