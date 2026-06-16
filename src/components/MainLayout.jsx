@@ -37,7 +37,7 @@ const MainLayout = () => {
     };
 
     const sidebarBackground = theme === 'dark' ? '#0b2e21' : colors.darkGreen;
-    const headerBackground = theme === 'dark' ? '#0d2a1d' : colors.darkGreen;
+    const headerBackground = theme === 'dark' ? '#1e5f38' : colors.darkGreen;
     const pageBackground = theme === 'dark' ? '#121212' : themeColors.bgLight;
     const textColor = theme === 'dark' ? '#f8f9fa' : themeColors.textColor;
 
@@ -284,7 +284,7 @@ const MainLayout = () => {
                 )}
 
                 {isMobile && (
-                    <div className="fixed-bottom border-top d-flex mt-auto justify-content-around align-items-center shadow-lg" style={{ height: '70px', zIndex: 1040, backgroundColor: colors.darkGreen, borderRadius: '20px 20px 0 0' }}>
+                    <div className="fixed-bottom border-top d-flex mt-auto justify-content-around align-items-center shadow-lg" style={{ height: '70px', zIndex: 1040, backgroundColor: colors.successGreen, borderRadius: '20px 20px 0 0' }}>
                         <Link to="/transactions" className="text-center text-decoration-none" style={{ color: location.pathname === '/transactions' ? colors.orange : 'rgba(255,255,255,0.6)',maxWidth: '80px'}}>
                             <i className="bi bi-cash-stack fs-3"></i><br/><small style={{fontSize: '8px'}}>Transactions</small>
                         </Link>

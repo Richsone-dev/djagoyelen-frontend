@@ -12,7 +12,7 @@ export default defineConfig({
         name: 'DjagoYelen - Gestion Financière',
         short_name: 'DjagoYelen',
         description: 'Solution moderne de gestion financière et de suivi pour les petites et moyennes entreprises.',
-        theme_color: '#0A3B2F',
+        theme_color: '#1e5f38',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
