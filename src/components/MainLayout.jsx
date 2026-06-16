@@ -202,12 +202,15 @@ const MainLayout = () => {
                             <button className="btn d-md-none me-2 px-1 py-0 shadow-sm" style={{backgroundColor: colors.orange, color: 'white'}} onClick={() => setIsSidebarOpen(true)}>
                                 <i className="bi bi-list fs-3"></i>
                             </button>
+                            <Link to="/" className="text-decoration-none d-flex align-items-center">
+                        
                             {isMobile && (
                                 <h5 className="fw-bold mb-0" style={{ fontSize: '1.1rem' }}>
                                     <span style={{ color: 'white' }}>Djago</span>
                                     <span style={{ color: colors.orange }}>Yelen</span>
                                 </h5>
                             )}
+                            </Link>
                             <h5 className="mb-0 d-none d-md-block fw-bold text-white" style={{ fontSize: '1.1rem', textTransform: 'capitalize'}}>
                                 {menuSections.flatMap(s => s.links).find(l => {
                                     const p = l.path.startsWith('/') ? l.path : `/${l.path}`;
@@ -216,7 +219,7 @@ const MainLayout = () => {
                             </h5>
                         </div>
                         <div className="d-flex align-items-center ms-auto gap-1">
-                            <button
+                            {/*<button
                                 type="button"
                                 className="btn btn-sm btn-outline-light"
                                 style={{ minWidth: 54, minHeight: 36 }}
@@ -224,15 +227,33 @@ const MainLayout = () => {
                                 title="Changer la langue"
                             >
                                 {language === 'fr' ? 'FR' : 'EN'}
-                            </button>
+                            </button>*/}
                             <Link to="/notifications">
-                                    <NotificationBell variant="header" />
+                                    <NotificationBell />
                             </Link>
                                 <Link to="/profil" className="text-decoration-none d-flex align-items-center p-1 pe-2 pe-md-3 rounded-pill border-0" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
+                                {/*{user?.id_photo ? (
+                                    (() => {
+                                        //const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
+                                        const baseUrl = 'http://localhost:8000';
+
+                                        const src = user.id_photo.startsWith('http') ? user.id_photo : `${baseUrl}${user.id_photo}`;
+                                        return (
+                                            <img src={src} alt="avatar" className="rounded-circle me-2" style={{ width: 32, height: 32, objectFit: 'cover', border: '2px solid rgba(255,255,255,0.2)' }} />
+                                        );
+                                    })()
+                                ) : (*/}
+                                    <div className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-2" style={{ width: '32px', height: '32px', backgroundColor: colors.orange }}>
+                                        {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                                    </div>
+                                {/*)}*/}
+                                <span className="small d-none d-sm-block fw-bold text-white">{user?.name || 'Chargement...'}</span>
+                            </Link>
+                                {/*<Link to="/profil" className="text-decoration-none d-flex align-items-center p-1 pe-2 pe-md-3 rounded-pill border-0" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
                                 {user?.id_photo ? (
                                     (() => {
-                                        const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
-                                        //const baseUrl = 'http://localhost:8000';
+                                        //const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
+                                        const baseUrl = 'http://localhost:8000';
 
                                         const src = user.id_photo.startsWith('http') ? user.id_photo : `${baseUrl}${user.id_photo}`;
                                         return (
@@ -245,7 +266,7 @@ const MainLayout = () => {
                                     </div>
                                 )}
                                 <span className="small d-none d-sm-block fw-bold text-white">{user?.name || 'Chargement...'}</span>
-                            </Link>
+                            </Link>*/}
                         </div>
                     </div>
                 </header>

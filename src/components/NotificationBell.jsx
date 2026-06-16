@@ -47,10 +47,11 @@ const NotificationBell = ({ variant = 'header' }) => {
                 />
                 {unreadCount > 0 && (
                     <span
-                        className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                        className="position-absolute m-left-0 bottom-10 top-50 translate-middlestart-100 translate-middle badge rounded-pill bg-danger"
                         style={{
                             fontSize: '0.65rem',
-                            minWidth: 18,
+                            minWidth: 20,
+                            minHeight: 20,
                             padding: '3px 5px',
                             border: isHeader ? `2px solid ${colors.darkGreen}` : 'none',
                         }}
@@ -75,7 +76,7 @@ const NotificationBell = ({ variant = 'header' }) => {
                     style={{ backgroundColor: colors.lightGray }}
                 >
                     <span className="fw-bold small" style={{ color: colors.darkGreen }}>
-                        {t('notifications')}
+                        Notifications
                         {unreadCount > 0 && (
                             <span className="badge bg-danger ms-2">{unreadCount}</span>
                         )}
@@ -91,7 +92,7 @@ const NotificationBell = ({ variant = 'header' }) => {
                                 markAllAsRead();
                             }}
                         >
-                            {t('markAllRead')}
+                            Tout lire
                         </button>
                     )}
                 </li>
@@ -100,7 +101,7 @@ const NotificationBell = ({ variant = 'header' }) => {
                     {preview.length === 0 ? (
                         <li className="px-3 py-4 text-center text-muted small">
                             <i className="bi bi-check2-circle fs-3 d-block mb-2 opacity-50" />
-                            {t('noNotifications')}
+                            Aucune notification
                         </li>
                     ) : (
                         preview.map((notif) => {
@@ -164,7 +165,7 @@ const NotificationBell = ({ variant = 'header' }) => {
                             document.querySelector('[data-bs-toggle="dropdown"][aria-expanded="true"]')?.click();
                         }}
                     >
-                        {t('viewAllNotifications')}
+                        Voir toutes les notifications
                     </Link>
                 </li>
             </ul>

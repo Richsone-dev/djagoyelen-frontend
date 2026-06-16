@@ -122,8 +122,8 @@ const Profil = () => {
                 telephone: userData?.telephone || ''
             });
             
-            const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
-            //const baseUrl = 'http://localhost:8000';
+            //const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
+            const baseUrl = 'http://localhost:8000';
             const photoUrl = userData?.id_photo
                 ? (userData.id_photo.startsWith('http') ? userData.id_photo : `${baseUrl}${userData.id_photo}`)
                 : null;
@@ -498,13 +498,13 @@ const Profil = () => {
                                     }}
                                 >
                                     <div className="position-relative mx-auto mb-3" style={{ width: '100px', height: '100px' }}>
-                                        {photoPreview ? (
+                                        {/*{photoPreview ? (
                                             <img
                                                 src={photoPreview}
                                                 alt="Profile"
                                                 className="rounded-circle border border-4 border-white shadow-sm object-fit-cover w-100 h-100"
                                             />
-                                        ) : (
+                                        ) : (*/}
                                             <div
                                                 className="rounded-circle border border-4 border-white shadow-sm d-flex align-items-center justify-content-center w-100 h-100"
                                                 style={{
@@ -516,7 +516,7 @@ const Profil = () => {
                                             >
                                                 {user?.name?.charAt(0)?.toUpperCase()}
                                             </div>
-                                        )}
+                                        {/*)}*/}
                                         <label
                                             htmlFor="photo-upload"
                                             className="position-absolute bottom-0 end-0 bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center"
