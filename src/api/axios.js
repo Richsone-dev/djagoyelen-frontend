@@ -1,10 +1,9 @@
 import axios from 'axios';
 
+const baseURL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_APP_API_URL || 'http://localhost:8000/api';
+//const baseURL 'http://localhost:8000/api';
 const api = axios.create({
-    // L'URL de ton serveur Laravel (Backend)
-    //baseURL: import.meta.env.VITE_APP_API_URL || 'http://localhost:8000/api',
-    baseURL: 'https://djagoyelen-backend.onrender.com/api' || 'http://localhost:8000/api',
-    //baseURL: 'http://localhost:8000/api',
+    baseURL,
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',

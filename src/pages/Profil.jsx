@@ -2,8 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import Swal from 'sweetalert2';
-import Login from '../Auth/Login';
-import Public from '../PublicPages/Public';
+import { useLanguage } from '../context/LanguageContext.jsx';
 
 // --- SKELETON ---
 const SkeletonSidebar = () => (
@@ -44,6 +43,9 @@ const Profil = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [showPasswordForm, setShowPasswordForm] = useState(false);
 
+    const [photo, setPhoto] = useState(null);
+    const [photoPreview, setPhotoPreview] = useState(null);
+
     const [status, setStatus] = useState({
         type: '',
         msg: ''
@@ -55,6 +57,8 @@ const Profil = () => {
         email: '',
         telephone: ''
     });
+
+    const { t } = useLanguage();
 
     // ---------------- PASSWORD FORM ----------------
     const [passwordData, setPasswordData] = useState({
@@ -114,6 +118,9 @@ const Profil = () => {
                 email: userData?.email || '',
                 telephone: userData?.telephone || ''
             });
+            
+            const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
+            setPhotoPreview(userData?.id_photo ? `${userData.id_photo.startsWith('http') ? userData.id_photo : `${baseUrl}${userData.id_photo}`}` : null);
 
             setClients(clientsRes.data || []);
         } catch (error) {
@@ -139,13 +146,21 @@ const Profil = () => {
         try {
             setSavingProfile(true);
 
-            const payload = {
-                name: formData.name.trim(),
-                email: formData.email.trim(),
-                telephone: formData.telephone.trim()
-            };
+            const data = new FormData();
+            data.append('name', formData.name.trim());
+            data.append('email', formData.email.trim());
+            data.append('telephone', formData.telephone.trim());
+            
+            if (photo) {
+                data.append('photo', photo);
+            }
 
-            const response = await api.put('/user/profile', payload);
+            // Utilisation du spoofing de méthode pour Laravel car PUT ne supporte pas multipart/form-data nativement
+            data.append('_method', 'PUT');
+
+            const response = await api.post('/user/profile', data, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
 
             // IMPORTANT :
             // on met immédiatement à jour le state
@@ -153,6 +168,10 @@ const Profil = () => {
             const updatedUser = response.data.user || response.data;
 
             setUser(updatedUser);
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            
+            const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
+            setPhotoPreview(updatedUser.id_photo ? `${updatedUser.id_photo.startsWith('http') ? updatedUser.id_photo : `${baseUrl}${updatedUser.id_photo}`}` : null);
 
             setFormData({
                 name: updatedUser.name || '',
@@ -161,6 +180,7 @@ const Profil = () => {
             });
 
             setIsEditing(false);
+            setPhoto(null);
 
             showFeedback(
                 'success',
@@ -185,6 +205,15 @@ const Profil = () => {
             }
         } finally {
             setSavingProfile(false);
+        }
+    };
+
+    const handlePhotoChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setPhoto(file);
+            setPhotoPreview(URL.createObjectURL(file));
+            setIsEditing(true);
         }
     };
 
@@ -449,21 +478,40 @@ const Profil = () => {
                                         marginTop: '-50px'
                                     }}
                                 >
-                                    <div
-                                        className="rounded-circle border border-4 border-white shadow-sm d-flex align-items-center justify-content-center mx-auto mb-3"
-                                        style={{
-                                            width: '100px',
-                                            height: '100px',
-                                            backgroundColor:
-                                                theme.orange,
-                                            color: 'white',
-                                            fontSize: '2.5rem',
-                                            fontWeight: 'bold'
-                                        }}
-                                    >
-                                        {user?.name
-                                            ?.charAt(0)
-                                            ?.toUpperCase()}
+                                    <div className="position-relative mx-auto mb-3" style={{ width: '100px', height: '100px' }}>
+                                        {photoPreview ? (
+                                            <img
+                                                src={photoPreview}
+                                                alt="Profile"
+                                                className="rounded-circle border border-4 border-white shadow-sm object-fit-cover w-100 h-100"
+                                            />
+                                        ) : (
+                                            <div
+                                                className="rounded-circle border border-4 border-white shadow-sm d-flex align-items-center justify-content-center w-100 h-100"
+                                                style={{
+                                                    backgroundColor: theme.orange,
+                                                    color: 'white',
+                                                    fontSize: '2.5rem',
+                                                    fontWeight: 'bold'
+                                                }}
+                                            >
+                                                {user?.name?.charAt(0)?.toUpperCase()}
+                                            </div>
+                                        )}
+                                        <label
+                                            htmlFor="photo-upload"
+                                            className="position-absolute bottom-0 end-0 bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center"
+                                            style={{ width: '32px', height: '32px', cursor: 'pointer', border: '1px solid #ddd' }}
+                                        >
+                                            <i className="bi bi-camera-fill text-dark"></i>
+                                            <input
+                                                id="photo-upload"
+                                                type="file"
+                                                className="d-none"
+                                                accept="image/*"
+                                                onChange={handlePhotoChange}
+                                            />
+                                        </label>
                                     </div>
 
                                     <h5 className="fw-bold mb-0">
@@ -506,7 +554,7 @@ const Profil = () => {
                                         }
                                     >
                                         <i className="bi bi-box-arrow-right me-2"></i>
-                                        Déconnexion
+                                        {t('logout')}
                                     </button>
                                 </div>
                             </div>
@@ -516,7 +564,7 @@ const Profil = () => {
                         <div className="card border-0 shadow-sm rounded-4 p-3">
                             <h6 className="fw-bold mb-3">
                                 <i className="bi bi-shield-lock me-2 text-primary"></i>
-                                Sécurité
+                                {t('security')}
                             </h6>
 
                             {!showPasswordForm ? (
@@ -625,24 +673,17 @@ const Profil = () => {
                         {/* PROFILE */}
                         <div className="card border-0 shadow-sm rounded-4 mb-4">
                             <div className="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-                                <h5
-                                    className="fw-bold mb-0"
-                                    style={{
-                                        color: theme.darkGreen
-                                    }}
-                                >
-                                    Informations personnelles
+                                <h5 className="fw-bold mb-0" style={{ color: theme.darkGreen }}>
+                                    {t('personalInfo')}
                                 </h5>
 
                                 {!isEditing && (
                                     <button
                                         className="btn btn-sm btn-light border fw-bold shadow-sm"
-                                        onClick={() =>
-                                            setIsEditing(true)
-                                        }
+                                        onClick={() => setIsEditing(true)}
                                     >
                                         <i className="bi bi-pencil-square me-2 text-primary"></i>
-                                        Modifier
+                                        {t('edit')}
                                     </button>
                                 )}
                             </div>
@@ -656,7 +697,7 @@ const Profil = () => {
                                     <div className="row g-3">
                                         <div className="col-md-6">
                                             <label className="form-label small fw-bold text-muted">
-                                                Nom complet
+                                                {t('name')}
                                             </label>
 
                                             <input
@@ -686,7 +727,7 @@ const Profil = () => {
 
                                         <div className="col-md-6">
                                             <label className="form-label small fw-bold text-muted">
-                                                Email
+                                                {t('email')}
                                             </label>
 
                                             <input
@@ -716,7 +757,7 @@ const Profil = () => {
 
                                         <div className="col-md-6">
                                             <label className="form-label small fw-bold text-muted">
-                                                Téléphone
+                                                {t('telephone')}
                                             </label>
 
                                             <input

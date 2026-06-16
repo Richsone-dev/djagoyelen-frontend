@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 import api from '../api/axios';
 import logo from '../assets/djago-logo.jpeg';
 import NotificationBell from './NotificationBell';
-
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext.jsx';
 
 const MainLayout = () => {
     const navigate = useNavigate();
@@ -13,6 +14,9 @@ const MainLayout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [isCollapsed, setIsCollapsed] = useState(window.innerWidth > 768 && window.innerWidth <= 1024);
+
+    const { theme, colors: themeColors } = useTheme();
+    const { t, language, setLanguage } = useLanguage();
 
     const colors = {
         darkGreen: '#0A3B2F',
@@ -31,6 +35,11 @@ const MainLayout = () => {
         orangeLight: 'rgba(233, 114, 35, 0.1)',
         yellowLight: 'rgba(255, 193, 7, 0.1)',
     };
+
+    const sidebarBackground = theme === 'dark' ? '#0b2e21' : colors.darkGreen;
+    const headerBackground = theme === 'dark' ? '#0d2a1d' : colors.darkGreen;
+    const pageBackground = theme === 'dark' ? '#121212' : themeColors.bgLight;
+    const textColor = theme === 'dark' ? '#f8f9fa' : themeColors.textColor;
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -73,34 +82,31 @@ const MainLayout = () => {
     const menuSections = [
     {
         links: [
-            { path: 'dashboard', label: 'Tableau de bord', icon: 'speedometer2' },
-            { path: 'transactions', label: 'Transactions', icon: 'cash-stack' },
-            {path: 'category', label: 'Catégories', icon: 'tags' },
-            { path: 'budgets', label: 'Budgets', icon: 'piggy-bank' },
-            { path: 'rapports', label: 'Rapports', icon: 'file-earmark-bar-graph' },
-            { path: 'profil', label: 'Profil', icon: 'person' },
-            { path: 'apropos', label: 'À propos', icon: 'info-circle' },
-            { path: 'parametres', label: 'Paramètres', icon: 'gear' },
-            { path: 'clients', label: 'Clients', icon: 'people' },
-            
-            { path: 'factures', label: 'Factures', icon: 'receipt'},
-            { path: 'notifications', label: 'Notifications', icon: 'bell' },
-            { path: 'aide', label: 'Aide', icon: 'question-circle', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
-            { path: 'dettes', label: 'Dettes', icon: 'person-dash', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
+            { path: 'dashboard', label: t('dashboard'), icon: 'speedometer2' },
+            { path: 'transactions', label: t('transactions'), icon: 'cash-stack' },
+            { path: 'category', label: t('categories'), icon: 'tags' },
+            { path: 'budgets', label: t('budgets'), icon: 'piggy-bank' },
+            { path: 'rapports', label: t('reports'), icon: 'file-earmark-bar-graph' },
+            { path: 'profil', label: t('profile'), icon: 'person' },
+            { path: 'apropos', label: t('about'), icon: 'info-circle' },
+            { path: 'parametres', label: t('settings'), icon: 'gear' },
+            { path: 'clients', label: t('clients'), icon: 'people' },
+            { path: 'factures', label: t('invoices'), icon: 'receipt' },
+            { path: 'notifications', label: t('notifications'), icon: 'bell' },
+            { path: 'aide', label: t('help'), icon: 'question-circle', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
+            { path: 'dettes', label: t('debts'), icon: 'person-dash', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
         ],
     },
-    // Injection conditionnelle pour Admin
     ...(user?.role === 'admin' ? [{
-        title: "Administration",
+        title: t('administration'),
         links: [
-            { path: '/admin/dashboard', label: 'Espace Admin', icon: 'shield-lock', color: colors.orange, external: true }
+            { path: '/admin/dashboard', label: t('admin'), icon: 'shield-lock', color: colors.orange, external: true }
         ]
     }] : []),
-    // Injection conditionnelle pour Manager
     ...(user?.role === 'manager' ? [{
-        title: "Gestion",
+        title: t('management'),
         links: [
-            { path: 'gestion', label: 'Panneau de Gestion', icon: 'briefcase', color: colors.primaryBlue }
+            { path: 'gestion', label: t('management'), icon: 'briefcase', color: colors.primaryBlue }
         ]
     }] : [])
 ];
@@ -110,13 +116,13 @@ const MainLayout = () => {
     const footerHeight = '70px';
 
     return (
-        <div className="d-flex" style={{ minHeight: '20vh', maxHeight: '50vh', backgroundColor: '#f8f9fa' }}>
+        <div className="d-flex" style={{ minHeight: '20vh', maxHeight: '50vh', backgroundColor: pageBackground, color: textColor }}>
             
             <nav 
                 className="d-flex flex-column shadow" 
                 style={{ 
                     width: isMobile ? (isSidebarOpen ? '250px' : '0') : sidebarWidth, 
-                    backgroundColor: colors.darkGreen, 
+                    backgroundColor: sidebarBackground, 
                     color: 'white',
                     position: 'fixed',
                     left: isMobile && !isSidebarOpen ? '-250px' : '0',
@@ -179,9 +185,9 @@ const MainLayout = () => {
                     ))}
                 </div>
 
-                <button onClick={handleLogout} className={`btn border-0 text-white w-100 d-flex align-items-center ${isCollapsed && !isMobile ? 'justify-content-center' : ''} p-3 mt-4 mb-3`} style={{ backgroundColor: 'rgba(233, 114, 35, 0.1)', borderRadius: '12px' }}>
+                <button onClick={handleLogout} className={`btn border-0 text-white w-100 d-flex align-items-center ${isCollapsed && !isMobile ? 'justify-content-center' : ''} p-3 mt-4 mb-3`} style={{ backgroundColor: theme === 'dark' ? 'rgba(231, 111, 81, 0.14)' : 'rgba(233, 114, 35, 0.1)', borderRadius: '12px' }}>
                     <i className="bi bi-power fs-5" style={{ color: colors.orange, marginRight: (isCollapsed && !isMobile) ? '0' : '15px' }}></i>
-                    {(!isCollapsed || isMobile) && <span className="fw-bold" style={{ whiteSpace: 'nowrap' }}>Déconnexion</span>}
+                    {(!isCollapsed || isMobile) && <span className="fw-bold" style={{ whiteSpace: 'nowrap' }}>{t('logout')}</span>}
                 </button>
             </nav>
 
@@ -189,8 +195,8 @@ const MainLayout = () => {
                 <div className="d-md-none position-fixed w-100 h-100" onClick={() => setIsSidebarOpen(false)} style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1040, top: 0, left: 0 }} />
             )}
 
-            <div className="d-flex flex-column w-100" style={{ marginLeft: sidebarWidth, transition: 'margin 0.3s cubic-bezier(0.4, 0, 0.2, 1)', position: 'relative', minHeight: '100vh' }}>
-                <header className="shadow px-3 px-md-4 d-flex align-items-center" style={{ position: 'fixed', top: 0, right: 0, left: sidebarWidth, height: headerHeight, zIndex: 1000, transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)', borderBottom: isMobile ? `2px solid ${colors.orange}` : 'none', borderRadius: isMobile ? '0 0 20px 20px' : '0', boxShadow: isMobile ? '0 4px 12px rgba(0,0,0,0.1)' : '0 2px 4px rgba(0,0,0,0.1)', backgroundColor: colors.darkGreen }}>
+            <div className="d-flex flex-column w-100" style={{ marginLeft: sidebarWidth, transition: 'margin 0.3s cubic-bezier(0.4, 0, 0.2, 1)', position: 'relative', minHeight: '100vh', backgroundColor: pageBackground, color: textColor }}>
+                <header className="shadow px-3 px-md-4 d-flex align-items-center" style={{ position: 'fixed', top: 0, right: 0, left: sidebarWidth, height: headerHeight, zIndex: 1000, transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)', borderBottom: isMobile ? `2px solid ${colors.orange}` : 'none', borderRadius: isMobile ? '0 0 20px 20px' : '0', boxShadow: isMobile ? '0 4px 12px rgba(0,0,0,0.1)' : '0 2px 4px rgba(0,0,0,0.1)', backgroundColor: headerBackground }}>
                     <div className="d-flex justify-content-between align-items-center w-100">
                         <div className="d-flex align-items-center">
                             <button className="btn d-md-none me-2 px-1 py-0 shadow-sm" style={{backgroundColor: colors.orange, color: 'white'}} onClick={() => setIsSidebarOpen(true)}>
@@ -210,6 +216,15 @@ const MainLayout = () => {
                             </h5>
                         </div>
                         <div className="d-flex align-items-center ms-auto gap-1">
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-outline-light"
+                                style={{ minWidth: 54, minHeight: 36 }}
+                                onClick={() => setLanguage(language === 'fr' ? 'en' : 'fr')}
+                                title="Changer la langue"
+                            >
+                                {language === 'fr' ? 'FR' : 'EN'}
+                            </button>
                             <Link to="/notifications">
                                     <NotificationBell variant="header" />
                             </Link>
@@ -223,7 +238,7 @@ const MainLayout = () => {
                     </div>
                 </header>
 
-                <main className="flex-grow-1 bg-light overflow-auto" style={{ marginTop: headerHeight, marginBottom: isMobile ? '70px' : '0' }}>
+                <main className="flex-grow-1 overflow-auto" style={{ marginTop: headerHeight, marginBottom: isMobile ? '70px' : '0', backgroundColor: pageBackground, color: textColor }}>
                     <div className="container-fluid py-3 py-md-2">
                         <Outlet />
                     </div>

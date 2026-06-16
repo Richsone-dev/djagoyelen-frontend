@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import api from '../api/axios';
 
 export const NOTIFICATIONS_UPDATED = 'notifications-updated';
@@ -7,10 +7,43 @@ export const dispatchNotificationsUpdated = () => {
     window.dispatchEvent(new CustomEvent(NOTIFICATIONS_UPDATED));
 };
 
+const requestBrowserPermission = async () => {
+    if (typeof window === 'undefined' || !('Notification' in window)) return;
+
+    if (Notification.permission === 'default') {
+        try {
+            await Notification.requestPermission();
+        } catch (error) {
+            console.warn('Permission notification refusée ou impossible', error);
+        }
+    }
+};
+
+const showBrowserNotification = (notification) => {
+    if (typeof window === 'undefined' || !('Notification' in window)) return;
+    if (Notification.permission !== 'granted') return;
+
+    try {
+        new Notification(notification.title || 'DjagoYelen', {
+            body: notification.message || '',
+            icon: '/favicon.ico',
+            tag: `djagoyelen-notification-${notification.id}`,
+            renotify: false,
+            data: {
+                id: notification.id,
+            },
+        });
+    } catch (error) {
+        console.warn('Impossible d’afficher la notification système', error);
+    }
+};
+
 export function useNotifications({ autoRefresh = true, pollInterval = 60000, limit = 20 } = {}) {
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(true);
+    const seenIdsRef = useRef(new Set());
+    const initializedRef = useRef(false);
 
     const fetchNotifications = useCallback(async () => {
         try {
@@ -19,8 +52,21 @@ export function useNotifications({ autoRefresh = true, pollInterval = 60000, lim
                 api.get('/notifications/unread-count'),
             ]);
 
-            setNotifications(Array.isArray(listRes.data) ? listRes.data : []);
+            const fetchedNotifications = Array.isArray(listRes.data) ? listRes.data : [];
+            setNotifications(fetchedNotifications);
             setUnreadCount(countRes.data?.count ?? 0);
+
+            if (initializedRef.current) {
+                const newNotifications = fetchedNotifications.filter(
+                    (notification) =>
+                        !seenIdsRef.current.has(notification.id) &&
+                        !notification.is_read
+                );
+                newNotifications.slice(0, 3).forEach(showBrowserNotification);
+            }
+
+            seenIdsRef.current = new Set(fetchedNotifications.map((n) => n.id));
+            initializedRef.current = true;
         } catch (error) {
             console.error('Erreur notifications:', error);
         } finally {
@@ -29,6 +75,7 @@ export function useNotifications({ autoRefresh = true, pollInterval = 60000, lim
     }, [limit]);
 
     useEffect(() => {
+        requestBrowserPermission();
         fetchNotifications();
 
         if (!autoRefresh) return undefined;

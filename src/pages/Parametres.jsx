@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext.jsx';
 import api from '../api/axios';
 
 const Parametres = () => {
     const { theme, setTheme, colors } = useTheme();
+    const { language, setLanguage, t } = useLanguage();
     const [activeTab, setActiveTab] = useState('general');
     const [status, setStatus] = useState({ type: '', msg: '' });
 
@@ -14,10 +16,10 @@ const Parametres = () => {
 
     // Liens du menu latéral
     const tabs = [
-        { id: 'general', icon: 'gear-wide-connected', label: 'Général' },
-        { id: 'entreprise', icon: 'building', label: 'Entreprise' },
-        { id: 'notifications', icon: 'bell', label: 'Notifications' },
-        { id: 'securite', icon: 'shield-lock', label: 'Sécurité' }
+        { id: 'general', icon: 'gear-wide-connected', label: t('general') },
+        { id: 'entreprise', icon: 'building', label: t('enterprise') },
+        { id: 'notifications', icon: 'bell', label: t('notificationSettings') },
+        { id: 'securite', icon: 'shield-lock', label: t('security') }
     ];
 
     return (
@@ -55,10 +57,10 @@ const Parametres = () => {
                     {/* --- CONTENU DYNAMIQUE --- */}
                     <div className="col-12 col-md-8 col-lg-9 text-start">
                         <div className="card border-0 shadow-sm rounded-4 p-4 p-md-5" style={{ backgroundColor: colors.cardBg }}>
-                            {activeTab === 'general' && <GeneralSettings colors={colors} theme={theme} setTheme={setTheme} onSave={showFeedback} />}
-                            {activeTab === 'entreprise' && <EnterpriseSettings colors={colors} onSave={showFeedback} />}
-                            {activeTab === 'notifications' && <NotificationSettings colors={colors} />}
-                            {activeTab === 'securite' && <SecuritySettings colors={colors} onSave={showFeedback} />}
+                            {activeTab === 'general' && <GeneralSettings colors={colors} theme={theme} setTheme={setTheme} language={language} setLanguage={setLanguage} t={t} onSave={showFeedback} />}
+                            {activeTab === 'entreprise' && <EnterpriseSettings colors={colors} t={t} onSave={showFeedback} />}
+                            {activeTab === 'notifications' && <NotificationSettings colors={colors} t={t} />}
+                            {activeTab === 'securite' && <SecuritySettings colors={colors} t={t} onSave={showFeedback} />}
                         </div>
                     </div>
                 </div>
@@ -77,54 +79,50 @@ const Parametres = () => {
 };
 
 // --- SOUS-COMPOSANT : GÉNÉRAL ---
-const GeneralSettings = ({ colors, theme, setTheme, onSave }) => {
-    const [prefs, setPrefs] = useState({
-        langue: localStorage.getItem('langue') || 'Français',
-        devise: localStorage.getItem('devise') || 'FCFA (XOF)'
-    });
+const GeneralSettings = ({ colors, theme, setTheme, language, setLanguage, t, onSave }) => {
+    const [currency, setCurrency] = useState(localStorage.getItem('devise') || 'FCFA (XOF)');
 
     const handleSave = () => {
-        localStorage.setItem('langue', prefs.langue);
-        localStorage.setItem('devise', prefs.devise);
-        onSave("Préférences enregistrées !");
+        localStorage.setItem('devise', currency);
+        onSave(t('statusSaved'));
     };
 
     return (
         <div className="animate-fade">
-            <h4 className="fw-bold mb-4" style={{ color: colors.darkGreen }}>Préférences Générales</h4>
+            <h4 className="fw-bold mb-4" style={{ color: colors.darkGreen }}>{t('general')}</h4>
             <div className="row g-4">
                 <div className="col-md-6">
-                    <label className="form-label fw-bold small text-muted">Langue du système</label>
-                    <select className="form-select py-2 shadow-none" value={prefs.langue} onChange={(e) => setPrefs({...prefs, langue: e.target.value})}>
-                        <option>Français</option>
-                        <option>English</option>
+                    <label className="form-label fw-bold small text-muted">{t('language')}</label>
+                    <select className="form-select py-2 shadow-none" value={language} onChange={(e) => setLanguage(e.target.value)}>
+                        <option value="fr">Français</option>
+                        <option value="en">English</option>
                     </select>
                 </div>
                 <div className="col-md-6">
-                    <label className="form-label fw-bold small text-muted">Devise par défaut</label>
-                    <select className="form-select py-2 shadow-none" value={prefs.devise} onChange={(e) => setPrefs({...prefs, devise: e.target.value})}>
+                    <label className="form-label fw-bold small text-muted">{t('currency')}</label>
+                    <select className="form-select py-2 shadow-none" value={currency} onChange={(e) => setCurrency(e.target.value)}>
                         <option>FCFA (XOF)</option>
                         <option>Euro (€)</option>
                         <option>Dollar ($)</option>
                     </select>
                 </div>
                 <div className="col-12">
-                    <label className="form-label fw-bold small text-muted d-block mb-3">Apparence de l'interface</label>
+                    <label className="form-label fw-bold small text-muted d-block mb-3">{t('appearance')}</label>
                     <div className="d-flex gap-3">
                         <button className={`btn flex-grow-1 py-3 border-2 transition-all ${theme === 'light' ? 'bg-white shadow-sm' : 'border-secondary text-muted'}`}
-                                onClick={() => setTheme('light')} 
+                                onClick={() => setTheme('light')}
                                 style={{ borderColor: theme === 'light' ? colors.darkGreen : 'transparent' }}>
-                            <i className="bi bi-sun me-2"></i> Clair
+                            <i className="bi bi-sun me-2"></i> {t('light')}
                         </button>
                         <button className={`btn flex-grow-1 py-3 border-2 transition-all ${theme === 'dark' ? 'bg-dark text-white shadow-sm' : 'border-secondary text-muted'}`}
-                                onClick={() => setTheme('dark')} 
+                                onClick={() => setTheme('dark')}
                                 style={{ borderColor: theme === 'dark' ? colors.orange : 'transparent' }}>
-                            <i className="bi bi-moon-stars me-2"></i> Sombre
+                            <i className="bi bi-moon-stars me-2"></i> {t('dark')}
                         </button>
                     </div>
                 </div>
             </div>
-            <button className="btn mt-5 px-5 fw-bold text-white shadow-sm border-0" style={{ backgroundColor: colors.orange }} onClick={handleSave}>Enregistrer</button>
+            <button className="btn mt-5 px-5 fw-bold text-white shadow-sm border-0" style={{ backgroundColor: colors.orange }} onClick={handleSave}>{t('save')}</button>
         </div>
     );
 };

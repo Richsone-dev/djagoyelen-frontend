@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext.jsx';
 import { useNotifications, getNotificationIcon, formatNotificationDate } from '../hooks/useNotifications';
 
 const NotificationBell = ({ variant = 'header' }) => {
@@ -9,12 +11,14 @@ const NotificationBell = ({ variant = 'header' }) => {
         markAllAsRead,
     } = useNotifications({ limit: 8, pollInterval: 45000 });
 
+    const { t } = useLanguage();
+    const { theme } = useTheme();
     const isHeader = variant === 'header';
     const colors = {
         darkGreen: '#0A3B2F',
         orange: '#E97223',
         white: '#ffffff',
-        lightGray: '#f8f9fa',
+        lightGray: theme === 'dark' ? '#252525' : '#f8f9fa',
     };
 
     const preview = notifications.slice(0, 6);
@@ -71,7 +75,7 @@ const NotificationBell = ({ variant = 'header' }) => {
                     style={{ backgroundColor: colors.lightGray }}
                 >
                     <span className="fw-bold small" style={{ color: colors.darkGreen }}>
-                        Notifications
+                        {t('notifications')}
                         {unreadCount > 0 && (
                             <span className="badge bg-danger ms-2">{unreadCount}</span>
                         )}
@@ -87,7 +91,7 @@ const NotificationBell = ({ variant = 'header' }) => {
                                 markAllAsRead();
                             }}
                         >
-                            Tout lire
+                            {t('markAllRead')}
                         </button>
                     )}
                 </li>
@@ -96,7 +100,7 @@ const NotificationBell = ({ variant = 'header' }) => {
                     {preview.length === 0 ? (
                         <li className="px-3 py-4 text-center text-muted small">
                             <i className="bi bi-check2-circle fs-3 d-block mb-2 opacity-50" />
-                            Aucune notification
+                            {t('noNotifications')}
                         </li>
                     ) : (
                         preview.map((notif) => {
@@ -160,7 +164,7 @@ const NotificationBell = ({ variant = 'header' }) => {
                             document.querySelector('[data-bs-toggle="dropdown"][aria-expanded="true"]')?.click();
                         }}
                     >
-                        Voir toutes les notifications
+                        {t('viewAllNotifications')}
                     </Link>
                 </li>
             </ul>
