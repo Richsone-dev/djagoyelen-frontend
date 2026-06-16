@@ -168,13 +168,45 @@ const NotificationSettings = ({ colors }) => {
         { id: 2, title: "Rapports Hebdomadaires", desc: "Résumé PDF envoyé par email", active: false }
     ]);
 
+    const [permission, setPermission] = useState(typeof Notification !== 'undefined' ? Notification.permission : 'default');
+
     const toggle = (id) => {
         setNotifs(notifs.map(n => n.id === id ? { ...n, active: !n.active } : n));
     };
 
+    const requestPermission = async () => {
+        if (typeof Notification === 'undefined') return;
+        try {
+            const p = await Notification.requestPermission();
+            setPermission(p);
+        } catch (e) {
+            console.warn('Notification permission error', e);
+        }
+    };
+
+    React.useEffect(() => {
+        if (typeof Notification !== 'undefined') setPermission(Notification.permission);
+    }, []);
+
     return (
         <div className="animate-fade">
-            <h4 className="fw-bold mb-4" style={{ color: colors.darkGreen }}>Gestion des Alertes</h4>
+            <h4 className="fw-bold mb-3" style={{ color: colors.darkGreen }}>Gestion des Alertes</h4>
+
+            <div className="mb-3 p-3 border rounded-4 shadow-sm d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 className="mb-1 fw-bold">Notifications Système</h6>
+                    <p className="small text-muted mb-0">Permettre aux notifications de votre navigateur d'apparaître quand de nouvelles alertes arrivent.</p>
+                </div>
+                <div className="text-end">
+                    <div className="small text-muted mb-1">Statut: <span className="fw-bold">{permission}</span></div>
+                    {permission !== 'granted' ? (
+                        <button className="btn btn-sm btn-outline-primary" onClick={requestPermission}>Autoriser</button>
+                    ) : (
+                        <button className="btn btn-sm btn-outline-success" disabled>Autorisé</button>
+                    )}
+                </div>
+            </div>
+
             <div className="d-flex flex-column gap-3">
                 {notifs.map((item) => (
                     <div key={item.id} className="d-flex justify-content-between align-items-center p-3 border rounded-4 shadow-sm">

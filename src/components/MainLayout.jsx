@@ -228,10 +228,22 @@ const MainLayout = () => {
                             <Link to="/notifications">
                                     <NotificationBell variant="header" />
                             </Link>
-                            <Link to="/profil" className="text-decoration-none d-flex align-items-center p-1 pe-2 pe-md-3 rounded-pill border-0" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
-                                <div className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-2" style={{ width: '32px', height: '32px', backgroundColor: colors.orange }}>
-                                    {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                                </div>
+                                <Link to="/profil" className="text-decoration-none d-flex align-items-center p-1 pe-2 pe-md-3 rounded-pill border-0" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
+                                {user?.id_photo ? (
+                                    (() => {
+                                        const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
+                                        //const baseUrl = 'http://localhost:8000';
+
+                                        const src = user.id_photo.startsWith('http') ? user.id_photo : `${baseUrl}${user.id_photo}`;
+                                        return (
+                                            <img src={src} alt="avatar" className="rounded-circle me-2" style={{ width: 32, height: 32, objectFit: 'cover', border: '2px solid rgba(255,255,255,0.2)' }} />
+                                        );
+                                    })()
+                                ) : (
+                                    <div className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-2" style={{ width: '32px', height: '32px', backgroundColor: colors.orange }}>
+                                        {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                                    </div>
+                                )}
                                 <span className="small d-none d-sm-block fw-bold text-white">{user?.name || 'Chargement...'}</span>
                             </Link>
                         </div>

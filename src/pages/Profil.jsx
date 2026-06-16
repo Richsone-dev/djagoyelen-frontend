@@ -109,7 +109,10 @@ const Profil = () => {
                 api.get('/clients')
             ]);
 
-            const userData = userRes.data;
+            // Extraire les données utilisateur correctement
+            const userData = userRes.data.data || userRes.data.user || userRes.data;
+
+            console.log('User data loaded:', userData);
 
             setUser(userData);
 
@@ -120,11 +123,16 @@ const Profil = () => {
             });
             
             const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
-            setPhotoPreview(userData?.id_photo ? `${userData.id_photo.startsWith('http') ? userData.id_photo : `${baseUrl}${userData.id_photo}`}` : null);
+            //const baseUrl = 'http://localhost:8000';
+            const photoUrl = userData?.id_photo
+                ? (userData.id_photo.startsWith('http') ? userData.id_photo : `${baseUrl}${userData.id_photo}`)
+                : null;
+            console.log('Photo URL:', photoUrl);
+            setPhotoPreview(photoUrl);
 
             setClients(clientsRes.data || []);
         } catch (error) {
-            console.error(error);
+            console.error('Load data error:', error);
 
             showFeedback(
                 'danger',
@@ -165,13 +173,19 @@ const Profil = () => {
             // IMPORTANT :
             // on met immédiatement à jour le state
             // pour que les nouvelles données apparaissent
-            const updatedUser = response.data.user || response.data;
+            const updatedUser = response.data.data;
+
+            console.log('Updated user response:', updatedUser);
 
             setUser(updatedUser);
             localStorage.setItem('user', JSON.stringify(updatedUser));
             
             const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
-            setPhotoPreview(updatedUser.id_photo ? `${updatedUser.id_photo.startsWith('http') ? updatedUser.id_photo : `${baseUrl}${updatedUser.id_photo}`}` : null);
+            const photoUrl = updatedUser.id_photo
+                ? (updatedUser.id_photo.startsWith('http') ? updatedUser.id_photo : `${baseUrl}${updatedUser.id_photo}`)
+                : null;
+            console.log('Updated photo URL:', photoUrl);
+            setPhotoPreview(photoUrl);
 
             setFormData({
                 name: updatedUser.name || '',
@@ -186,6 +200,11 @@ const Profil = () => {
                 'success',
                 'Profil mis à jour avec succès.'
             );
+
+            // Recharger les données du profil après 500ms pour s'assurer que la photo est visible en BD
+            setTimeout(() => {
+                loadData(false);
+            }, 500);
         } catch (error) {
             console.error(error);
 

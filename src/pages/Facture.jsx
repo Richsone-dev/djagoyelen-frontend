@@ -414,6 +414,31 @@ const Facture = () => {
         }));
     };
 
+    // ─────────────────────────────────────────
+    // EDIT
+    // ─────────────────────────────────────────
+
+    const handleEditFacture = (facture) => {
+        // Normalize facture into formData shape
+        const items = facture.lignes && Array.isArray(facture.lignes)
+            ? facture.lignes.map(i => ({ designation: i.designation || i.description || '', quantite: i.quantite || i.qty || 1, prix_unitaire: i.prix_unitaire || i.prix || i.prix_unitaire || 0 }))
+            : (Array.isArray(facture.items) ? facture.items : (typeof facture.items === 'string' ? (() => { try { return JSON.parse(facture.items); } catch { return []; } })() : []));
+
+        setFormData({
+            id: facture.id,
+            client_id: facture.client_id || facture.client?.id || facture.client_id || '',
+            date_emission: facture.date_emission ? new Date(facture.date_emission).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+            items: items.length > 0 ? items : [{ designation: '', quantite: 1, prix_unitaire: 0 }],
+            tva_taux: facture.tva_taux ?? 18,
+            total_ht: facture.total_ht ?? 0,
+            total_ttc: facture.total_ttc ?? 0
+        });
+
+        setErrors({});
+        setIsEditing(true);
+        setShowModal(true);
+    };
+
     const addItem = () => {
 
         setFormData(prev => ({
@@ -1225,6 +1250,9 @@ Tél: ${téléphone}`;
                                                         <button className="btn btn-sm btn-outline-primary" onClick={() => handlePreviewPDF(facture)}>
                                                             <i className="bi bi-eye"></i>
                                                         </button>
+                                                        <button className="btn btn-sm btn-outline-warning" onClick={() => handleEditFacture(facture)}>
+                                                            <i className="bi bi-pencil-square"></i>
+                                                        </button>
                                                         <button className="btn btn-sm btn-outline-success" onClick={() => handleDownloadPDF(facture)}>
                                                             <i className="bi bi-download"></i>
                                                         </button>
@@ -1267,6 +1295,13 @@ Tél: ${téléphone}`;
                                                 >
                                                     <i className="bi bi-eye-fill"></i>
                                                 </button>
+                                                    <button 
+                                                        className="btn btn-link flex-grow-1 text-center text-warning border-end p-0 m-0" 
+                                                        style={{ textDecoration: 'none', borderRadius: '0' }}
+                                                        onClick={() => handleEditFacture(facture)}
+                                                    >
+                                                        <i className="bi bi-pencil-square"></i>
+                                                    </button>
                                                 <button 
                                                     className="btn btn-link flex-grow-1 text-center text-success border-end p-0 m-0" 
                                                     style={{ textDecoration: 'none', borderRadius: '0' }}
