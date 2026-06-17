@@ -284,7 +284,7 @@ const MainLayout = () => {
                 )}
 
                 {isMobile && (
-                    <div className="fixed-bottom border-top d-flex mt-auto justify-content-around align-items-center shadow-lg" style={{ height: '70px', zIndex: 1040, backgroundColor: colors.successGreen, borderRadius: '20px 20px 0 0' }}>
+                    <div className="fixed-bottom border-top d-flex mt-auto justify-content-around align-items-center shadow-lg" style={{ height: '70px', zIndex: 1040, backgroundColor: colors.darkGreen, borderRadius: '20px 20px 0 0' }}>
                         <Link to="/transactions" className="text-center text-decoration-none" style={{ color: location.pathname === '/transactions' ? colors.orange : 'rgba(255,255,255,0.6)',maxWidth: '80px'}}>
                             <i className="bi bi-cash-stack fs-3"></i><br/><small style={{fontSize: '8px'}}>Transactions</small>
                         </Link>
