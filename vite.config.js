@@ -58,7 +58,7 @@ export default defineConfig({
         short_name: 'DjagoYelen',
         description: 'Solution moderne de gestion financière et de suivi pour les petites et moyennes entreprises.',
         theme_color: '#0A3B2F',
-        background_color: '#1e5f38',
+        background_color: '#0A3B2F', // 👈 MODIFIÉ : Aligné sur ton vert foncé pour un splash screen natif fluide
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',
@@ -78,7 +78,7 @@ export default defineConfig({
             src: 'pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'any maskable' // Assure que ton logo s'adapte parfaitement aux formes d'icônes d'Android
           }
         ]
       }
