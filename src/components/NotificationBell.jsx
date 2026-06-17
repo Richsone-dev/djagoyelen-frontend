@@ -47,7 +47,7 @@ const NotificationBell = ({ variant = 'header' }) => {
                 />
                 {unreadCount > 0 && (
                     <span
-                        className="position-absolute m-left-0 bottom-10 top-50 translate-middlestart-100 translate-middle badge rounded-pill bg-danger"
+                        className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                         style={{
                             fontSize: '0.65rem',
                             minWidth: 20,
@@ -97,61 +97,66 @@ const NotificationBell = ({ variant = 'header' }) => {
                     )}
                 </li>
 
-                <div style={{ maxHeight: 'min(360px, 50vh)', overflowY: 'auto' }}>
-                    {preview.length === 0 ? (
-                        <li className="px-3 py-4 text-center text-muted small">
-                            <i className="bi bi-check2-circle fs-3 d-block mb-2 opacity-50" />
-                            Aucune notification
-                        </li>
-                    ) : (
-                        preview.map((notif) => {
-                            const { icon, className } = getNotificationIcon(notif.type);
-                            return (
-                                <li key={notif.id}>
-                                    <button
-                                        type="button"
-                                        className={`dropdown-item py-3 border-bottom text-start w-100 ${
-                                            !notif.is_read ? 'bg-light' : ''
-                                        }`}
-                                        style={{
-                                            whiteSpace: 'normal',
-                                            borderLeft: !notif.is_read
-                                                ? `4px solid ${colors.orange}`
-                                                : '4px solid transparent',
-                                        }}
-                                        onClick={() => {
-                                            if (!notif.is_read) markAsRead(notif.id);
-                                        }}
-                                    >
-                                        <div className="d-flex gap-2">
-                                            <i className={`bi ${icon} ${className} mt-1`} />
-                                            <div className="flex-grow-1">
-                                                <div className="d-flex justify-content-between gap-2">
-                                                    <span
-                                                        className={`small ${
-                                                            !notif.is_read ? 'fw-bold' : ''
-                                                        }`}
-                                                    >
-                                                        {notif.title || 'Information'}
-                                                    </span>
-                                                    <span className="text-muted" style={{ fontSize: '0.65rem' }}>
-                                                        {formatNotificationDate(notif.created_at)}
-                                                    </span>
-                                                </div>
-                                                <p
-                                                    className="mb-0 text-muted"
-                                                    style={{ fontSize: '0.8rem', lineHeight: 1.3 }}
-                                                >
-                                                    {notif.message}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </button>
+                {/* CORRECTION : On enveloppe la div de scroll dans un <li> pour respecter la sémantique HTML */}
+                <li>
+                    <div style={{ maxHeight: 'min(360px, 50vh)', overflowY: 'auto' }}>
+                        <ul className="list-unstyled mb-0">
+                            {preview.length === 0 ? (
+                                <li className="px-3 py-4 text-center text-muted small">
+                                    <i className="bi bi-check2-circle fs-3 d-block mb-2 opacity-50" />
+                                    Aucune notification
                                 </li>
-                            );
-                        })
-                    )}
-                </div>
+                            ) : (
+                                preview.map((notif) => {
+                                    const { icon, className } = getNotificationIcon(notif.type);
+                                    return (
+                                        <li key={notif.id}>
+                                            <button
+                                                type="button"
+                                                className={`dropdown-item py-3 border-bottom text-start w-100 ${
+                                                    !notif.is_read ? 'bg-light' : ''
+                                                }`}
+                                                style={{
+                                                    whiteSpace: 'normal',
+                                                    borderLeft: !notif.is_read
+                                                        ? `4px solid ${colors.orange}`
+                                                        : '4px solid transparent',
+                                                }}
+                                                onClick={() => {
+                                                    if (!notif.is_read) markAsRead(notif.id);
+                                                }}
+                                            >
+                                                <div className="d-flex gap-2">
+                                                    <i className={`bi ${icon} ${className} mt-1`} />
+                                                    <div className="flex-grow-1">
+                                                        <div className="d-flex justify-content-between gap-2">
+                                                            <span
+                                                                className={`small ${
+                                                                    !notif.is_read ? 'fw-bold' : ''
+                                                                }`}
+                                                            >
+                                                                {notif.title || 'Information'}
+                                                            </span>
+                                                            <span className="text-muted" style={{ fontSize: '0.65rem' }}>
+                                                                {formatNotificationDate(notif.created_at)}
+                                                            </span>
+                                                        </div>
+                                                        <p
+                                                            className="mb-0 text-muted"
+                                                            style={{ fontSize: '0.8rem', lineHeight: 1.3 }}
+                                                        >
+                                                            {notif.message}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        </li>
+                                    );
+                                })
+                            )}
+                        </ul>
+                    </div>
+                </li>
 
                 <li
                     className="text-center py-2 border-top"
@@ -159,7 +164,7 @@ const NotificationBell = ({ variant = 'header' }) => {
                 >
                     <Link
                         to="/notifications"
-                        className="text-decoration-none small fw-bold"
+                        className="text-decoration-none small fw-bold d-block w-100"
                         style={{ color: colors.darkGreen }}
                         onClick={() => {
                             document.querySelector('[data-bs-toggle="dropdown"][aria-expanded="true"]')?.click();

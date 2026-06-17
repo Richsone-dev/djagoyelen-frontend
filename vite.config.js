@@ -12,26 +12,41 @@ export default defineConfig({
       // 1. Mise en cache des icônes PWA de base pour le hors-ligne
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg', 'pwa-192x192.png', 'pwa-512x512.png'],
       
-      // 2. Configuration Workbox pour les images statiques et dynamiques
+      // 2. Configuration Workbox pour les images statiques, dynamiques ET les polices d'icônes
       workbox: {
-        // Cache tous les fichiers statiques de base
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp}'],
+        // Cache tous les fichiers statiques de base ET les polices locales (woff, woff2, tttf)
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,woff,woff2,ttf}'],
         maximumFileSizeToCacheInBytes: 5000000,
         
-        // Configuration du cache dynamique pour les images de la base de données
+        // Configuration du cache dynamique
         runtimeCaching: [
           {
-            // Intercepte les requêtes d'images
+            // Intercepte les requêtes d'images (statiques et base de données)
             urlPattern: ({ request, url }) => request.destination === 'image' || url.pathname.match(/\.(?:png|jpg|jpeg|svg|webp|gif)$/i),
             handler: 'StaleWhileRevalidate',
             options: {
-              cacheName: 'djago-dynamic-images',
+              cacheName: 'djago-images-cache',
               expiration: {
-                maxEntries: 50, // Garde les 50 dernières images
+                maxEntries: 100, 
                 maxAgeSeconds: 60 * 60 * 24 * 30, // Expire après 30 jours
               },
               cacheableResponse: {
                 statuses: [0, 200]
+              }
+            }
+          },
+          {
+            // Intercepte et cache les polices d'icônes (sécurité supplémentaire pour les CDN)
+            urlPattern: ({ request, url }) => request.destination === 'font' || url.pathname.match(/\.(?:woff|woff2|ttf|eot)$/i) || url.host.includes('jsdelivr') || url.host.includes('cdnjs'),
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'djago-fonts-icons',
+              expiration: { 
+                maxEntries: 20, 
+                maxAgeSeconds: 60 * 60 * 24 * 365 // Gardé 1 an
+              },
+              cacheableResponse: { 
+                statuses: [0, 200] 
               }
             }
           }
@@ -42,9 +57,7 @@ export default defineConfig({
         name: 'DjagoYelen - Gestion Financière',
         short_name: 'DjagoYelen',
         description: 'Solution moderne de gestion financière et de suivi pour les petites et moyennes entreprises.',
-        //theme_color: '#1e5f38',
         theme_color: '#0A3B2F',
-        //background_color: '#ffffff',
         background_color: '#1e5f38',
         display: 'standalone',
         orientation: 'portrait',

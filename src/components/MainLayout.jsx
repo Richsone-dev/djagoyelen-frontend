@@ -15,8 +15,8 @@ const MainLayout = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [isCollapsed, setIsCollapsed] = useState(window.innerWidth > 768 && window.innerWidth <= 1024);
 
-    const { theme, colors: themeColors } = useTheme();
-    const { t, language, setLanguage } = useLanguage();
+    const { theme, setTheme, colors: themeColors } = useTheme();
+    const { t } = useLanguage();
 
     const colors = {
         darkGreen: '#0A3B2F',
@@ -69,7 +69,7 @@ const MainLayout = () => {
         try {
             await api.post('/logout');
         } catch (error) {
-            // Même si erreur, on déconnecte côté frontend
+            // Déconnexion forcée côté front
         } finally {
             localStorage.clear();
             navigate('/login', { replace: true });
@@ -80,43 +80,43 @@ const MainLayout = () => {
     };
 
     const menuSections = [
-    {
-        links: [
-            { path: 'dashboard', label: t('dashboard'), icon: 'speedometer2' },
-            { path: 'transactions', label: t('transactions'), icon: 'cash-stack' },
-            { path: 'category', label: t('categories'), icon: 'tags' },
-            { path: 'budgets', label: t('budgets'), icon: 'piggy-bank' },
-            { path: 'rapports', label: t('reports'), icon: 'file-earmark-bar-graph' },
-            { path: 'profil', label: t('profile'), icon: 'person' },
-            { path: 'apropos', label: t('about'), icon: 'info-circle' },
-            { path: 'parametres', label: t('settings'), icon: 'gear' },
-            { path: 'clients', label: t('clients'), icon: 'people' },
-            { path: 'factures', label: t('invoices'), icon: 'receipt' },
-            { path: 'notifications', label: t('notifications'), icon: 'bell' },
-            { path: 'aide', label: t('help'), icon: 'question-circle', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
-            { path: 'dettes', label: t('debts'), icon: 'person-dash', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
-        ],
-    },
-    ...(user?.role === 'admin' ? [{
-        title: t('administration'),
-        links: [
-            { path: '/admin/dashboard', label: t('admin'), icon: 'shield-lock', color: colors.orange, external: true }
-        ]
-    }] : []),
-    ...(user?.role === 'manager' ? [{
-        title: t('management'),
-        links: [
-            { path: 'gestion', label: t('management'), icon: 'briefcase', color: colors.primaryBlue }
-        ]
-    }] : [])
-];
+        {
+            links: [
+                { path: 'dashboard', label: t('dashboard'), icon: 'speedometer2' },
+                { path: 'transactions', label: t('transactions'), icon: 'cash-stack' },
+                { path: 'category', label: t('categories'), icon: 'tags' },
+                { path: 'budgets', label: t('budgets'), icon: 'piggy-bank' },
+                { path: 'rapports', label: t('reports'), icon: 'file-earmark-bar-graph' },
+                { path: 'profil', label: t('profile'), icon: 'person' },
+                { path: 'apropos', label: t('about'), icon: 'info-circle' },
+                { path: 'parametres', label: t('settings'), icon: 'gear' },
+                { path: 'clients', label: t('clients'), icon: 'people' },
+                { path: 'factures', label: t('invoices'), icon: 'receipt' },
+                { path: 'notifications', label: t('notifications'), icon: 'bell' },
+                { path: 'aide', label: t('help'), icon: 'question-circle', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
+                { path: 'dettes', label: t('debts'), icon: 'person-dash', disabled: true, tooltip: "Bientôt disponible", color: colors.accentPurple },
+            ],
+        },
+        ...(user?.role === 'admin' ? [{
+            title: t('administration'),
+            links: [
+                { path: '/admin/dashboard', label: t('admin'), icon: 'shield-lock', color: colors.orange, external: true }
+            ]
+        }] : []),
+        ...(user?.role === 'manager' ? [{
+            title: t('management'),
+            links: [
+                { path: 'gestion', label: t('management'), icon: 'briefcase', color: colors.primaryBlue }
+            ]
+        }] : []),
+    ];
 
     const sidebarWidth = isMobile ? '0px' : (isCollapsed ? '70px' : '250px');
     const headerHeight = '72px';
     const footerHeight = '70px';
 
     return (
-        <div className="d-flex" style={{ minHeight: '20vh', maxHeight: '50vh', backgroundColor: pageBackground, color: textColor }}>
+        <div className="d-flex" style={{ minHeight: '100vh', backgroundColor: pageBackground, color: textColor }}>
             
             <nav 
                 className="d-flex flex-column shadow" 
@@ -135,7 +135,7 @@ const MainLayout = () => {
                     padding: isCollapsed && !isMobile ? '1.5rem 0.75rem' : '1.5rem',
                 }}
             >
-                <div className={`d-flex ${isCollapsed && !isMobile ? 'justify-content-center' : 'justify-content-between'} align-items-center mb-4`} style={{backgroundColor: colors.white, borderRadius: '10px'}}>
+                <div className={`d-flex ${isCollapsed && !isMobile ? 'justify-content-center' : 'justify-content-between'} align-items-center mb-4`} style={{backgroundColor: colors.white, borderRadius: '10px', padding: '5px'}}>
                     <div className="d-flex align-items-center" onClick={() => !isMobile && setIsCollapsed(!isCollapsed)} style={{ cursor: 'pointer' }}>
                         <img src={logo} alt="Logo" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} />
                         {(!isCollapsed || isMobile) && (
@@ -145,8 +145,8 @@ const MainLayout = () => {
                         )}
                     </div>
                     {isMobile && (
-                        <button className="btn text-white p-0 border-0" style={{border: colors.orange, borderRadius: '50px'}} onClick={() => setIsSidebarOpen(false)}>
-                            <i className="bi bi-x-lg fs-4"></i>
+                        <button className="btn text-dark p-0 border-0" onClick={() => setIsSidebarOpen(false)}>
+                            <i className="bi bi-x-lg fs-5"></i>
                         </button>
                     )}
                 </div>
@@ -154,8 +154,8 @@ const MainLayout = () => {
                 <div className="flex-grow-1">
                     {menuSections.map((section, idx) => (
                         <div key={idx} className="mb-4">
-                            {(!isCollapsed || isMobile) && (
-                                <small className="text-uppercase fw-bold text-muted mb-2 d-block color-primary" style={{ fontSize: '0.6rem', color: colors.white}}>
+                            {(!isCollapsed || isMobile) && section.title && (
+                                <small className="text-uppercase fw-bold text-muted mb-2 d-block" style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.6)'}}>
                                     {section.title}
                                 </small>
                             )}
@@ -163,18 +163,18 @@ const MainLayout = () => {
                                 {section.links.map((link) => (
                                     <li className="nav-item mb-1" key={link.path}>
                                         {link.disabled ? (
-                                            <span className="nav-link text-white d-flex align-items-center p-2" style={{ borderRadius: '10px', transition: '0.3s', cursor: 'not-allowed', backgroundColor: 'rgba(233, 114, 35, 0.2)', color: link.color || 'rgba(255,255,255,0.2)' }} title={link.tooltip || "Indisponible"}>
-                                                <i className={`bi bi-${link.icon} fs-5`} style={{ color: colors.successGreen, marginRight: (isCollapsed && !isMobile) ? '0' : '15px' }}></i>
-                                                {(!isCollapsed || isMobile) && <span style={{ fontSize: '0.9rem', whiteSpace: 'nowrap', color: colors.successGreen }}>{link.tooltip}</span>}
+                                            <span className="nav-link text-white d-flex align-items-center p-2" style={{ borderRadius: '10px', transition: '0.3s', cursor: 'not-allowed', backgroundColor: 'rgba(233, 114, 35, 0.05)', opacity: 0.5 }} title={link.tooltip || "Indisponible"}>
+                                                <i className={`bi bi-${link.icon} fs-5`} style={{ marginRight: (isCollapsed && !isMobile) ? '0' : '15px' }}></i>
+                                                {(!isCollapsed || isMobile) && <span style={{ fontSize: '0.9rem', whiteSpace: 'nowrap' }}>{link.label} (Bientôt)</span>}
                                             </span>
                                         ) : (
                                             <Link 
                                                 to={link.path.startsWith('/') ? link.path : `/${link.path}`}
-                                                className={`nav-link text-white d-flex align-items-center ${isCollapsed && !isMobile ? 'justify-content-center' : ''} p-2 ${location.pathname === (link.path.startsWith('/') ? link.path : `/${link.path}`) ? 'bg-white bg-opacity-10 shadow-sm' : ''}`}
+                                                className={`nav-link text-white d-flex align-items-center ${isCollapsed && !isMobile ? 'justify-content-center' : ''} p-2 ${location.pathname === (link.path.startsWith('/') ? link.path : `/${link.path}`) ? 'bg-white bg-opacity-10 shadow-sm fw-bold' : ''}`}
                                                 onClick={() => isMobile && setIsSidebarOpen(false)}
                                                 style={{ borderRadius: '10px', transition: '0.3s' }}
                                             >
-                                                <i className={`bi bi-${link.icon} fs-5`} style={{ color: '#ffffff', marginRight: (isCollapsed && !isMobile) ? '0' : '15px' }}></i>
+                                                <i className={`bi bi-${link.icon} fs-5`} style={{ marginRight: (isCollapsed && !isMobile) ? '0' : '15px', color: link.color || '#ffffff' }}></i>
                                                 {(!isCollapsed || isMobile) && <span style={{ fontSize: '0.9rem', whiteSpace: 'nowrap' }}>{link.label}</span>}
                                             </Link>
                                         )}
@@ -203,13 +203,12 @@ const MainLayout = () => {
                                 <i className="bi bi-list fs-3"></i>
                             </button>
                             <Link to="/" className="text-decoration-none d-flex align-items-center">
-                        
-                            {isMobile && (
-                                <h5 className="fw-bold mb-0" style={{ fontSize: '1.1rem' }}>
-                                    <span style={{ color: 'white' }}>Djago</span>
-                                    <span style={{ color: colors.orange }}>Yelen</span>
-                                </h5>
-                            )}
+                                {isMobile && (
+                                    <h5 className="fw-bold mb-0" style={{ fontSize: '1.1rem' }}>
+                                        <span style={{ color: 'white' }}>Djago</span>
+                                        <span style={{ color: colors.orange }}>Yelen</span>
+                                    </h5>
+                                )}
                             </Link>
                             <h5 className="mb-0 d-none d-md-block fw-bold text-white" style={{ fontSize: '1.1rem', textTransform: 'capitalize'}}>
                                 {menuSections.flatMap(s => s.links).find(l => {
@@ -218,68 +217,84 @@ const MainLayout = () => {
                                 })?.label || "Bienvenue"}
                             </h5>
                         </div>
-                        <div className="d-flex align-items-center ms-auto gap-1">
-                            {/*<button
+                        
+                        {/* SECTION NAVIGATION DROITE OPTIMISÉE POUR LE RESPONSIVE */}
+                        <div className="d-flex align-items-center ms-auto gap-2">
+                            
+                            <Link to="/notifications" className="d-flex align-items-center">
+                                <NotificationBell />
+                            </Link>
+
+                            {/* 1. VERSION DESKTOP/TABLETTE : Pilule complète (Affichée uniquement sur md et plus) */}
+                            <div className="d-none d-md-flex gap-1 p-1 ms-2 me-2 rounded-pill" style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)' }}>
+                                <button 
+                                    type="button"
+                                    className="btn p-0 d-flex align-items-center justify-content-center rounded-circle border-0"
+                                    onClick={() => setTheme('light')}
+                                    style={{ 
+                                        width: '32px', 
+                                        height: '32px',
+                                        backgroundColor: theme === 'light' ? colors.white : 'transparent',
+                                        color: theme === 'light' ? colors.darkGreen : 'rgba(255, 255, 255, 0.6)',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                    title="Mode Clair"
+                                >
+                                    <i className="bi bi-sun-fill fs-6"></i>
+                                </button>
+                                <button 
+                                    type="button"
+                                    className="btn p-0 d-flex align-items-center justify-content-center rounded-circle border-0"
+                                    onClick={() => setTheme('dark')}
+                                    style={{ 
+                                        width: '32px', 
+                                        height: '32px',
+                                        backgroundColor: theme === 'dark' ? colors.orange : 'transparent',
+                                        color: theme === 'dark' ? colors.white : 'rgba(255, 255, 255, 0.6)',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                    title="Mode Sombre"
+                                >
+                                    <i className="bi bi-moon-stars-fill fs-6"></i>
+                                </button>
+                            </div>
+
+                            {/* 2. VERSION MOBILE : Bouton unique Toggle (Affiché uniquement sous md) */}
+                            <button
                                 type="button"
-                                className="btn btn-sm btn-outline-light"
-                                style={{ minWidth: 54, minHeight: 36 }}
-                                onClick={() => setLanguage(language === 'fr' ? 'en' : 'fr')}
-                                title="Changer la langue"
+                                className="btn d-md-none p-0 d-flex align-items-center justify-content-center rounded-circle border-0 ms-1 me-1"
+                                onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+                                style={{
+                                    width: '36px',
+                                    height: '36px',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                                    color: theme === 'dark' ? colors.orange : '#ffffff',
+                                    transition: 'all 0.2s ease'
+                                }}
+                                title={theme === 'light' ? "Passer au Mode Sombre" : "Passer au Mode Clair"}
                             >
-                                {language === 'fr' ? 'FR' : 'EN'}
-                            </button>*/}
-                            <Link to="/notifications">
-                                    <NotificationBell />
-                            </Link>
-                                <Link to="/profil" className="text-decoration-none d-flex align-items-center p-1 pe-2 pe-md-3 rounded-pill border-0" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
-                                {/*{user?.id_photo ? (
-                                    (() => {
-                                        //const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
-                                        const baseUrl = 'http://localhost:8000';
+                                <i className={`bi bi-${theme === 'light' ? 'sun-fill' : 'moon-stars-fill'} fs-5`}></i>
+                            </button>
 
-                                        const src = user.id_photo.startsWith('http') ? user.id_photo : `${baseUrl}${user.id_photo}`;
-                                        return (
-                                            <img src={src} alt="avatar" className="rounded-circle me-2" style={{ width: 32, height: 32, objectFit: 'cover', border: '2px solid rgba(255,255,255,0.2)' }} />
-                                        );
-                                    })()
-                                ) : (*/}
-                                    <div className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-2" style={{ width: '32px', height: '32px', backgroundColor: colors.orange }}>
-                                        {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                                    </div>
-                                {/*)}*/}
-                                <span className="small d-none d-sm-block fw-bold text-white">{user?.name || 'Chargement...'}</span>
+                            <Link to="/profil" className="text-decoration-none d-flex align-items-center p-1 pe-2 pe-md-3 rounded-pill border-0" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
+                                <div className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-md-2" style={{ width: '32px', height: '32px', backgroundColor: colors.orange }}>
+                                    {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                                </div>
+                                <span className="small d-none d-sm-block fw-bold text-white">{user?.name || 'Profil'}</span>
                             </Link>
-                                {/*<Link to="/profil" className="text-decoration-none d-flex align-items-center p-1 pe-2 pe-md-3 rounded-pill border-0" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
-                                {user?.id_photo ? (
-                                    (() => {
-                                        //const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
-                                        const baseUrl = 'http://localhost:8000';
-
-                                        const src = user.id_photo.startsWith('http') ? user.id_photo : `${baseUrl}${user.id_photo}`;
-                                        return (
-                                            <img src={src} alt="avatar" className="rounded-circle me-2" style={{ width: 32, height: 32, objectFit: 'cover', border: '2px solid rgba(255,255,255,0.2)' }} />
-                                        );
-                                    })()
-                                ) : (
-                                    <div className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-2" style={{ width: '32px', height: '32px', backgroundColor: colors.orange }}>
-                                        {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                                    </div>
-                                )}
-                                <span className="small d-none d-sm-block fw-bold text-white">{user?.name || 'Chargement...'}</span>
-                            </Link>*/}
                         </div>
                     </div>
                 </header>
 
                 <main className="flex-grow-1 overflow-auto" style={{ marginTop: headerHeight, marginBottom: isMobile ? '70px' : '0', backgroundColor: pageBackground, color: textColor }}>
-                    <div className="container-fluid py-3 py-md-2">
+                    <div className="container-fluid py-3 py-md-4">
                         <Outlet />
                     </div>
                 </main>
 
                 {!isMobile && (
                     <footer className="text-center d-flex align-items-center justify-content-center text-muted small border-top bg-white mt-auto" style={{ height: footerHeight, width: '100%' }}>
-                        <div>&copy; 2026 <strong>DjagoYelen</strong> tout droit réservé. {/*} <span className="ms-2"><em>Karim & Françoise, Ingénieurs en Génie Logiciel</em></span>*/}</div>
+                        <div>&copy; 2026 <strong>DjagoYelen</strong> tous droits réservés.</div>
                     </footer>
                 )}
 

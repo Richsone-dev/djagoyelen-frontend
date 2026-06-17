@@ -3,9 +3,9 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap-icons/font/bootstrap-icons.css';
 import ThemeProvider from './context/ThemeContext.jsx';
 import { LanguageProvider } from './context/LanguageContext.jsx';
+import { CategoryProvider } from './context/CategoryContext.jsx';
 
 // Importation du script d'enregistrement automatique de la PWA
 import { registerSW } from 'virtual:pwa-register'; //  Bon chemin virtuel !
@@ -17,7 +17,9 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ThemeProvider>
       <LanguageProvider>
-        <App />
+        <CategoryProvider>
+          <App />
+        </CategoryProvider>
       </LanguageProvider>
     </ThemeProvider>
   </StrictMode>,
