@@ -5,6 +5,7 @@ import logo from '../assets/djago-logo.jpeg';
 import NotificationBell from './NotificationBell';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext.jsx';
+import SplashScreen from './SplashScreen';
 
 const MainLayout = () => {
     const navigate = useNavigate();
@@ -14,6 +15,16 @@ const MainLayout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [isCollapsed, setIsCollapsed] = useState(window.innerWidth > 768 && window.innerWidth <= 1024);
+    
+    // 1. Détection : Est-ce que l'application est lancée en mode "installée" ?
+    const isInstalledApp = () => {
+        return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    };
+
+    // Initialisation intelligente : Splash actif uniquement si c'est l'app installée ET premier lancement de session
+    const [isAppLoading, setIsAppLoading] = useState(() => {
+        return isInstalledApp() && !sessionStorage.getItem('djago_animated');
+    });
 
     const { theme, setTheme, colors: themeColors } = useTheme();
     const { t } = useLanguage();
@@ -43,13 +54,27 @@ const MainLayout = () => {
 
     useEffect(() => {
         const token = localStorage.getItem('token');
+        const isStandalone = isInstalledApp();
+        const alreadyAnimated = sessionStorage.getItem('djago_animated');
+
         if (token) {
             api.get('/me')
                 .then(res => setUser(res.data))
                 .catch(() => {
                     localStorage.removeItem('token');
                     navigate('/login');
+                })
+                .finally(() => {
+                    // 2. On applique l'animation SEULEMENT dans l'app installée et au premier démarrage
+                    if (isStandalone && !alreadyAnimated) {
+                        sessionStorage.setItem('djago_animated', 'true');
+                        setTimeout(() => setIsAppLoading(false), 1200);
+                    } else {
+                        setIsAppLoading(false);
+                    }
                 });
+        } else {
+            setIsAppLoading(false);
         }
     }, [navigate]);
 
@@ -69,7 +94,7 @@ const MainLayout = () => {
         try {
             await api.post('/logout');
         } catch (error) {
-            // Déconnexion forcée côté front
+            // Déconnexion forcée
         } finally {
             localStorage.clear();
             navigate('/login', { replace: true });
@@ -114,6 +139,10 @@ const MainLayout = () => {
     const sidebarWidth = isMobile ? '0px' : (isCollapsed ? '70px' : '250px');
     const headerHeight = '72px';
     const footerHeight = '70px';
+
+    if (isAppLoading) {
+        return <SplashScreen />;
+    }
 
     return (
         <div className="d-flex" style={{ minHeight: '100vh', backgroundColor: pageBackground, color: textColor }}>
@@ -218,14 +247,12 @@ const MainLayout = () => {
                             </h5>
                         </div>
                         
-                        {/* SECTION NAVIGATION DROITE OPTIMISÉE POUR LE RESPONSIVE */}
                         <div className="d-flex align-items-center ms-auto gap-2">
                             
                             <Link to="/notifications" className="d-flex align-items-center">
                                 <NotificationBell />
                             </Link>
 
-                            {/* 1. VERSION DESKTOP/TABLETTE : Pilule complète (Affichée uniquement sur md et plus) */}
                             <div className="d-none d-md-flex gap-1 p-1 ms-2 me-2 rounded-pill" style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)' }}>
                                 <button 
                                     type="button"
@@ -259,7 +286,6 @@ const MainLayout = () => {
                                 </button>
                             </div>
 
-                            {/* 2. VERSION MOBILE : Bouton unique Toggle (Affiché uniquement sous md) */}
                             <button
                                 type="button"
                                 className="btn d-md-none p-0 d-flex align-items-center justify-content-center rounded-circle border-0 ms-1 me-1"
@@ -307,7 +333,7 @@ const MainLayout = () => {
                             <i className="bi bi-piggy-bank fs-3"></i><br/><small style={{fontSize: '8px'}}>Budget</small>
                         </Link>
                         <div style={{ top: '-25px', position: 'relative' }}>
-                            <Link to="/dashboard" className="btn rounded-circle shadow-lg d-flex align-items-center justify-content-center" style={{ backgroundColor: colors.successGreen, width: '55px', height: '55px', border: `4px solid ${location.pathname === '/dashboard' ? colors.orange : colors.white}`, background: `${location.pathname === '/dashboard' ? colors.white : colors.successGreen}` }}>
+                            <Link to="/dashboard" className="btn rounded-circle shadow-lg d-flex align-items-center justify-content-center" style={{ backgroundColor: colors.successGreen, width: '55px', height: '55px', border: `4px solid ${location.pathname === '/dashboard' ? colors.orange : colors.white}`, background: `${location.pathname === '/dashboard' ? colors.successGreen : colors.successGreen}` }}>
                                 <i className="bi bi-house-door-fill fs-3" style={{color: location.pathname === '/dashboard' ? colors.orange : 'white',maxWidth: '80px'}}></i>
                             </Link>
                         </div>
