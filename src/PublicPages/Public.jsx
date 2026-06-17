@@ -301,7 +301,7 @@ const Public = () => {
                                 <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-white text-white-50-hover fs-5"><i className="bi bi-facebook"></i></a>
                                 <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-white text-white-50-hover fs-5"><i className="bi bi-linkedin"></i></a>
                                 <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-white text-white-50-hover fs-5"><i className="bi bi-github"></i></a>
-                                <a href="https://wa.me/22665395514" target="_blank" rel="noopener noreferrer" className="text-white text-white-50-hover fs-5"><i className="bi bi-whatsapp"></i></a>
+                                <a href="https://api.whatsapp.com/send?phone=+22665395514&text=Salut%2C%20puis-je%20savoir%20un%20peu%20plus%20sur%20l'application%20DjagoYelen%20%3F" target="_blank" rel="noopener noreferrer" className="text-white text-white-50-hover fs-5"><i className="bi bi-whatsapp"></i></a>
                             </div>
                         </div>
 

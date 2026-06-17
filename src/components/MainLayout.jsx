@@ -5,7 +5,6 @@ import logo from '../assets/djago-logo.jpeg';
 import NotificationBell from './NotificationBell';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext.jsx';
-import SplashScreen from './SplashScreen';
 
 const MainLayout = () => {
     const navigate = useNavigate();
@@ -15,16 +14,6 @@ const MainLayout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [isCollapsed, setIsCollapsed] = useState(window.innerWidth > 768 && window.innerWidth <= 1024);
-    
-    // 1. Détection : Est-ce que l'application est lancée en mode "installée" ?
-    const isInstalledApp = () => {
-        return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    };
-
-    // Initialisation intelligente : Splash actif uniquement si c'est l'app installée ET premier lancement de session
-    const [isAppLoading, setIsAppLoading] = useState(() => {
-        return isInstalledApp() && !sessionStorage.getItem('djago_animated');
-    });
 
     const { theme, setTheme, colors: themeColors } = useTheme();
     const { t } = useLanguage();
@@ -47,34 +36,21 @@ const MainLayout = () => {
         yellowLight: 'rgba(255, 193, 7, 0.1)',
     };
 
+    // Gestion unifiée et dynamique des fonds selon le thème
     const sidebarBackground = theme === 'dark' ? '#0b2e21' : colors.darkGreen;
-    const headerBackground = theme === 'dark' ? '#1e5f38' : colors.darkGreen;
+    const headerBackground = theme === 'dark' ? '#1e5f38' : colors.darkGreen; // 👈 Appliqué au header et au footer mobile
     const pageBackground = theme === 'dark' ? '#121212' : themeColors.bgLight;
     const textColor = theme === 'dark' ? '#f8f9fa' : themeColors.textColor;
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        const isStandalone = isInstalledApp();
-        const alreadyAnimated = sessionStorage.getItem('djago_animated');
-
         if (token) {
             api.get('/me')
                 .then(res => setUser(res.data))
                 .catch(() => {
                     localStorage.removeItem('token');
                     navigate('/login');
-                })
-                .finally(() => {
-                    // 2. On applique l'animation SEULEMENT dans l'app installée et au premier démarrage
-                    if (isStandalone && !alreadyAnimated) {
-                        sessionStorage.setItem('djago_animated', 'true');
-                        setTimeout(() => setIsAppLoading(false), 1200);
-                    } else {
-                        setIsAppLoading(false);
-                    }
                 });
-        } else {
-            setIsAppLoading(false);
         }
     }, [navigate]);
 
@@ -139,10 +115,6 @@ const MainLayout = () => {
     const sidebarWidth = isMobile ? '0px' : (isCollapsed ? '70px' : '250px');
     const headerHeight = '72px';
     const footerHeight = '70px';
-
-    if (isAppLoading) {
-        return <SplashScreen />;
-    }
 
     return (
         <div className="d-flex" style={{ minHeight: '100vh', backgroundColor: pageBackground, color: textColor }}>
@@ -225,7 +197,8 @@ const MainLayout = () => {
             )}
 
             <div className="d-flex flex-column w-100" style={{ marginLeft: sidebarWidth, transition: 'margin 0.3s cubic-bezier(0.4, 0, 0.2, 1)', position: 'relative', minHeight: '100vh', backgroundColor: pageBackground, color: textColor }}>
-                <header className="shadow px-3 px-md-4 d-flex align-items-center" style={{ position: 'fixed', top: 0, right: 0, left: sidebarWidth, height: headerHeight, zIndex: 1000, transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)', borderBottom: isMobile ? `2px solid ${colors.orange}` : 'none', borderRadius: isMobile ? '0 0 20px 20px' : '0', boxShadow: isMobile ? '0 4px 12px rgba(0,0,0,0.1)' : '0 2px 4px rgba(0,0,0,0.1)', backgroundColor: headerBackground }}>
+                {/* Header mis à jour avec la variable de fond thématique */}
+                <header className="shadow px-3 px-md-4 d-flex align-items-center" style={{ position: 'fixed', top: 0, right: 0, left: sidebarWidth, height: headerHeight, zIndex: 1000, transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', borderBottom: isMobile ? `2px solid ${colors.orange}` : 'none', borderRadius: isMobile ? '0 0 20px 20px' : '0', boxShadow: isMobile ? '0 4px 12px rgba(0,0,0,0.1)' : '0 2px 4px rgba(0,0,0,0.1)', backgroundColor: headerBackground }}>
                     <div className="d-flex justify-content-between align-items-center w-100">
                         <div className="d-flex align-items-center">
                             <button className="btn d-md-none me-2 px-1 py-0 shadow-sm" style={{backgroundColor: colors.orange, color: 'white'}} onClick={() => setIsSidebarOpen(true)}>
@@ -248,7 +221,6 @@ const MainLayout = () => {
                         </div>
                         
                         <div className="d-flex align-items-center ms-auto gap-2">
-                            
                             <Link to="/notifications" className="d-flex align-items-center">
                                 <NotificationBell />
                             </Link>
@@ -325,19 +297,21 @@ const MainLayout = () => {
                 )}
 
                 {isMobile && (
-                    <div className="fixed-bottom border-top d-flex mt-auto justify-content-around align-items-center shadow-lg" style={{ height: '70px', zIndex: 1040, backgroundColor: colors.darkGreen, borderRadius: '20px 20px 0 0' }}>
-                        <Link to="/transactions" className="text-center text-decoration-none" style={{ color: location.pathname === '/transactions' ? colors.orange : 'rgba(255,255,255,0.6)',maxWidth: '80px'}}>
+                    /* Footer Mobile mis à jour avec la variable headerBackground (thématique) */
+                    <div className="fixed-bottom border-top d-flex mt-auto justify-content-around align-items-center shadow-lg" style={{ height: '70px', zIndex: 1040, backgroundColor: headerBackground, borderRadius: '20px 20px 0 0', transition: 'background-color 0.3s ease' }}>
+                        <Link to="/transactions" className="text-center text-decoration-none" style={{ color: location.pathname === '/transactions' ? colors.orange : 'rgba(255,255,255,0.6)', maxWidth: '80px'}}>
                             <i className="bi bi-cash-stack fs-3"></i><br/><small style={{fontSize: '8px'}}>Transactions</small>
                         </Link>
-                        <Link to="/budgets" className="text-center text-decoration-none" style={{ color: location.pathname === '/budgets' ? colors.orange : 'rgba(255,255,255,0.6)',maxWidth: '80px' }}>
+                        <Link to="/budgets" className="text-center text-decoration-none" style={{ color: location.pathname === '/budgets' ? colors.orange : 'rgba(255,255,255,0.6)', maxWidth: '80px' }}>
                             <i className="bi bi-piggy-bank fs-3"></i><br/><small style={{fontSize: '8px'}}>Budget</small>
                         </Link>
                         <div style={{ top: '-25px', position: 'relative' }}>
-                            <Link to="/dashboard" className="btn rounded-circle shadow-lg d-flex align-items-center justify-content-center" style={{ backgroundColor: colors.successGreen, width: '55px', height: '55px', border: `4px solid ${location.pathname === '/dashboard' ? colors.orange : colors.white}`, background: `${location.pathname === '/dashboard' ? colors.successGreen : colors.successGreen}` }}>
-                                <i className="bi bi-house-door-fill fs-3" style={{color: location.pathname === '/dashboard' ? colors.orange : 'white',maxWidth: '80px'}}></i>
+                            {/* Le contour du bouton s'adapte lui aussi à la couleur thématique en cours */}
+                            <Link to="/dashboard" className="btn rounded-circle shadow-lg d-flex align-items-center justify-content-center" style={{ backgroundColor: colors.white, width: '55px', height: '55px', border: `4px solid ${headerBackground}`, transition: 'border-color 0.3s ease' }}>
+                                <i className="bi bi-house-door-fill fs-3" style={{color: location.pathname === '/dashboard' ? colors.orange : 'darkgreen', maxWidth: '80px'}}></i>
                             </Link>
                         </div>
-                        <Link to="/factures" className="text-center text-decoration-none" style={{ color: location.pathname === '/factures' ? colors.orange : 'rgba(255,255,255,0.6)',maxWidth: '80px' }}>
+                        <Link to="/factures" className="text-center text-decoration-none" style={{ color: location.pathname === '/factures' ? colors.orange : 'rgba(255,255,255,0.6)', maxWidth: '80px' }}>
                             <i className="bi bi-receipt fs-3"></i><br/><small style={{fontSize: '8px'}}>Factures</small>
                         </Link>
                         <Link to="/profil" className="text-center text-decoration-none" style={{ color: location.pathname === '/profil' ? colors.orange : 'rgba(255,255,255,0.6)' }}>
