@@ -7,6 +7,7 @@ import autoTable from 'jspdf-autotable';
 import Swal from 'sweetalert2';
 import logo from '../assets/djago-logo.jpeg';
 import { Colors } from 'chart.js';
+import { Link } from 'react-router-dom';
 
 const Facture = () => {
 
@@ -1228,7 +1229,8 @@ Tél: ${téléphone}`;
                         <div>
                             {/* ÉCRAN LARGE : Rendu sous forme de tableau standard */}
                             <div className="table-responsive d-none d-md-block">
-                                <table className="table table-hover align-middle shadow-sm">
+                                
+                                <table className="table table-hover align-middle shadow-sm ">
                                     <thead className="text-white" style={{ backgroundColor: colors.successGreen }}>
                                         <tr>
                                             <th>N°</th>
@@ -1238,8 +1240,10 @@ Tél: ${téléphone}`;
                                             <th className="text-end">Actions</th>
                                         </tr>
                                     </thead>
+
                                     <tbody>
                                         {factures.map((facture) => (
+                                        <bouton className="btn btn-sm btn-outline-success m-2" onClick={() => handlePreviewPDF(facture)}>
                                             <tr key={facture.id}>
                                                 <td>#{facture.numero_facture || facture.id}</td>
                                                 <td>{facture.client?.nom || facture.client_nom || '---'}</td>
@@ -1265,6 +1269,7 @@ Tél: ${téléphone}`;
                                                     </div>
                                                 </td>
                                             </tr>
+                                        </bouton>
                                         ))}
                                     </tbody>
                                 </table>
