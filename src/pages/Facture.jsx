@@ -1243,8 +1243,8 @@ Tél: ${téléphone}`;
 
                                     <tbody>
                                         {factures.map((facture) => (
-                                        <bouton className="btn btn-sm btn-outline-success m-2" onClick={() => handlePreviewPDF(facture)}>
                                             <tr key={facture.id}>
+                                                
                                                 <td>#{facture.numero_facture || facture.id}</td>
                                                 <td>{facture.client?.nom || facture.client_nom || '---'}</td>
                                                 <td>{new Date(facture.date_emission).toLocaleDateString('fr-FR')}</td>
@@ -1268,8 +1268,8 @@ Tél: ${téléphone}`;
                                                         </button>
                                                     </div>
                                                 </td>
+                                        
                                             </tr>
-                                        </bouton>
                                         ))}
                                     </tbody>
                                 </table>
@@ -1278,59 +1278,55 @@ Tél: ${téléphone}`;
                             {/* ÉCRAN MOBILE : Rendu sous forme de cartes avec actions figées horizontalement en bas */}
                             <div className="d-block d-md-none">
                                 {factures.map((facture) => (
-                                    <div key={facture.id} className="card mb-3 shadow-sm border-0" style={{ position: 'relative', overflow: 'hidden' }}>
-                                        <div className="card-body pb-5"> {/* pb-5 pour ne pas surcharger le contenu sous la barre d'action */}
-                                            <div className="d-flex justify-content-between align-items-center mb-2">
-                                                <span className="fw-bold text-success">#{facture.numero_facture || facture.id}</span>
-                                                <small className="text-muted">{new Date(facture.date_emission).toLocaleDateString('fr-FR')}</small>
-                                            </div>
-                                            <h6 className="card-title mb-1 text-uppercase fw-semibold">
-                                                {facture.client?.nom || facture.client_nom || '---'}
-                                            </h6>
-                                            <p className="card-text fw-bold text-dark mb-0">
-                                                Total TTC : <span style={{ color: colors.orange }}>{formatPrix(facture.total_ttc)} F CFA</span>
-                                            </p>
+                                    <div key={facture.id} className="card mb-3 shadow-sm border-1 border-success outline" style={{ position: 'relative', overflow: 'hidden', hover: { backgroundColor: '#f8f9fa' } }}>
+                                        <button className="btn btn-sm shadow m-2" onClick={() => handlePreviewPDF(facture)} style={{ textAlign: 'left', border: 'none', width: '100%', hover: { backgroundColor: colors.lightGray } }}>
+                                            <div className="card-body pb-5"> {/* pb-5 pour ne pas surcharger le contenu sous la barre d'action */}
+                                                <div className="d-flex justify-content-between align-items-center mb-2">
+                                                    <span className="fw-bold text-success">#{facture.numero_facture || facture.id}</span>
+                                                    <small className="text-muted border border-success rounded p-1" style={{backgroundColor: 'rgbd(225, 255, 233, 0.10)', color: 'black'}}>{new Date(facture.date_emission).toLocaleDateString('fr-FR')}</small>
+                                                </div>
+                                                <h6 className="card-title mb-1 text-uppercase fw-semibold">
+                                                    {facture.client?.nom || facture.client_nom || '---'}
+                                                </h6>
+                                                <p className="card-text fw-bold text-dark mb-0">
+                                                    Total TTC : <span style={{ color: colors.orange }}>{formatPrix(facture.total_ttc)} F CFA</span>
+                                                </p>
 
-                                            {/* Barre d'action horizontale alignée tout en bas de la carte mobile */}
-                                            <div className="position-absolute bottom-0 start-0 w-100 d-flex bg-light border-top" style={{ height: '40px' }}>
-                                                <button 
-                                                    className="btn btn-link flex-grow-1 text-center text-primary border-end p-0 m-0" 
-                                                    style={{ textDecoration: 'none', borderRadius: '0' }}
-                                                    onClick={() => handlePreviewPDF(facture)}
-                                                >
-                                                    <i className="bi bi-eye-fill"></i>
-                                                </button>
+                                                {/* Barre d'action horizontale alignée tout en bas de la carte mobile */}
+                                                <div className="position-absolute bottom-0 start-0 w-100 d-flex bg-light border-top" style={{ height: '40px' }}>
+                                                    
+                                                        <button 
+                                                            className="btn btn-link flex-grow-1 text-center text-warning border-end p-0 m-0" 
+                                                            style={{ textDecoration: 'none', borderRadius: '0' }}
+                                                            onClick={() => handleEditFacture(facture)}
+                                                        >
+                                                            <i className="bi bi-pencil-square"></i>
+                                                        </button>
                                                     <button 
-                                                        className="btn btn-link flex-grow-1 text-center text-warning border-end p-0 m-0" 
+                                                        className="btn btn-link flex-grow-1 text-center text-success border-end p-0 m-0" 
                                                         style={{ textDecoration: 'none', borderRadius: '0' }}
-                                                        onClick={() => handleEditFacture(facture)}
+                                                        onClick={() => handleDownloadPDF(facture)}
                                                     >
-                                                        <i className="bi bi-pencil-square"></i>
+                                                        <i className="bi bi-download"></i>
                                                     </button>
-                                                <button 
-                                                    className="btn btn-link flex-grow-1 text-center text-success border-end p-0 m-0" 
-                                                    style={{ textDecoration: 'none', borderRadius: '0' }}
-                                                    onClick={() => handleDownloadPDF(facture)}
-                                                >
-                                                    <i className="bi bi-download"></i>
-                                                </button>
-                                                <button 
-                                                    className="btn btn-link flex-grow-1 text-center text-secondary border-end p-0 m-0" 
-                                                    style={{ textDecoration: 'none', borderRadius: '0' }}
-                                                    onClick={() => handleSharePDF(facture)}
-                                                >
-                                                    <i className="bi bi-share-fill"></i>
-                                                </button>
-                                                <button 
-                                                    className="btn btn-link flex-grow-1 text-center text-danger p-0 m-0" 
-                                                    style={{ textDecoration: 'none', borderRadius: '0' }}
-                                                    onClick={() => handleDelete(facture.id)}
-                                                >
-                                                    <i className="bi bi-trash-fill"></i>
-                                                </button>
-                                            </div>
+                                                    <button 
+                                                        className="btn btn-link flex-grow-1 text-center text-secondary border-end p-0 m-0" 
+                                                        style={{ textDecoration: 'none', borderRadius: '0' }}
+                                                        onClick={() => handleSharePDF(facture)}
+                                                    >
+                                                        <i className="bi bi-share-fill"></i>
+                                                    </button>
+                                                    <button 
+                                                        className="btn btn-link flex-grow-1 text-center text-danger p-0 m-0" 
+                                                        style={{ textDecoration: 'none', borderRadius: '0' }}
+                                                        onClick={() => handleDelete(facture.id)}
+                                                    >
+                                                        <i className="bi bi-trash-fill"></i>
+                                                    </button>
+                                                </div>
 
-                                        </div>
+                                            </div>
+                                        </button>
                                     </div>
                                 ))}
                             </div>

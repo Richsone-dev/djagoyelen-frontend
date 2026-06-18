@@ -7,6 +7,11 @@ import solution1 from '../assets/solution1.png';
 import logo from '../assets/djago-logo.jpeg'; 
 import visuel2 from '../assets/visuel2.jpeg';
 import visuel3 from '../assets/visuel3.jpeg';
+import progressiveApp from '../assets/progressiveApp.svg';
+import InterfaceFinance from '../assets/InterfaceFinance.png';
+import { Colors } from 'chart.js';
+import whyUs from '../assets/whyUs.png';
+import PcMobile from '../assets/PcMobile.png';
 
 // Hook personnalisé pour l'animation au défilement
 const useScrollAnimation = () => {
@@ -66,20 +71,15 @@ const Public = () => {
             
             {/* 1. BARRE DE NAVIGATION */}
             <nav 
-                className="navbar navbar-expand-lg shadow-sm sticky-top py-3 animate__animated animate__fadeInDown" 
+                className="navbar navbar-expand-lg shadow-sm sticky-top py-3 animate__animated animate__fadeInDown custom-responsive-navbar" 
                 style={{ 
                     backgroundColor: Colors.darkGreen, 
-                    borderBottom: '2px solid ' + Colors.orange, 
-                    borderRadius: '0 0 20px 20px', 
                     zIndex: 1050,
                     height: '100%',
                     transition: 'all 0.3s ease-in-out',
                     margin: -5
                 }}
-
-                
-                
-                >
+            >
                 <div className="container">
                     {/* LOGO & NOM DE L'APPLI */}
                     <Link className="navbar-brand d-flex align-items-center text-decoration-none" to="/">
@@ -108,7 +108,7 @@ const Public = () => {
                     />
 
                     {/* CONTENU DU MENU COLLAPSE AVEC GLISSEMENT LATÉRAL */}
-                    <div className={`custom-nav-collapse d-flex flex-column flex-lg-row justify-content-lg-end align-items-lg-center gap-3 ${isNavOpen ? 'open' : ''}`}>
+                    <div className={`custom-nav-collapse d-flex flex-column flex-lg-row justify-content-lg-end align-items-lg-right gap-3 ${isNavOpen ? 'open' : ''}`}>
                         <div className="d-flex flex-column flex-lg-row gap-2 w-100 w-lg-auto align-items-stretch align-items-lg-center">
                             {token ? (
                                 <>
@@ -158,9 +158,14 @@ const Public = () => {
                     </div>
                 </div>
 
-                {/* DESIGN CSS INJECTÉ */}
+                {/* DESIGN CSS INTEGRÉ ADAPTATIF */}
                 <style dangerouslySetInnerHTML={{ __html: `
+                    /* --- STYLE SUR LARGE ÉCRAN (Desktop) --- */
                     @media (min-width: 992px) {
+                        .custom-responsive-navbar {
+                            border-bottom: none !important;
+                            border-radius: 0px !important;
+                        }
                         .nav-overlay { display: none !important; }
                         .custom-nav-collapse { display: flex !important; flex-basis: auto; flex-grow: 1; }
                         .btn-outline-danger-custom { color: #ffffff; border: 1px solid #dc3545; background-color: #dc3545; }
@@ -168,7 +173,13 @@ const Public = () => {
                         .btn-outline-dark-custom { color: #ffffff; border: 1px solid rgba(255,255,255,0.4); }
                         .btn-outline-dark-custom:hover { background-color: rgba(255,255,255,0.1); color: white; }
                     }
+                    
+                    /* --- STYLE SUR ÉCRAN MOBILE --- */
                     @media (max-width: 991.98px) {
+                        .custom-responsive-navbar {
+                            border-bottom: 2px solid ${Colors.orange} !important;
+                            border-radius: 0 0 20px 20px !important;
+                        }
                         .nav-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; z-index: 1040; }
                         .nav-overlay.active { opacity: 1; visibility: visible; }
                         .custom-nav-collapse { position: fixed; top: 0; right: -100%; bottom: 0; width: 280px; background-color: ${Colors.darkGreen}; padding: 80px 24px 24px 24px; transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: -5px 0 25px rgba(0, 0, 0, 0.3); z-index: 1050; display: flex; }
@@ -182,80 +193,472 @@ const Public = () => {
             {/* 3. SECTION HERO */}
             <header 
                 ref={heroRef} 
-                className={`fade ${heroVisible ? 'show' : ''} container mt-5 py-5 text-white d-flex align-items-center rounded-4`} 
+                className={`fade ${heroVisible ? 'show' : ''} container mt-5 py-5 text-white d-flex align-items-center rounded-4 position-relative overflow-hidden hero-digital-finance`} 
                 style={{ 
-                    backgroundColor: Colors.darkGreen, 
-                    backgroundImage: `linear-gradient(135deg, ${Colors.darkGreen} 0%, #135746 100%)` 
+                    backgroundColor: Colors.darkGreen,
+                    zIndex: 1
                 }}
             >
-                <div className="container py-4">
+                {/* Éléments d'arrière-plan de flux réseau */}
+                <div className="digital-grid-overlay"></div>
+                <div className="digital-glow-circle circle-1"></div>
+                <div className="digital-glow-circle circle-2"></div>
+
+                {/* CARTE D'AFRIQUE EN ARRIÈRE-PLAN (Opacité 20%) */}
+                <div className="africa-bg-vector">
+    <svg viewBox="0 0 2000 2000" fill="currentColor" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        {/* Contours géographiques précis du continent africain et de Madagascar */}
+        <path d="M720,290 C780,270 850,265 920,275 C950,280 1020,310 1050,315 C1110,325 1160,295 1220,300 C1260,305 1310,340 1340,370 C1380,410 1360,450 1390,500 C1410,535 1460,560 1480,600 C1510,660 1490,720 1520,780 C1540,820 1590,840 1600,890 C1615,960 1540,1010 1530,1080 C1520,1150 1560,1210 1540,1280 C1515,1370 1440,1430 1390,1510 C1340,1590 1280,1670 1210,1730 C1170,1765 1120,1830 1070,1810 C1040,1800 1030,1740 1010,1710 C970,1650 940,1580 920,1510 C900,1440 910,1370 890,1300 C870,1230 820,1180 790,1110 C760,1040 760,960 720,900 C690,855 640,830 600,790 C550,740 480,745 420,700 C370,660 350,590 310,540 C280,500 210,480 190,430 C170,380 230,340 260,300 C295,255 320,195 370,170 C430,140 500,180 570,160 C625,145 660,90 720,110 C760,125 770,180 800,210 C830,240 780,270 750,285 Z 
+                 M1510,1330 C1530,1310 1550,1350 1560,1380 C1580,1440 1600,1500 1610,1560 C1620,1620 1610,1690 1580,1740 C1560,1770 1530,1750 1520,1710 C1510,1650 1530,1580 1520,1520 C1510,1460 1490,1400 1510,1330 Z" />
+    </svg>
+</div>
+
+                {/* MULTIPLICATION DES PARTICULES (PIÈCES & ÉTOILES d'animation rapide) */}
+                <div className="finance-particle coin-1"><i className="bi bi-coin"></i></div>
+                <div className="finance-particle coin-2"><i className="bi bi-coin"></i></div>
+                <div className="finance-particle coin-3"><i className="bi bi-coin"></i></div>
+                <div className="finance-particle coin-4"><i className="bi bi-coin"></i></div>
+                <div className="finance-particle coin-5"><i className="bi bi-coin"></i></div>
+                
+                <div className="finance-particle star-1"><i className="bi bi-star-fill"></i></div>
+                <div className="finance-particle star-2"><i className="bi bi-star-fill"></i></div>
+                <div className="finance-particle star-3"><i className="bi bi-star-fill"></i></div>
+                <div className="finance-particle star-4"><i className="bi bi-star-fill"></i></div>
+                <div className="finance-particle star-5"><i className="bi bi-star-fill"></i></div>
+
+                <div className="container py-4 position-relative" style={{ zIndex: 2 }}>
                     <div className="row justify-content-center g-5 mb-5">
                         <div className="col-lg-10 text-center">
-                            <i className="bi bi-graph-up-arrow display-4 text-white"></i>
+                            {/* Titre Principal */}
                             <h2 className="display-5 fw-bold mb-3">
-                                <span style={{ color: 'whitesmoke' }}>Djago</span>
-                                <span style={{ color: Colors.orange }}>Yelen</span>
+                                <span style={{ color: 'whitesmoke' }}>Chaque Entreprise, chaque structure et chaque business mérite une bonne </span>
+                                <span style={{ color: Colors.orange }}>Gestion Financière</span>
                             </h2>
-                            <p className="lead mb-4 opacity-75" style={{ lineHeight: 1.7 }}>
-                                DjagoYelen est une solution numérique de gestion financière conçue pour
-                                les entrepreneurs, les PME et les structures en activité en Afrique de
-                                l'Ouest. Notre objectif : centraliser vos opérations, clarifier vos
-                                indicateurs et faciliter vos décisions au quotidien.
-                            </p>
-                            
-                            <div className="d-flex flex-wrap justify-content-center gap-2 mb-5">
-                                {['Tableau de bord', 'Transactions', 'Budgets', 'Facturation', 'Rapports', 'Catégories', 'Clients', 'Notifications'].map((tag) => (
-                                    <span
-                                        key={tag}
-                                        className="badge rounded-pill px-3 py-2"
-                                        style={{
-                                            backgroundColor: 'rgba(255, 255, 255, 0.12)',
-                                            color: '#ffffff',
-                                            border: '1px solid rgba(255, 255, 255, 0.08)'
-                                        }}
-                                    >
-                                        {tag}
-                                    </span>
-                                ))}
-                            </div>
-
-                            <img
-                                src={img2}
-                                className="img-fluid shadow-lg rounded-4 border border-white border-opacity-10"
-                                style={{ maxHeight: '500px', objectFit: 'cover', width: '100%', marginBottom: '40px'}}
-                                alt="Interface DjagoYelen"
-                            />
                         </div>
                     </div>
 
+                    {/* Section CTA / Boutons */}
                     <div className="row align-items-center g-5 border-top border-white border-opacity-10 pt-5">
                         <div className="col-lg-6 text-center text-lg-start">
-                            <h1 className="display-4 fw-bold mb-3" style={{ lineHeight: '1.1', letterSpacing: '-1px' }}>
-                                Propulsez la gestion de votre <span style={{ color: Colors.orange }}>Business</span>
-                            </h1>
-                            <p className="lead opacity-75 mb-4 fs-5">
-                                Suivez vos transactions, maîtrisez vos budgets, gérez vos factures et analysez vos rapports financiers sur une seule et unique plateforme intuitive.
-                            </p>
-                            <div className="d-flex flex-column flex-sm-row justify-content-center justify-content-lg-start gap-3">
+                            <div className="d-flex flex-column flex-sm-row justify-content-center justify-content-start gap-3">
                                 <Link 
                                     to={token ? "/dashboard" : "/register"} 
-                                    className="btn btn-lg fw-bold px-4 py-3 text-white shadow-lg border-0 transition-all btn-hero-primary btn-pulse-cta" 
-                                    style={{ backgroundColor: Colors.orange, borderRadius: '10px' }}
+                                    className="btn btn-lg fw-bold px-4 py-3 text-white shadow-lg btn-hero-orange-slide transition-all btn-hero-primary btn-pulse-cta" 
+                                    style={{ 
+                                        backgroundColor: 'rgba(233, 114, 35, 0.15)', 
+                                        border: '2px solid rgba(233, 114, 35, 0.4)', 
+                                        borderRadius: '10px',
+                                        position: 'relative',
+                                        overflow: 'hidden',
+                                        zIndex: 1
+                                    }}
                                 >
-                                    {token ? "Accéder au Tableau de Bord" : "Créer un compte gratuit"} <i className="bi bi-arrow-right ms-2 transition-arrow"></i>
+                                    {token ? "Accéder au Tableau de Bord" : "Créer un compte gratuit"} 
+                                    <i className="bi bi-arrow-right ms-2 transition-arrow"></i>
                                 </Link>
-                            </div>
-                        </div>
-
-                        <div className="col-lg-6 text-center">
-                            <div className="p-4 rounded-3 shadow-lg bg-white bg-opacity-10 backdrop-blur d-inline-block">
-                                <i className="bi bi-wallet2" style={{ fontSize: '120px', color: Colors.orange }}></i>
-                                <div className="mt-2 fw-bold text-uppercase tracking-wider">DjagoYelen Finance v1.0</div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                {/* Styles CSS mis à jour */}
+                <style dangerouslySetInnerHTML={{ __html: `
+                    .hero-digital-finance {
+                        background-image: linear-gradient(135deg, ${Colors.darkGreen} 0%, #114c3e 40%, #198754 75%, #b25013 100%) !important;
+                        background-size: 400% 400% !important;
+                        animation: digitalGradient 15s ease infinite !important;
+                    }
+
+                    @keyframes digitalGradient {
+                        0% { background-position: 0% 50%; }
+                        50% { background-position: 100% 50%; }
+                        100% { background-position: 0% 50%; }
+                    }
+
+                    /* --- CARTE D'AFRIQUE EN ARRIÈRE-PLAN --- */
+                    .africa-bg-vector {
+                        position: absolute;
+                        right: -5%;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        width: 450px;
+                        height: 450px;
+                        color: rgba(255, 255, 255, 0.20); /* Opacité fixée à 20% */
+                        pointer-events: none;
+                        z-index: 1;
+                    }
+
+                    .digital-grid-overlay {
+                        position: absolute;
+                        inset: 0;
+                        background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 0);
+                        background-size: 24px 24px;
+                        opacity: 0.7;
+                        pointer-events: none;
+                    }
+
+                    .digital-glow-circle {
+                        position: absolute;
+                        border-radius: 50%;
+                        filter: blur(80px);
+                        opacity: 0.25;
+                        pointer-events: none;
+                        mix-blend-mode: screen;
+                    }
+
+                    .circle-1 { width: 300px; height: 300px; background: #E97223; top: -10%; right: 10%; animation: floatGlow1 8s ease-in-out infinite alternate; }
+                    .circle-2 { width: 400px; height: 400px; background: #198754; bottom: -20%; left: 5%; animation: floatGlow2 12s ease-in-out infinite alternate; }
+
+                    @keyframes floatGlow1 { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(-30px, 40px) scale(1.2); } }
+                    @keyframes floatGlow2 { 0% { transform: translate(0, 0) scale(1.1); } 100% { transform: translate(40px, -30px) scale(0.9); } }
+
+                    /* --- PARTICULES FLUIDES MULTIPLIÉES ET ACCÉLÉRÉES --- */
+                    .finance-particle {
+                        position: absolute;
+                        pointer-events: none;
+                        opacity: 0.5;
+                        z-index: 1;
+                    }
+
+                    /* Distribution & Vitesse Augmentée (durations d'animations réduites à 3s - 5s) */
+                    .coin-1 { top: 12%; left: 8%; color: #ffd700; font-size: 1.3rem; animation: floatFastLeft 4s linear infinite; }
+                    .coin-2 { bottom: 20%; right: 12%; color: #e5e5e5; font-size: 1.1rem; animation: floatFastRight 4.5s linear infinite; }
+                    .coin-3 { top: 40%; right: 30%; color: ${Colors.orange}; font-size: 1rem; animation: floatFastLeft 3.5s linear infinite; }
+                    .coin-4 { bottom: 45%; left: 25%; color: #ffd700; font-size: 0.9rem; animation: floatFastRight 5s linear infinite; }
+                    .coin-5 { top: 65%; right: 15%; color: #e5e5e5; font-size: 1.2rem; animation: floatFastLeft 4.2s linear infinite; }
+
+                    .star-1 { top: 22%; right: 25%; color: #ffffff; font-size: 0.8rem; animation: floatFastRight 3.8s linear infinite; }
+                    .star-2 { bottom: 15%; left: 15%; color: #ffeb3b; font-size: 1.2rem; animation: floatFastLeft 4.6s linear infinite; }
+                    .star-3 { top: 75%; left: 35%; color: #00e676; font-size: 0.7rem; animation: floatFastRight 3s linear infinite; }
+                    .star-4 { top: 10%; right: 45%; color: #ffffff; font-size: 1rem; animation: floatFastLeft 4.8s linear infinite; }
+                    .star-5 { bottom: 30%; right: 35%; color: #ffeb3b; font-size: 0.7rem; animation: floatFastRight 3.4s linear infinite; }
+
+                    /* Keyframes super dynamiques à haute vitesse et rotations continues */
+                    @keyframes floatFastLeft {
+                        0% { transform: translate(0, 0) rotate(0deg) scale(0.8); opacity: 0; }
+                        10% { opacity: 0.6; }
+                        90% { opacity: 0.6; }
+                        100% { transform: translate(-40px, -60px) rotate(360deg) scale(1.1); opacity: 0; }
+                    }
+
+                    @keyframes floatFastRight {
+                        0% { transform: translate(0, 0) rotate(0deg) scale(1.1); opacity: 0; }
+                        10% { opacity: 0.6; }
+                        90% { opacity: 0.6; }
+                        100% { transform: translate(50px, -50px) rotate(-360deg) scale(0.8); opacity: 0; }
+                    }
+
+                    /* Style Cta */
+                    .btn-hero-orange-slide {
+                        background-image: linear-gradient(to right, rgba(233, 114, 35, 0.8) 50%, transparent 50%);
+                        background-size: 200% 100%;
+                        background-position: right bottom;
+                        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                    }
+                    .btn-hero-orange-slide:hover { background-position: left bottom; border-color: #E97223 !important; color: #ffffff !important; box-shadow: 0 8px 25px rgba(233, 114, 35, 0.4) !important; transform: translateY(-2px); }
+                    .btn-hero-orange-slide:hover .transition-arrow { transform: translateX(4px); transition: transform 0.3s ease; }
+                    .btn-hero-orange-slide:active { transform: translateY(1px); }
+                `}} />
             </header>
+            <header 
+    ref={heroRef} 
+    className={`fade ${heroVisible ? 'show' : ''} container mt-5 py-5 text-white d-flex align-items-center rounded-4`} 
+    style={{ 
+        backgroundColor: Colors.darkGreen, 
+        backgroundImage: `linear-gradient(135deg, ${Colors.darkGreen} 0%, #135746 100%)` 
+    }}
+>
+    <div className="container py-4">
+        {/* Grille principale : Texte & Description à gauche, Image à droite */}
+        <div className="row align-items-center g-5 mb-5">
+            <div className="col-lg-6 text-center text-lg-start">
+                {/* Titre Principal */}
+                <h2 className="display-6 fw-bold mb-3">
+                    <span style={{ color: 'whitesmoke' }}>Chaque idée, chaque structure et chaque business mérite une bonne </span>
+                    <span style={{ color: Colors.orange }}>Gestion Financière</span>
+                </h2>
+                
+                {/* Description de l'application */}
+                <p className="lead opacity-75 mb-0" style={{ fontSize: '1.1rem', lineHeight: '1.6' }}>
+                    Découvrez une plateforme intuitive conçue pour propulser la croissance des petites et moyennes entreprises africaines. Suivez vos flux de trésorerie, pilotez vos indicateurs de performance et éclairez vos décisions stratégiques en temps réel, sans la moindre complexité technique.
+                </p>
+            </div>
+
+            <div className="col-lg-6 d-flex justify-content-center">
+                <img
+                    src={InterfaceFinance}
+                    className="img-fluid shadow-lg rounded-4 border border-white border-opacity-10"
+                    style={{ 
+                        maxHeight: '400px', 
+                        width: '100%', 
+                        backgroundColor: 'rgba(255, 255, 255, 0.05)', 
+                        objectFit: 'cover' 
+                    }}
+                    alt="Interface DjagoYelen"
+                />
+            </div>
+        </div>
+
+        {/* Section CTA / Boutons */}
+        <div className="row align-items-center g-5 border-top border-white border-opacity-10 pt-5">
+            <div className="col-lg-6 text-center text-lg-start">
+                <div className="d-flex flex-column flex-sm-row justify-content-center justify-content-lg-start gap-3">
+                    <Link 
+                        to={token ? "/dashboard" : "/register"} 
+                        className="btn btn-lg fw-bold px-4 py-3 text-white shadow-lg btn-hero-orange-slide btn-pulse-cta" 
+                        style={{ 
+                            backgroundColor: 'rgba(233, 114, 35, 0.15)', 
+                            border: '2px solid rgba(233, 114, 35, 0.4)', 
+                            borderRadius: '10px',
+                            position: 'relative',
+                            overflow: 'hidden',
+                            zIndex: 1
+                        }}
+                    >
+                        {token ? "Accéder au Tableau de Bord" : "Créer un compte gratuit"} 
+                        <i className="bi bi-arrow-right ms-2 transition-arrow"></i>
+                    </Link>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {/* Styles injectés de manière isolée */}
+    <style dangerouslySetInnerHTML={{ __html: `
+        .btn-hero-orange-slide {
+            background-image: linear-gradient(to right, rgba(233, 114, 35, 0.8) 50%, transparent 50%);
+            background-size: 200% 100%;
+            background-position: right bottom;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        .btn-hero-orange-slide:hover {
+            background-position: left bottom;
+            border-color: #E97223 !important;
+            color: #ffffff !important;
+            box-shadow: 0 8px 25px rgba(233, 114, 35, 0.4) !important;
+            transform: translateY(-2px);
+        }
+
+        .btn-hero-orange-slide:hover .transition-arrow {
+            transform: translateX(4px);
+            transition: transform 0.3s ease;
+        }
+
+        .btn-hero-orange-slide:active {
+            transform: translateY(1px);
+        }
+    `}} />
+</header>
+            <header 
+    ref={heroRef} 
+    className={`fade ${heroVisible ? 'show' : ''} container mt-5 py-5 text-white d-flex align-items-center rounded-4 position-relative overflow-hidden hero-digital-finance`} 
+    style={{ 
+        backgroundColor: Colors.darkGreen,
+        zIndex: 1
+    }}
+>
+    {/* --- EFFETS DE FOND EN MOUVEMENT --- */}
+    <div className="digital-grid-overlay"></div>
+    <div className="digital-glow-circle circle-1"></div>
+    <div className="digital-glow-circle circle-2"></div>
+
+    {/* --- VECTEUR AFRIQUE PRÉCIS (100% OPAQUE) --- */}
+    <div className="africa-bg-vector">
+        <svg viewBox="0 0 2000 2000" fill="currentColor" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+            <path d="M720,290 C780,270 850,265 920,275 C950,280 1020,310 1050,315 C1110,325 1160,295 1220,300 C1260,305 1310,340 1340,370 C1380,410 1360,450 1390,500 C1410,535 1460,560 1480,600 C1510,660 1490,720 1520,780 C1540,820 1590,840 1600,890 C1615,960 1540,1010 1530,1080 C1520,1150 1560,1210 1540,1280 C1515,1370 1440,1430 1390,1510 C1340,1590 1280,1670 1210,1730 C1170,1765 1120,1830 1070,1810 C1040,1800 1030,1740 1010,1710 C970,1650 940,1580 920,1510 C900,1440 910,1370 890,1300 C870,1230 820,1180 790,1110 C760,1040 760,960 720,900 C690,855 640,830 600,790 C550,740 480,745 420,700 C370,660 350,590 310,540 C280,500 210,480 190,430 C170,380 230,340 260,300 C295,255 320,195 370,170 C430,140 500,180 570,160 C625,145 660,90 720,110 C760,125 770,180 800,210 C830,240 780,270 750,285 Z M1510,1330 C1530,1310 1550,1350 1560,1380 C1580,1440 1600,1500 1610,1560 C1620,1620 1610,1690 1580,1740 C1560,1770 1530,1750 1520,1710 C1510,1650 1530,1580 1520,1520 C1510,1460 1490,1400 1510,1330 Z" />
+        </svg>
+    </div>
+
+    {/* --- PLUIE DE PARTICULES RAPIDES MULTICOLORES --- */}
+    <div className="finance-particle coin-1"><i className="bi bi-coin"></i></div>
+    <div className="finance-particle coin-2"><i className="bi bi-coin"></i></div>
+    <div className="finance-particle coin-3"><i className="bi bi-coin"></i></div>
+    <div className="finance-particle coin-4"><i className="bi bi-coin"></i></div>
+    <div className="finance-particle coin-5"><i className="bi bi-coin"></i></div>
+    
+    <div className="finance-particle star-1"><i className="bi bi-star-fill"></i></div>
+    <div className="finance-particle star-2"><i className="bi bi-star-fill"></i></div>
+    <div className="finance-particle star-3"><i className="bi bi-star-fill"></i></div>
+    <div className="finance-particle star-4"><i className="bi bi-star-fill"></i></div>
+    <div className="finance-particle star-5"><i className="bi bi-star-fill"></i></div>
+
+    <div className="container py-4 position-relative" style={{ zIndex: 2 }}>
+        <div className="row align-items-center g-5">
+            
+            {/* Colonne Gauche : Présentation et Contenu */}
+            <div className="col-lg-6 text-center text-lg-start">
+                <h2 className="display-4 fw-bold mb-3" style={{ lineHeight: '1.1', letterSpacing: '-1px' }}>
+                    <span>Djago</span><span style={{ color: Colors.orange }}>Yelen</span>
+                </h2>
+                
+                <h3 className="h4 fw-light mb-3 text-white-50">
+                    Propulsez la gestion de votre <span style={{ color: Colors.orange, fontWeight: '600' }}>Business</span>
+                </h3>
+
+                <p className="lead mb-4 opacity-75" style={{ lineHeight: 1.6, fontSize: '1.1rem' }}>
+                    La solution ultime numérique de gestion conçue pour les entreprises, les PME et les structures individuelles. 
+                    <span className="d-block mt-2">
+                        <strong style={{ borderBottom: '1px solid rgba(255,255,255,0.3)' }}>Notre objectif :</strong> centraliser vos opérations, maîtriser vos budgets, gérer vos factures et clarifier vos indicateurs financiers au quotidien.
+                    </span>
+                </p>
+                
+                {/* Liste des Tags Fonctionnalités */}
+                <div className="d-flex flex-wrap justify-content-center justify-content-lg-start gap-2 mb-4">
+                    {['Tableau de bord', 'Transactions', 'Budgets', 'Facturation', 'Rapports', 'Catégories', 'Clients'].map((tag) => (
+                        <span
+                            key={tag}
+                            className="badge rounded-pill px-3 py-2 function-tag"
+                            style={{
+                                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                color: '#ffffff',
+                                border: '1px solid rgba(255, 255, 255, 0.15)',
+                                backdropFilter: 'blur(5px)'
+                            }}
+                        >
+                            {tag}
+                        </span>
+                    ))}
+                </div>
+
+                {/* Bouton d'action CTA */}
+                <div className="d-flex flex-column flex-sm-row justify-content-center justify-content-lg-start gap-3">
+                    <Link 
+                        to={token ? "/dashboard" : "/register"} 
+                        className="btn btn-lg fw-bold px-4 py-3 text-white shadow-lg btn-hero-orange-slide btn-pulse-cta" 
+                        style={{ 
+                            backgroundColor: 'rgba(233, 114, 35, 0.15)', 
+                            border: '2px solid rgba(233, 114, 35, 0.4)', 
+                            borderRadius: '10px',
+                            position: 'relative',
+                            overflow: 'hidden',
+                            zIndex: 1
+                        }}
+                    >
+                        {token ? "Accéder au Tableau de Bord" : "Créer un compte gratuit"} 
+                        <i className="bi bi-arrow-right ms-2 transition-arrow"></i>
+                    </Link>
+                </div>
+            </div>
+
+            {/* Colonne Droite : Visuel de l'Interface */}
+            <div className="col-lg-6 d-flex justify-content-center position-relative">
+                <div className="image-container-overlay">
+                    <img
+                        src={img2}
+                        className="img-fluid shadow-lg rounded-4 border border-white border-opacity-10 visual-hero-mockup"
+                        style={{ maxHeight: '420px', objectFit: 'cover', width: '100%' }}
+                        alt="Interface DjagoYelen"
+                    />
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    {/* --- STYLES ISOLÉS --- */}
+    <style dangerouslySetInnerHTML={{ __html: `
+        .hero-digital-finance {
+            background-image: linear-gradient(135deg, ${Colors.darkGreen} 0%, #114c3e 40%, #198754 75%, #b25013 100%) !important;
+            background-size: 400% 400% !important;
+            animation: digitalGradient 12s ease infinite !important;
+        }
+
+        @keyframes digitalGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Carte d'Afrique 100% opaque, intégrée harmonieusement */
+        .africa-bg-vector {
+            position: absolute;
+            right: -8%;
+            top: 45%;
+            transform: translateY(-50%);
+            width: 550px;
+            height: 550px;
+            color: rgba(255, 255, 255, 0.08); /* Ajusté pour ne pas gêner la lisibilité tout en restant net */
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .digital-grid-overlay {
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 0);
+            background-size: 28px 28px;
+            pointer-events: none;
+        }
+
+        .digital-glow-circle {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.22;
+            pointer-events: none;
+        }
+        .circle-1 { width: 350px; height: 350px; background: #E97223; top: -10%; right: 15%; animation: floatGlow1 7s ease-in-out infinite alternate; }
+        .circle-2 { width: 420px; height: 420px; background: #198754; bottom: -15%; left: -5%; animation: floatGlow2 10s ease-in-out infinite alternate; }
+
+        @keyframes floatGlow1 { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(-20px, 30px) scale(1.15); } }
+        @keyframes floatGlow2 { 0% { transform: translate(0, 0) scale(1.1); } 100% { transform: translate(30px, -20px) scale(0.95); } }
+
+        /* Particules en mouvement rapide */
+        .finance-particle {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 1;
+        }
+
+        .coin-1 { top: 15%; left: 7%; color: #ffd700; font-size: 1.3rem; animation: floatFastLeft 3.5s linear infinite; }
+        .coin-2 { bottom: 25%; right: 8%; color: #e5e5e5; font-size: 1.1rem; animation: floatFastRight 4s linear infinite; }
+        .coin-3 { top: 35%; right: 40%; color: #E97223; font-size: 1rem; animation: floatFastLeft 3s linear infinite; }
+        .coin-4 { bottom: 35%; left: 45%; color: #ffd700; font-size: 0.9rem; animation: floatFastRight 4.5s linear infinite; }
+        .coin-5 { top: 60%; left: 12%; color: #e5e5e5; font-size: 1.1rem; animation: floatFastLeft 3.8s linear infinite; }
+
+        .star-1 { top: 20%; right: 20%; color: #ffffff; font-size: 0.8rem; animation: floatFastRight 3.2s linear infinite; }
+        .star-2 { bottom: 12%; left: 22%; color: #ffeb3b; font-size: 1.2rem; animation: floatFastLeft 4.2s linear infinite; }
+        .star-3 { top: 70%; left: 50%; color: #00e676; font-size: 0.7rem; animation: floatFastRight 2.8s linear infinite; }
+        .star-4 { top: 8%; right: 30%; color: #ffffff; font-size: 0.9rem; animation: floatFastLeft 4.4s linear infinite; }
+        .star-5 { bottom: 45%; right: 22%; color: #ffeb3b; font-size: 0.7rem; animation: floatFastRight 3.1s infinite linear; }
+
+        @keyframes floatFastLeft {
+            0% { transform: translate(0, 0) rotate(0deg) scale(0.7); opacity: 0; }
+            15% { opacity: 0.6; }
+            85% { opacity: 0.6; }
+            100% { transform: translate(-50px, -70px) rotate(360deg) scale(1.1); opacity: 0; }
+        }
+
+        @keyframes floatFastRight {
+            0% { transform: translate(0, 0) rotate(0deg) scale(1.1); opacity: 0; }
+            15% { opacity: 0.6; }
+            85% { opacity: 0.6; }
+            100% { transform: translate(60px, -60px) rotate(-360deg) scale(0.7); opacity: 0; }
+        }
+
+        .function-tag {
+            transition: all 0.3s ease;
+        }
+        .function-tag:hover {
+            transform: translateY(-2px);
+            background-color: rgba(255, 255, 255, 0.2) !important;
+            border-color: #E97223 !important;
+        }
+
+        /* CTA Effect */
+        .btn-hero-orange-slide {
+            background-image: linear-gradient(to right, rgba(233, 114, 35, 0.8) 50%, transparent 50%);
+            background-size: 200% 100%;
+            background-position: right bottom;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        .btn-hero-orange-slide:hover { background-position: left bottom; border-color: #E97223 !important; color: #ffffff !important; box-shadow: 0 8px 25px rgba(233, 114, 35, 0.4) !important; transform: translateY(-2px); }
+        .btn-hero-orange-slide:hover .transition-arrow { transform: translateX(4px); transition: transform 0.3s ease; }
+        .btn-hero-orange-slide:active { transform: translateY(1px); }
+    `}} />
+</header>
 
             {/* INTERLUDES MISSIONS ET AMBITIONS */}
             <div className="container mt-5">
@@ -267,7 +670,7 @@ const Public = () => {
                 />
                 <Section
                     title="Notre ambition"
-                    img={visuel3}
+                    img={PcMobile}
                     text="Devenir la référence régionale en matière de gestion financière simplifiée, en combinant rigueur comptable, innovation technologique et proximité avec les besoins du terrain."
                     colors={Colors}
                     reverse
@@ -507,8 +910,8 @@ const ProblemSolution = ({ colors, cardStyle }) => {
             <div className="row g-4">
                 <div className="col-md-6">
                     <div className="p-4 rounded-4 shadow-sm h-100 premium-card border-start border-4 border-danger" style={cardStyle}>
-                        <div className="mb-3">
-                            <img src={probleme} alt="Icône Problème" style={{ width: 48, height: 48 }} />
+                        <div className="d-flex flex-column flex-sm-row justify-content-center justify-content-center gap-3 mb-3">
+                            <img src={probleme} alt="Icône Problème" style={{ maxWidth: '30%', maxHeight: '30%', objectFit: 'contain' }} />
                         </div>
                         <h5 className="text-danger fw-bold mb-2">Les difficultés rencontrées</h5>
                         <ul className="mb-0 ps-3 opacity-75 text-adaptive" style={{ lineHeight: 1.7 }}>
@@ -521,8 +924,8 @@ const ProblemSolution = ({ colors, cardStyle }) => {
                 </div>
                 <div className="col-md-6">
                     <div className="p-4 rounded-4 shadow-sm h-100 premium-card border-start border-4 border-success" style={cardStyle}>
-                        <div className="mb-3">
-                            <img src={solution1} alt="Icône Solution" style={{ width: 48, height: 48, objectFit: 'contain' }} />
+                        <div className="d-flex flex-column flex-sm-row justify-content-center justify-content-center gap-3 mb-3">
+                            <img src={solution1} alt="Icône Solution" style={{ maxWidth: '30%', maxHeight: '30%', objectFit: 'contain' }} />
                         </div>
                         <h5 className="text-success fw-bold mb-2">La solution DjagoYelen</h5>
                         <ul className="mb-0 ps-3 opacity-75 text-adaptive" style={{ lineHeight: 1.7 }}>
@@ -549,15 +952,30 @@ const Features = ({ colors, cardStyle }) => {
             <div className="row g-3 g-md-4">
                 {FEATURES.map((f) => (
                     <div className="col-md-6 col-lg-3" key={f.title}>
-                        <div className="p-4 rounded-4 shadow-sm h-100 card-feature" style={cardStyle}>
-                            <div className="mb-3 d-inline-flex align-items-center justify-content-center rounded-3 p-2" style={{ backgroundColor: 'rgba(25, 135, 84, 0.1)', color: '#198754' }}>
+                        {/* text-start cale tout le texte à gauche */}
+                        <div className="p-4 rounded-4 shadow-sm h-100 card-feature text-start" style={cardStyle}>
+                            
+                            {/* L'icône reste isolée en haut, calée à gauche grâce à sa nature d'inline-flex */}
+                            <div className="mb-3 border border-1 border-success d-inline-flex rounded-3 p-2" 
+                                style={{ 
+                                    backgroundColor: 'rgba(25, 135, 84, 0.1)', 
+                                    color: '#198754', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center', 
+                                    width: '48px', 
+                                    height: '48px' 
+                                }}
+                            >
                                 <i className={`bi bi-${f.icon} fs-3`}></i>
                             </div>
+                            
+                            {/* Le texte se déroule naturellement en dessous */}
                             <h5 className="fw-bold mb-2">{f.title}</h5>
                             <p className="small opacity-75 text-adaptive mb-3">{f.desc}</p>
                             <Link to={f.link} className="feature-link text-decoration-none fw-bold small" style={{ color: colors.orange }}>
                                 Voir plus <i className="bi bi-chevron-right small ms-1"></i>
                             </Link>
+
                         </div>
                     </div>
                 ))}
@@ -590,10 +1008,19 @@ const WhyUs = ({ colors }) => {
     return (
         <section ref={ref} className={`mb-5 p-5 rounded-4 text-white fade ${visible ? 'show' : ''}`} style={{ backgroundColor: colors.darkGreen }}>
             <div className="row align-items-center g-4">
+                <div className="d-flex flex-column flex-sm-row justify-content-center justify-content-center gap-3">
+                                        <img
+                                            src={probleme}
+                                            className="img-fluid shadow-lg rounded-4 px-3 py-2 border border-white border-opacity-20 "
+                                            style={{ maxHeight: '600px',maxWidth: '30%',backgroundColor: 'rgba(255, 255, 255, 0.3)', shadow: '0 0 10px rgba(255, 255, 255, 0.5)', objectFit: 'cover', marginBottom: '40px'}}
+                                            alt="Interface DjagoYelen"
+                                        />
+
+                            </div>
                 <div className="col-lg-7">
                     <h2 className="fw-bold text-white mb-3">Pourquoi choisir DjagoYelen ?</h2>
-                    <p className="opacity-75 mb-0" style={{ lineHeight: 1.7 }}>
-                        Contrairement aux logiciels occidentaux complexes et lourds, DjagoYelen va droit au but. Il s'intègre parfaitement aux flux de travail réels des commerçants, des prestataires de services et des petites entreprises d'Afrique de l'Ouest, offrant une agilité unique sans nécessiter de compétences avancées en comptabilité.
+                    <p className=" mb-0 " >
+                        Contrairement aux logiciels complexes lourds et à usage compliqué, <span className="fw-bold" style={{color: 'green', borderBottom: '1px solid orange'}}>Djago</span><span className="fw-bold" style={{color: 'orange', borderBottom: '1px solid green'}}>Yelen</span> va droit au but. Il s'intègre parfaitement aux flux de travail réels des commerçants, des prestataires de services et des petites entreprises d'Afrique de l'Ouest, offrant une agilité unique sans nécessiter de compétences avancées en comptabilité.
                     </p>
                 </div>
                 <div className="col-lg-5 text-center text-lg-end">
@@ -617,10 +1044,18 @@ const CTA = ({ colors }) => {
                 </p>
                 <Link 
                     to={token ? "/dashboard" : "/register"} 
-                    className="btn btn-lg text-white fw-bold px-5 py-3 btn-pulse-cta"
-                    style={{ backgroundColor: colors.orange, borderRadius: '10px' }}
+                    className="btn btn-lg fw-bold px-4 py-3 text-white shadow-lg transition-all btn-hero-orange-slide transition-all btn-hero-primary btn-pulse-cta" 
+                                    style={{ 
+                                        backgroundColor: 'rgba(10, 59, 47, 1)',
+                                        border: '2px solid rgba(233, 114, 35, 0.4)', 
+                                        borderRadius: '10px',
+                                        position: 'relative',
+                                        overflow: 'hidden',
+                                        zIndex: 1
+                                    }}
                 >
                     {token ? "Retourner au Tableau de bord" : "Commencer dès maintenant"}
+                    <i className="bi bi-arrow-right ms-2 transition-arrow"></i>
                 </Link>
             </div>
         </section>
