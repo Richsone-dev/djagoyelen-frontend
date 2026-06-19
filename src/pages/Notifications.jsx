@@ -30,6 +30,9 @@ const Notifications = () => {
             ? notifications.filter((n) => !n.is_read)
             : notifications;
 
+    // Détermine si c'est le tout premier chargement à blanc
+    const isInitialLoading = loading && notifications.length === 0;
+
     const handleDelete = async (notif) => {
         const result = await Swal.fire({
             title: 'Supprimer cette notification ?',
@@ -48,6 +51,7 @@ const Notifications = () => {
 
     return (
         <div className="pb-4">
+            {/* Header */}
             <div className="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
                 <div>
                     <h3 className="fw-bold mb-1" style={{ color: colors.successGreen }}>
@@ -93,36 +97,48 @@ const Notifications = () => {
                         </button>
                     )}
 
+                    {/* Bouton Refresh avec spinner intégré si chargement en arrière-plan */}
                     <button
                         type="button"
                         className="btn btn-sm btn-outline-primary"
                         onClick={fetchNotifications}
+                        disabled={loading}
                     >
-                        <i className="bi bi-arrow-clockwise" />
+                        <i className={`bi bi-arrow-clockwise ${loading ? 'spin-animation d-inline-block' : ''}`} />
                     </button>
                 </div>
             </div>
 
-            {loading ? (
-                <div className="text-center py-5">
-                    <div className="spinner-border text-success" role="status" />
+            {/* Zone de contenu principale */}
+            {isInitialLoading ? (
+                /* Écrans de chargement initial (Skeletons factices pour un rendu plus pro) */
+                <div className="d-flex flex-column gap-2">
+                    {[1, 2, 3].map((n) => (
+                        <div key={n} className="card border-0 shadow-sm placeholder-glow">
+                            <div className="card-body d-flex gap-3 align-items-start">
+                                <div className="rounded-circle bg-secondary placeholder" style={{ width: 44, height: 44, opacity: 0.15 }} />
+                                <div className="flex-grow-1">
+                                    <div className="placeholder col-4 mb-2" style={{ height: '15px' }} />
+                                    <div className="placeholder col-8 d-block" style={{ height: '12px' }} />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             ) : filtered.length === 0 ? (
+                /* Liste vide */
                 <div className="card border-0 shadow-sm text-center py-5">
-                    <i
-                        className="bi bi-bell-slash display-4 text-muted mb-3 d-block"
-                    />
+                    <i className="bi bi-bell-slash display-4 text-muted mb-3 d-block" />
                     <h5 className="text-muted">
-                        {filter === 'unread'
-                            ? 'Aucune notification non lue'
-                            : 'Aucune notification'}
+                        {filter === 'unread' ? 'Aucune notification non lue' : 'Aucune notification'}
                     </h5>
                     <p className="text-muted small mb-0">
                         Les alertes budget et messages système apparaîtront ici.
                     </p>
                 </div>
             ) : (
-                <div className="d-flex flex-column gap-2">
+                /* Liste des notifications */
+                <div className={`d-flex flex-column gap-2 ${loading ? 'opacity-75' : ''}`} style={{ transition: 'opacity 0.2s' }}>
                     {filtered.map((notif) => {
                         const { icon, className } = getNotificationIcon(notif.type);
                         return (
@@ -146,11 +162,7 @@ const Notifications = () => {
 
                                     <div className="flex-grow-1 min-w-0">
                                         <div className="d-flex flex-wrap justify-content-between gap-2">
-                                            <h6
-                                                className={`mb-1 ${
-                                                    !notif.is_read ? 'fw-bold' : ''
-                                                }`}
-                                            >
+                                            <h6 className={`mb-1 ${!notif.is_read ? 'fw-bold' : ''}`}>
                                                 {notif.title || 'Information'}
                                                 {!notif.is_read && (
                                                     <span className="badge bg-warning text-dark ms-2 small">

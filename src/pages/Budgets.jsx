@@ -13,7 +13,7 @@ const LoaderOverlay = ({ message = "Chargement..." }) => (
     </div>
 );
 
-const Budgets = () => {
+const Budgets = ({ isDarkMode }) => { // Ajout de la prop isDarkMode si elle est transmise depuis le parent
     const [budgets, setBudgets] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -130,7 +130,7 @@ const Budgets = () => {
     };
 
     return (
-        <div className="container-fluid px-0 px-md-1 py-3 position-relative mb-5" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+        <div className="container-fluid px-0 px-md-1 py-3 position-relative mb-5" style={{ minHeight: '100vh' }}>
             {notification.show && (
                 <div className={`alert alert-${notification.type} border-0 shadow-lg position-fixed top-0 start-50 translate-middle-x mt-4`} 
                      style={{ zIndex: 9999, borderRadius: '50px', padding: '10px 25px' }}>
@@ -142,7 +142,7 @@ const Budgets = () => {
             {/* HEADER - Toujours visible */}
             <div className="row mb-4 align-items-center">
                 <div className="col-md-8 text-start">
-                    <h2 className="fw-bold h-auto mb-4" style={{ color: colors.darkGreen }}>
+                    <h2 className="fw-bold h-auto mb-4" style={{ color: colors.successGreen }}>
                         <i className="bi bi-piggy-bank fs-3 me-2"></i>Budgets & Objectifs
                     </h2>
                     <p className="text-muted small">Contrôlez vos dépenses pour mieux épargner.</p>
@@ -161,8 +161,9 @@ const Budgets = () => {
             {/* MODAL FORMULAIRE */}
             {showFormModal && (
                 <div className="modal d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', zIndex: 1060 }}>
-                    <div className="modal-dialog modal-dialog-centered">
-                        <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px' }}>
+                    {/* Ajout de la classe custom-animated-modal ici */}
+                    <div className="modal-dialog modal-dialog-centered custom-animated-modal">
+                        <div className="modal-content border-0 shadow-lg modal-content-mobile" style={{ borderRadius: '20px' }}>
                             <div className="modal-header border-0 pt-4 px-4">
                                 <h5 className="fw-bold mb-0">Définir une limite</h5>
                                 <button type="button" className="btn-close" onClick={() => setShowFormModal(false)}></button>
@@ -172,7 +173,7 @@ const Budgets = () => {
                                     <div className="mb-3 text-start">
                                         <label className="form-label small fw-bold text-muted">Catégorie</label>
                                         {!isAddingCategory ? (
-                                            <div className="input-group">
+                                            <div className="input-group text-black">
                                                 <Select
                                                     options={categories.map(c => ({ value: c.id, label: c.nom || c.name }))}
                                                     onChange={(selected) => setFormData({...formData, category_id: selected.value})}
@@ -194,11 +195,11 @@ const Budgets = () => {
                                     </div>
                                     <div className="mb-3 text-start">
                                         <label className="form-label small fw-bold text-muted">Montant Limite (FCFA)</label>
-                                        <input type="number" className="form-control rounded-3 bg-light border-0 shadow-none" placeholder="Ex: 50000" value={formData.amount_limit} onChange={(e) => setFormData({...formData, amount_limit: e.target.value})} required />
+                                        <input type="number" className="form-control rounded-3 bg-light text-black shadow-none" placeholder="Ex: 50000" value={formData.amount_limit} onChange={(e) => setFormData({...formData, amount_limit: e.target.value})} required />
                                     </div>
                                     <div className="mb-3 text-start">
                                         <label className="form-label small fw-bold text-muted">Fréquence</label>
-                                        <select className="form-select rounded-3 bg-light border-0 shadow-none" value={formData.period} onChange={(e) => setFormData({...formData, period: e.target.value})}>
+                                        <select className="form-select rounded-3 bg-light text-black border-0 shadow-none" value={formData.period} onChange={(e) => setFormData({...formData, period: e.target.value})}>
                                             <option value="hebdomadaire">Hebdomadaire</option>
                                             <option value="mensuel">Mensuel</option>
                                             <option value="annuel">Annuel</option>
@@ -212,6 +213,39 @@ const Budgets = () => {
                             </form>
                         </div>
                     </div>
+                    
+                    {/* Style CSS injecté gérant l'effet responsive et l'animation sur mobile */}
+                    <style dangerouslySetInnerHTML={{ __html: `
+                        @media (max-width: 575.98px) {
+                            /* Force le modal à se coller en bas de l'écran sur mobile */
+                            .custom-animated-modal {
+                                margin: 0 !important;
+                                position: fixed !important;
+                                bottom: 0 !important;
+                                left: 0 !important;
+                                right: 0 !important;
+                                max-width: 100% !important;
+                                width: 100% !important;
+                            }
+                            
+                            /* Arrondit uniquement les coins supérieurs du modal sur mobile (Style Application Pro) */
+                            .modal-content-mobile {
+                                border-radius: 24px 24px 0 0 !important;
+                                animation: slideUpMobile 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+                                will-change: transform;
+                            }
+                        }
+
+                        /* Animation d'entrée du bas vers le haut */
+                        @keyframes slideUpMobile {
+                            from {
+                                transform: translateY(100%);
+                            }
+                            to {
+                                transform: translateY(0);
+                            }
+                        }
+                    `}} />
                 </div>
             )}
 
@@ -219,56 +253,81 @@ const Budgets = () => {
             <div className="col-12 position-relative" style={{ minHeight: '400px' }}>
                 <h5 className="fw-bold text-start mb-3">Suivi en temps réel</h5>
                 
-                {/* Loader spécifique à la liste des budgets */}
-                {loading && <LoaderOverlay message="Chargement de vos objectifs..." />}
-
-                {/* État vide (affiché uniquement si non chargement) */}
-                {!loading && budgets.length === 0 ? (
-                    <div className="card border-0 shadow-sm py-5 text-center" style={{ borderRadius: '20px' }}>
-                        <i className="bi bi-shield-lock fs-1 text-muted opacity-25"></i>
-                        <p className="text-muted mt-3">Aucun budget défini.</p>
+                {loading && budgets.length === 0 ? (
+                    /* 1. ÉTAT DE CHARGEMENT (SKELETON COMPLET) */
+                    <div className="row g-3">
+                        {[1, 2, 3, 4].map((i) => (
+                            <div key={`skeleton-${i}`} className="col-12 col-md-6">
+                                <div className={`card border-0 shadow-sm p-4 placeholder-glow `} style={{ borderRadius: '18px', height: '220px' }}>
+                                    <div className="d-flex justify-content-between">
+                                        <div className="placeholder rounded" style={{ width: '40%', height: '20px' }} />
+                                        <div className="placeholder rounded-circle" style={{ width: '32px', height: '32px' }} />
+                                    </div>
+                                    <div className="placeholder rounded mt-4" style={{ width: '60%', height: '25px' }} />
+                                    <div className="placeholder rounded mt-3" style={{ width: '100%', height: '10px' }} />
+                                    <div className="placeholder rounded mt-3" style={{ width: '100%', height: '40px' }} />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : budgets.length === 0 ? (
+                    /* ÉTAT VIDE (Si aucun budget n'existe après le chargement) */
+                    <div className="text-center py-5">
+                        <i className="bi bi-wallet2 display-4 text-muted"></i>
+                        <p className="mt-2 text-muted">Aucun budget défini pour le moment.</p>
                     </div>
                 ) : (
+                    /* 2. AFFICHAGE DES DONNÉES RÉELLES */
                     <div className="row g-3">
-                        {(loading && budgets.length === 0 ? [1, 2] : budgets).map((budget, index) => {
-                            // Si on charge et qu'on n'a pas encore de données, on affiche des cartes vides "Skeleton"
-                            if (loading && budgets.length === 0) return (
-                                <div className="col-12 col-md-6" key={index}>
-                                    <div className="card border-0 shadow-sm h-100 p-4" style={{ borderRadius: '18px', height: '200px', backgroundColor: '#fff', opacity: 0.6 }}></div>
-                                </div>
-                            );
-
+                        {budgets.map((budget) => {
                             const progress = calculateProgress(budget.current_spent, budget.amount_limit);
                             const isOver = progress >= 100;
+
                             return (
                                 <div className="col-12 col-md-6 text-start" key={budget.id}>
-                                    <div className="card border-0 shadow-sm h-100 transition-hover" style={{ borderRadius: '18px' }}>
+                                    <div className={`${isDarkMode ? 'card text-light border-secondary' : 'card border-0'} shadow-sm h-100 transition-hover`} style={{ borderRadius: '18px' }}>
                                         <div className="card-body p-4">
+                                            
+                                            {/* En-tête de la carte */}
                                             <div className="d-flex justify-content-between align-items-start">
                                                 <div>
-                                                    <h6 className="fw-bold mb-0">{budget.category?.nom || 'Général'}</h6>
-                                                    <span className="badge rounded-pill bg-light text-muted fw-normal" style={{ fontSize: '0.7rem' }}>
-                                                        <i className="bi bi-calendar3 me-1"></i>{budget.period.toUpperCase()}
+                                                    <h5 className="fw-bold mb-1">{budget.category?.nom || 'Général'}</h5>
+                                                    <span className={`badge rounded-pill fw-normal ${isDarkMode ? 'bg-secondary text-light' : 'bg-light text-secondary'} border border-opacity-10`} style={{ fontSize: '0.75rem' }}>
+                                                        <i className="bi bi-calendar3 me-1"></i>
+                                                        {budget.period?.toUpperCase()}
                                                     </span>
                                                 </div>
-                                                <button className="btn btn-sm btn-light text-danger rounded-circle" onClick={() => handleDelete(budget.id)}>
+                                                <button 
+                                                    className={`btn btn-sm ${isDarkMode ? 'btn-outline-light' : 'btn-light'} text-danger rounded-circle d-flex align-items-center justify-content-center`}
+                                                    style={{ width: '32px', height: '32px' }}
+                                                    onClick={() => handleDelete(budget.id)}
+                                                    title="Supprimer le budget"
+                                                >
                                                     <i className="bi bi-trash"></i>
                                                 </button>
                                             </div>
 
+                                            {/* Montants et pourcentage */}
                                             <div className="mt-4 mb-2 d-flex justify-content-between align-items-end">
-                                                <div className="small">
-                                                    <span className="fw-bold fs-5">{Number(budget.current_spent).toLocaleString()}</span>
-                                                    <span className="text-muted"> / {Number(budget.amount_limit).toLocaleString()} F</span>
+                                                <div>
+                                                    <span className="fw-bold fs-4">{Number(budget.current_spent).toLocaleString()}</span>
+                                                    <span className={isDarkMode ? 'text-white-50' : 'text-muted'}> / {Number(budget.amount_limit).toLocaleString()} F</span>
                                                 </div>
-                                                <span className={`fw-bold ${isOver ? 'text-danger' : 'text-success'}`}>{progress}%</span>
+                                                <span className={`fw-bold fs-5 ${isOver ? 'text-danger' : 'text-success'}`}>
+                                                    {progress}%
+                                                </span>
                                             </div>
 
-                                            <div className="progress mb-4" style={{ height: '10px', borderRadius: '10px', backgroundColor: '#f0f0f0', position: 'relative', overflow: 'visible' }}>
+                                            {/* Barre de progression avec repères */}
+                                            <div className="progress mb-4" style={{ height: '12px', borderRadius: '10px', backgroundColor: isDarkMode ? '#343a40' : '#f0f0f0', position: 'relative', overflow: 'visible' }}>
                                                 <div 
                                                     className={`progress-bar progress-bar-striped progress-bar-animated ${progress > 90 ? 'bg-danger' : progress > 70 ? 'bg-warning' : 'bg-success'}`} 
-                                                    style={{ width: `${progress}%`, borderRadius: '10px', zIndex: 2 }}
-                                                ></div>
+                                                    style={{ width: `${Math.min(progress, 100)}%`, borderRadius: '10px', zIndex: 2 }}
+                                                    role="progressbar"
+                                                    aria-valuenow={progress}
+                                                    aria-valuemin="0"
+                                                    aria-valuemax="100"
+                                                />
                                                 
                                                 {[25, 50, 75].map((mark) => (
                                                     <div 
@@ -277,19 +336,19 @@ const Budgets = () => {
                                                             position: 'absolute',
                                                             left: `${mark}%`,
                                                             top: '0',
-                                                            width: '2px',
+                                                            width: '1px',
                                                             height: '100%',
-                                                            backgroundColor: 'rgba(0,0,0,0.1)',
+                                                            backgroundColor: isDarkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
                                                             zIndex: 3,
                                                             pointerEvents: 'none'
                                                         }}
                                                     >
                                                         <span style={{ 
                                                             position: 'absolute', 
-                                                            top: '12px', 
+                                                            top: '14px', 
                                                             left: '-10px', 
                                                             fontSize: '8px', 
-                                                            color: '#aaa',
+                                                            color: isDarkMode ? '#6c757d' : '#aaa',
                                                             fontWeight: 'bold'
                                                         }}>
                                                             {mark}%
@@ -298,12 +357,20 @@ const Budgets = () => {
                                                 ))}
                                             </div>
 
-                                            <div className="mt-3 p-2 rounded-3 bg-light d-flex align-items-center">
-                                                <i className={`bi bi-${isOver ? 'exclamation-circle-fill text-danger' : 'check-circle-fill text-success'} me-2`}></i>
+                                            {/* Alerte de statut (Dépassé / Disponible) */}
+                                            <div 
+                                                className={`mt-4 p-2 rounded-3 border d-flex align-items-center ${isOver ? 'border-danger' : 'border-success'}`} 
+                                                style={{ backgroundColor: isOver ? (isDarkMode ? 'rgba(220, 53, 69, 0.15)' : 'rgba(220, 53, 69, 0.08)') : (isDarkMode ? 'rgba(40, 167, 69, 0.15)' : 'rgba(40, 167, 69, 0.08)') }}
+                                            >
+                                                <i className={`bi bi-${isOver ? 'exclamation-circle-fill text-danger' : 'check-circle-fill text-success'} me-2 fs-5`}></i>
                                                 <span className="small fw-medium">
-                                                    {isOver ? 'Budget limite atteint !' : `Encore ${Number(budget.amount_limit - budget.current_spent).toLocaleString()} F disponible`}
+                                                    {isOver 
+                                                        ? 'Budget limite atteint !' 
+                                                        : `Encore ${Number(budget.amount_limit - budget.current_spent).toLocaleString()} F disponible`
+                                                    }
                                                 </span>
                                             </div>
+
                                         </div>
                                     </div>
                                 </div>
@@ -313,10 +380,11 @@ const Budgets = () => {
                 )}
             </div>
 
+            {/* Styles injectés de transition */}
             <style>{`
-                .transition-all { transition: all 0.3s ease; }
-                .transition-hover:hover { transform: translateY(-5px); transition: all 0.3s ease; }
-                .btn:active { transform: scale(0.95); }
+                .transition-hover { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease; }
+                .transition-hover:hover { transform: translateY(-4px); box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.08) !important; }
+                .btn:active { transform: scale(0.96); transition: transform 0.1s ease; }
             `}</style>
         </div>
     );

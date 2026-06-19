@@ -38,7 +38,7 @@ const MainLayout = () => {
 
     // Gestion unifiée et dynamique des fonds selon le thème
     const sidebarBackground = theme === 'dark' ? '#0b2e21' : colors.darkGreen;
-    const headerBackground = theme === 'dark' ? '#1e5f38' : colors.darkGreen; // 👈 Appliqué au header et au footer mobile
+    const headerBackground = theme === 'dark' ? colors.darkGreen : '#1e5f38'; // 👈 Appliqué au header et au footer mobile
     const pageBackground = theme === 'dark' ? '#121212' : themeColors.bgLight;
     const textColor = theme === 'dark' ? '#f8f9fa' : themeColors.textColor;
 

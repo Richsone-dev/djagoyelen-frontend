@@ -459,7 +459,6 @@ const Profil = () => {
         <div
             className="py-4"
             style={{
-                backgroundColor: theme.bgLight,
                 minHeight: '100vh'
             }}
         >
@@ -469,115 +468,113 @@ const Profil = () => {
             >
                 {/* STATUS */}
                 {status.msg && (
-                    <div
-                        className={`alert alert-${status.type} border-0 shadow-sm text-center fw-bold`}
-                    >
-                        {status.msg}
-                    </div>
-                )}
+    <div className={`alert alert-${status.type} border-0 shadow-sm text-center fw-bold`}>
+        {status.msg}
+    </div>
+)}
 
-                <div className="row g-4">
-                    {/* SIDEBAR */}
-                    <div className="col-12 col-lg-4">
-                        {loading ? (
-                            <SkeletonSidebar />
+<div className="row g-4">
+    {/* SIDEBAR */}
+    <div className="col-12 col-lg-4">
+        {loading ? (
+            <SkeletonSidebar />
+        ) : (
+            <div className="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+                <div
+                    style={{
+                        height: '100px',
+                        backgroundColor: theme.darkGreen,
+                        borderRadius: '0 0 30px 30px'
+                    }}
+                ></div>
+
+                <div
+                    className="card-body text-center pt-0"
+                    style={{
+                        marginTop: '-70px',
+                        boxShadow: '-moz-initial'
+                    }}
+                >
+                    <div className="position-relative mx-auto mb-3" style={{ width: '100px', height: '100px' }}>
+                        {/* Gestion de l'affichage de la photo avec repli vers la lettre */}
+                        {photoPreview ? (
+                            <img
+                                src={photoPreview}
+                                alt="Profile"
+                                className="rounded-circle border border-4 border-white shadow-sm object-fit-cover w-100 h-100"
+                                /* Si l'adresse dans la BD est cassée ou inaccessible, on repasse à null */
+                                onError={() => setPhotoPreview(null)} 
+                            />
                         ) : (
-                            <div className="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
-                                <div
-                                    style={{
-                                        height: '100px',
-                                        backgroundColor:
-                                            theme.darkGreen
-                                    }}
-                                ></div>
-
-                                <div
-                                    className="card-body text-center pt-0"
-                                    style={{
-                                        marginTop: '-50px'
-                                    }}
-                                >
-                                    <div className="position-relative mx-auto mb-3" style={{ width: '100px', height: '100px' }}>
-                                        {/*{photoPreview ? (
-                                            <img
-                                                src={photoPreview}
-                                                alt="Profile"
-                                                className="rounded-circle border border-4 border-white shadow-sm object-fit-cover w-100 h-100"
-                                            />
-                                        ) : (*/}
-                                            <div
-                                                className="rounded-circle border border-4 border-white shadow-sm d-flex align-items-center justify-content-center w-100 h-100"
-                                                style={{
-                                                    backgroundColor: theme.orange,
-                                                    color: 'white',
-                                                    fontSize: '2.5rem',
-                                                    fontWeight: 'bold'
-                                                }}
-                                            >
-                                                {user?.name?.charAt(0)?.toUpperCase()}
-                                            </div>
-                                        {/*)}*/}
-                                        <label
-                                            htmlFor="photo-upload"
-                                            className="position-absolute bottom-0 end-0 bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center"
-                                            style={{ width: '32px', height: '32px', cursor: 'pointer', border: '1px solid #ddd' }}
-                                        >
-                                            <i className="bi bi-camera-fill text-dark"></i>
-                                            <input
-                                                id="photo-upload"
-                                                type="file"
-                                                className="d-none"
-                                                accept="image/*"
-                                                onChange={handlePhotoChange}
-                                            />
-                                        </label>
-                                    </div>
-
-                                    <h5 className="fw-bold mb-0">
-                                        {user?.name}
-                                    </h5>
-
-                                    <p className="text-muted small mb-3">
-                                        {user?.email}
-                                    </p>
-
-                                    <div className="p-3 bg-light rounded-3 mb-3">
-                                        <div className="d-flex justify-content-between small mb-1">
-                                            <span className="text-muted">
-                                                Téléphone :
-                                            </span>
-
-                                            <span className="fw-bold">
-                                                {user?.telephone ||
-                                                    'N/A'}
-                                            </span>
-                                        </div>
-
-                                        <div className="d-flex justify-content-between small">
-                                            <span className="text-muted">
-                                                Clients :
-                                            </span>
-
-                                            <span className="fw-bold">
-                                                {
-                                                    clients.length
-                                                }
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <button
-                                        className="btn btn-sm btn-outline-danger w-100 rounded-pill fw-bold border-0"
-                                        onClick={
-                                            handleLogout
-                                        }
-                                    >
-                                        <i className="bi bi-box-arrow-right me-2"></i>
-                                        {t('logout')}
-                                    </button>
-                                </div>
+                            <div
+                                className="rounded-circle border border-4 border-white shadow-sm d-flex align-items-center justify-content-center w-100 h-100"
+                                style={{
+                                    backgroundColor: theme.orange,
+                                    color: 'white',
+                                    fontSize: '2.5rem',
+                                    fontWeight: 'bold'
+                                }}
+                            >
+                                {user?.name?.charAt(0)?.toUpperCase() || '?'}
                             </div>
                         )}
+
+                        <label
+                            htmlFor="photo-upload"
+                            className="position-absolute bottom-0 end-0 bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center"
+                            style={{ width: '32px', height: '32px', cursor: 'pointer', border: '1px solid #ddd' }}
+                        >
+                            <i className="bi bi-camera-fill text-dark"></i>
+                            <input
+                                id="photo-upload"
+                                type="file"
+                                className="d-none"
+                                accept="image/*"
+                                onChange={handlePhotoChange}
+                            />
+                        </label>
+                    </div>
+
+                    <h5 className="fw-bold mb-0">
+                        {user?.name}
+                    </h5>
+
+                    <p className="text-muted small mb-3">
+                        {user?.email}
+                    </p>
+
+                    <div className="p-3 rounded-3 mb-3" style={{border: '1px solid orange', backgroundColor: 'rgba(233, 233, 192, 0.12)'}}>
+                        <div className="d-flex justify-content-between small mb-1">
+                            <span className="text-muted">
+                                Téléphone :
+                            </span>
+
+                            <span className="fw-bold">
+                                {user?.telephone || 'N/A'}
+                            </span>
+                        </div>
+
+                        <div className="d-flex justify-content-between small">
+                            <span className="text-muted">
+                                Clients :
+                            </span>
+
+                            <span className="fw-bold">
+                                {clients.length}
+                            </span>
+                        </div>
+                    </div>
+
+                    <button
+                        className="btn btn-sm btn-outline-danger w-100 rounded-pill fw-bold border-0 border-1-danger"
+                        onClick={handleLogout}
+                    >
+                        <i className="bi bi-box-arrow-right me-2"></i>
+                        {t('logout')}
+                    </button>
+                </div>
+            </div>
+        )}
 
                         {/* PASSWORD */}
                         <div className="card border-0 shadow-sm rounded-4 p-3">
@@ -588,7 +585,7 @@ const Profil = () => {
 
                             {!showPasswordForm ? (
                                 <button
-                                    className="btn btn-sm w-100 py-2 border rounded-3 fw-bold bg-white shadow-sm"
+                                    className="btn btn-sm w-100 py-2 btn-outline-danger border rounded-3 fw-bold shadow-sm"
                                     onClick={() =>
                                         setShowPasswordForm(
                                             true
@@ -688,20 +685,20 @@ const Profil = () => {
                     </div>
 
                     {/* CONTENT */}
-                    <div className="col-12 col-lg-8">
+                    <div className="col-12 col-lg-8 ">
                         {/* PROFILE */}
-                        <div className="card border-0 shadow-sm rounded-4 mb-4">
-                            <div className="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-                                <h5 className="fw-bold mb-0" style={{ color: theme.darkGreen }}>
+                        <div className="card border-0 shadow-sm rounded-4 mb-4 border border-2-success">
+                            <div className="card-header border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                                <h5 className="fw-bold mb-0">
                                     {t('personalInfo')}
                                 </h5>
 
                                 {!isEditing && (
                                     <button
-                                        className="btn btn-sm btn-light border fw-bold shadow-sm"
+                                        className="btn btn-sm btn-success border fw-bold shadow-sm"
                                         onClick={() => setIsEditing(true)}
                                     >
-                                        <i className="bi bi-pencil-square me-2 text-primary"></i>
+                                        <i className="bi bi-pencil-square me-2"></i>
                                         {t('edit')}
                                     </button>
                                 )}
@@ -715,7 +712,7 @@ const Profil = () => {
                                 >
                                     <div className="row g-3">
                                         <div className="col-md-6">
-                                            <label className="form-label small fw-bold text-muted">
+                                            <label className="form-label small fw-bold">
                                                 {t('name')}
                                             </label>
 
@@ -724,7 +721,11 @@ const Profil = () => {
                                                 className={`form-control ${
                                                     isEditing
                                                         ? ''
-                                                        : 'bg-light'
+                                                        : 'bg-gray',
+                                                    
+                                                    isEditing
+                                                        ? 'border-orange'
+                                                        : 'border-success'
                                                 }`}
                                                 value={
                                                     formData.name
@@ -754,7 +755,11 @@ const Profil = () => {
                                                 className={`form-control ${
                                                     isEditing
                                                         ? ''
-                                                        : 'bg-light'
+                                                        : 'bg-gray',
+                                                    
+                                                    isEditing
+                                                        ? 'border-orange'
+                                                        : 'border-success'
                                                 }`}
                                                 value={
                                                     formData.email
@@ -784,7 +789,10 @@ const Profil = () => {
                                                 className={`form-control ${
                                                     isEditing
                                                         ? ''
-                                                        : 'bg-light'
+                                                        : 'bg-gray',
+                                                    isEditing
+                                                        ? 'border-orange'
+                                                        : 'border-success'
                                                 }`}
                                                 value={
                                                     formData.telephone
@@ -856,12 +864,9 @@ const Profil = () => {
 
                         {/* CLIENTS */}
                         <div className="card border-0 shadow-sm rounded-4 overflow-hidden">
-                            <div className="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                            <div className="card-header border-0 pt-4 px-4 d-flex justify-content-between align-items-center" style={{border: '3px solid success'}}>
                                 <h5
                                     className="fw-bold mb-0"
-                                    style={{
-                                        color: theme.darkGreen
-                                    }}
                                 >
                                     Partenaires & Clients
                                 </h5>

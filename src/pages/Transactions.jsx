@@ -164,6 +164,55 @@ const Transactions = () => {
     };
 
     const isSubmitDisabled = formData.type === 'depense' && soldeActuel < Number(formData.montant) && !formData.id;
+    // --- COMPOSANT DE GESTION DU CONTENU DU TABLEAU TRÈS UX ---
+const TableContent = ({ loading, data, columns, renderRow }) => {
+    if (loading) {
+        // Génère 5 lignes fictives animées pour l'effet miroir
+        return Array.from({ length: 5 }).map((_, idx) => (
+            <tr key={`skeleton-${idx}`} style={{ opacity: 1 - idx * 0.15 }}>
+                {/* Colonne Détails */}
+                <td className="ps-4 py-3">
+                    <div className="placeholder-glow">
+                        <span className="placeholder col-7 rounded-pill mb-1" style={{ height: '16px' }}></span>
+                        <span className="placeholder col-4 d-block rounded-pill text-muted" style={{ height: '12px' }}></span>
+                    </div>
+                </td>
+                {/* Colonne Catégorie (masquée sur mobile comme ton vrai tableau) */}
+                <td className="d-none d-md-table-cell py-3">
+                    <div className="placeholder-glow">
+                        <span className="placeholder col-5 rounded-pill" style={{ height: '20px' }}></span>
+                    </div>
+                </td>
+                {/* Colonne Montant */}
+                <td className="text-end pe-4 py-3">
+                    <div className="placeholder-glow d-flex justify-content-end">
+                        <span className="placeholder col-6 rounded-pill" style={{ height: '16px' }}></span>
+                    </div>
+                </td>
+                {/* Colonne Actions */}
+                <td className="py-3">
+                    <div className="placeholder-glow d-flex justify-content-center gap-1">
+                        <span className="placeholder rounded-circle" style={{ width: '28px', height: '28px' }}></span>
+                        <span className="placeholder rounded-circle" style={{ width: '28px', height: '28px' }}></span>
+                    </div>
+                </td>
+            </tr>
+        ));
+    }
+
+    if (data.length === 0) {
+        return (
+            <tr>
+                <td colSpan={columns} className="text-center py-5 text-muted">
+                    <i className="bi bi-inbox fs-2 d-block mb-2"></i>
+                    Aucune transaction trouvée.
+                </td>
+            </tr>
+        );
+    }
+
+    return data.map((item, index) => renderRow(item, index));
+};
 
     return (
         <div className="container-fluid px-2 px-md-4 py-4 mb-5" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>

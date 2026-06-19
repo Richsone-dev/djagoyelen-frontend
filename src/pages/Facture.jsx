@@ -932,33 +932,7 @@ Tél: ${téléphone}`;
     // LOADING
     // ─────────────────────────────────────────
 
-    if (loading) {
-
-        return (
-
-            <div
-                className="d-flex justify-content-center align-items-center"
-                style={{
-                    height: '80vh',
-                    backgroundColor: colors.lightGray
-                }}
-            >
-
-                <div
-                    className="spinner-border"
-                    style={{ color: colors.orange }}
-                    role="status"
-                >
-
-                    <span className="visually-hidden">
-                        Chargement...
-                    </span>
-
-                </div>
-
-            </div>
-        );
-    }
+    
 
     const fieldConfig = {
 
@@ -1007,7 +981,7 @@ Tél: ${téléphone}`;
                     >
 
                         <h5 className="mb-0">
-                            Prévisualisation de la facture #{previewFacture.numero_facture || previewFacture.id}
+                            facture #{previewFacture.numero_facture || previewFacture.id}
                         </h5>
 
                         <button
@@ -1222,15 +1196,60 @@ Tél: ${téléphone}`;
                             + Nouvelle facture
                         </button>
                     </div>
+                    
 
-                    {factures.length === 0 ? (
-                        <p className="text-muted">Aucune facture enregistrée.</p>
+                    {loading ? (
+                        /* --- ÉTAT DE CHARGEMENT : SKELETON PLACEHOLDER --- */
+                        <div>
+                            {/* Skeleton pour version Ordinateur */}
+                            <div className="table-responsive d-none d-md-block placeholder-glow">
+                                <table className="table align-middle shadow-sm">
+                                    <thead className="text-white" style={{ backgroundColor: colors.successGreen }}>
+                                        <tr>
+                                            <th>N°</th>
+                                            <th>Client</th>
+                                            <th>Date</th>
+                                            <th>Total TTC</th>
+                                            <th className="text-end">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {[1, 2, 3].map((i) => (
+                                            <tr key={`skeleton-table-${i}`}>
+                                                <td><span className="placeholder col-4 rounded" style={{ height: '15px' }}></span></td>
+                                                <td><span className="placeholder col-8 rounded" style={{ height: '15px' }}></span></td>
+                                                <td><span className="placeholder col-6 rounded" style={{ height: '15px' }}></span></td>
+                                                <td><span className="placeholder col-5 rounded" style={{ height: '15px' }}></span></td>
+                                                <td className="text-end"><span className="placeholder col-7 rounded" style={{ height: '30px' }}></span></td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Skeleton pour version Mobile */}
+                            <div className="d-block d-md-none placeholder-glow">
+                                {[1, 2].map((i) => (
+                                    <div key={`skeleton-card-${i}`} className="card mb-3 shadow-sm p-3" style={{ borderRadius: '12px', height: '140px' }}>
+                                        <div className="d-flex justify-content-between mb-3">
+                                            <span className="placeholder col-3 rounded" style={{ height: '18px' }}></span>
+                                            <span className="placeholder col-4 rounded" style={{ height: '15px' }}></span>
+                                        </div>
+                                        <span className="placeholder col-8 rounded mb-2" style={{ height: '20px' }}></span>
+                                        <span className="placeholder col-6 rounded" style={{ height: '15px' }}></span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ) : factures.length === 0 ? (
+                        /* --- ÉTAT VIDE (Une fois le chargement fini et aucune facture trouvée) --- */
+                        <p className="text-muted text-center py-4">Aucune facture enregistrée.</p>
                     ) : (
+                        /* --- AFFICHAGE DES FACTURES RÉELLES --- */
                         <div>
                             {/* ÉCRAN LARGE : Rendu sous forme de tableau standard */}
                             <div className="table-responsive d-none d-md-block">
-                                
-                                <table className="table table-hover align-middle shadow-sm ">
+                                <table className="table table-hover align-middle shadow-sm">
                                     <thead className="text-white" style={{ backgroundColor: colors.successGreen }}>
                                         <tr>
                                             <th>N°</th>
@@ -1244,7 +1263,6 @@ Tél: ${téléphone}`;
                                     <tbody>
                                         {factures.map((facture) => (
                                             <tr key={facture.id}>
-                                                
                                                 <td>#{facture.numero_facture || facture.id}</td>
                                                 <td>{facture.client?.nom || facture.client_nom || '---'}</td>
                                                 <td>{new Date(facture.date_emission).toLocaleDateString('fr-FR')}</td>
@@ -1268,7 +1286,6 @@ Tél: ${téléphone}`;
                                                         </button>
                                                     </div>
                                                 </td>
-                                        
                                             </tr>
                                         ))}
                                     </tbody>
@@ -1278,53 +1295,53 @@ Tél: ${téléphone}`;
                             {/* ÉCRAN MOBILE : Rendu sous forme de cartes avec actions figées horizontalement en bas */}
                             <div className="d-block d-md-none">
                                 {factures.map((facture) => (
-                                    <div key={facture.id} className="card mb-3 shadow-sm border-1 border-success outline" style={{ position: 'relative', overflow: 'hidden', hover: { backgroundColor: '#f8f9fa' } }}>
-                                        <button className="btn btn-sm shadow m-2" onClick={() => handlePreviewPDF(facture)} style={{ textAlign: 'left', border: 'none', width: '100%', hover: { backgroundColor: colors.lightGray } }}>
-                                            <div className="card-body pb-5"> {/* pb-5 pour ne pas surcharger le contenu sous la barre d'action */}
+                                    <div key={facture.id} className="card mb-3 shadow-sm border-1 border-success outline" style={{ position: 'relative', overflow: 'hidden' }}>
+                                        <button className="btn btn-sm shadow m-2" onClick={() => handlePreviewPDF(facture)} style={{ textAlign: 'left', border: 'none', width: '100%' }}>
+                                            <div className="card-body pb-5">
                                                 <div className="d-flex justify-content-between align-items-center mb-2">
                                                     <span className="fw-bold text-success">#{facture.numero_facture || facture.id}</span>
-                                                    <small className="text-muted border border-success rounded p-1" style={{backgroundColor: 'rgbd(225, 255, 233, 0.10)', color: 'black'}}>{new Date(facture.date_emission).toLocaleDateString('fr-FR')}</small>
+                                                    <small className="text-muted border border-success rounded p-1" style={{ backgroundColor: 'rgba(225, 255, 233, 0.10)', color: 'black' }}>
+                                                        {new Date(facture.date_emission).toLocaleDateString('fr-FR')}
+                                                    </small>
                                                 </div>
                                                 <h6 className="card-title mb-1 text-uppercase fw-semibold">
                                                     {facture.client?.nom || facture.client_nom || '---'}
                                                 </h6>
-                                                <p className="card-text fw-bold text-dark mb-0">
+                                                <p className="card-text fw-bold mb-0">
                                                     Total TTC : <span style={{ color: colors.orange }}>{formatPrix(facture.total_ttc)} F CFA</span>
                                                 </p>
 
                                                 {/* Barre d'action horizontale alignée tout en bas de la carte mobile */}
                                                 <div className="position-absolute bottom-0 start-0 w-100 d-flex bg-light border-top" style={{ height: '40px' }}>
-                                                    
-                                                        <button 
-                                                            className="btn btn-link flex-grow-1 text-center text-warning border-end p-0 m-0" 
-                                                            style={{ textDecoration: 'none', borderRadius: '0' }}
-                                                            onClick={() => handleEditFacture(facture)}
-                                                        >
-                                                            <i className="bi bi-pencil-square"></i>
-                                                        </button>
+                                                    <button 
+                                                        className="btn btn-link flex-grow-1 text-center text-warning border-end p-0 m-0" 
+                                                        style={{ textDecoration: 'none', borderRadius: '0' }}
+                                                        onClick={(e) => { e.stopPropagation(); handleEditFacture(facture); }}
+                                                    >
+                                                        <i className="bi bi-pencil-square"></i>
+                                                    </button>
                                                     <button 
                                                         className="btn btn-link flex-grow-1 text-center text-success border-end p-0 m-0" 
                                                         style={{ textDecoration: 'none', borderRadius: '0' }}
-                                                        onClick={() => handleDownloadPDF(facture)}
+                                                        onClick={(e) => { e.stopPropagation(); handleDownloadPDF(facture); }}
                                                     >
                                                         <i className="bi bi-download"></i>
                                                     </button>
                                                     <button 
                                                         className="btn btn-link flex-grow-1 text-center text-secondary border-end p-0 m-0" 
                                                         style={{ textDecoration: 'none', borderRadius: '0' }}
-                                                        onClick={() => handleSharePDF(facture)}
+                                                        onClick={(e) => { e.stopPropagation(); handleSharePDF(facture); }}
                                                     >
                                                         <i className="bi bi-share-fill"></i>
                                                     </button>
                                                     <button 
                                                         className="btn btn-link flex-grow-1 text-center text-danger p-0 m-0" 
                                                         style={{ textDecoration: 'none', borderRadius: '0' }}
-                                                        onClick={() => handleDelete(facture.id)}
+                                                        onClick={(e) => { e.stopPropagation(); handleDelete(facture.id); }}
                                                     >
                                                         <i className="bi bi-trash-fill"></i>
                                                     </button>
                                                 </div>
-
                                             </div>
                                         </button>
                                     </div>
