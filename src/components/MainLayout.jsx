@@ -291,14 +291,14 @@ const MainLayout = () => {
                 </main>
 
                 {!isMobile && (
-                    <footer className="text-center d-flex align-items-center justify-content-center text-muted small border-top bg-white mt-auto" style={{ height: footerHeight, width: '100%' }}>
+                    <footer className="text-center d-flex align-items-center justify-content-center small border-top mt-auto" style={{ height: footerHeight, width: '100%' }}>
                         <div>&copy; 2026 <strong>DjagoYelen</strong> tous droits réservés.</div>
                     </footer>
                 )}
 
                 {isMobile && (
                     /* Footer Mobile mis à jour avec la variable headerBackground (thématique) */
-                    <div className="fixed-bottom border-top d-flex mt-auto justify-content-around align-items-center shadow-lg" style={{ height: '70px', zIndex: 1040, backgroundColor: headerBackground, borderRadius: '20px 20px 0 0', transition: 'background-color 0.3s ease' }}>
+                    <div className="fixed-bottom border-top d-flex mt-auto justify-content-around align-items-center" style={{ boxShadow: '0 -4px 13px rgba(0, 0, 0, 0.3)', height: '70px', zIndex: 1040, backgroundColor: headerBackground, borderRadius: '20px 20px 0 0', transition: 'background-color 0.3s ease',borderTop:'2px solid orange' }}>
                         <Link to="/transactions" className="text-center text-decoration-none" style={{ color: location.pathname === '/transactions' ? colors.orange : 'rgba(255,255,255,0.6)', maxWidth: '80px'}}>
                             <i className="bi bi-cash-stack fs-3"></i><br/><small style={{fontSize: '8px'}}>Transactions</small>
                         </Link>
@@ -307,8 +307,14 @@ const MainLayout = () => {
                         </Link>
                         <div style={{ top: '-25px', position: 'relative' }}>
                             {/* Le contour du bouton s'adapte lui aussi à la couleur thématique en cours */}
-                            <Link to="/dashboard" className="btn rounded-circle shadow-lg d-flex align-items-center justify-content-center" style={{ backgroundColor: colors.white, width: '55px', height: '55px', border: `4px solid ${headerBackground}`, transition: 'border-color 0.3s ease' }}>
-                                <i className="bi bi-house-door-fill fs-3" style={{color: location.pathname === '/dashboard' ? colors.orange : 'darkgreen', maxWidth: '80px'}}></i>
+                            <Link to="/dashboard" className="btn rounded-circle shadow-lg d-flex align-items-center justify-content-center" style={{ backgroundColor: colors.white, width: '55px', height: '55px', border: `4px solid ${headerBackground}`, transition: 'border-color 0.3s ease'}}>
+                                <i className="bi bi-house-door-fill fs-3" 
+                                style={{
+                                    color: location.pathname === '/dashboard' ? colors.orange : 'darkgreen', 
+                                    maxWidth: '80px',
+                                    textShadow: '0 2px 3px rgba(0, 0, 0, 0.5)' // Utilisation de textShadow pour l'icône
+                                }}
+                                ></i>
                             </Link>
                         </div>
                         <Link to="/factures" className="text-center text-decoration-none" style={{ color: location.pathname === '/factures' ? colors.orange : 'rgba(255,255,255,0.6)', maxWidth: '80px' }}>

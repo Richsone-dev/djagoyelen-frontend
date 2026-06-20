@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { useTheme } from '../context/ThemeContext'; 
+import { useQuery } from '@tanstack/react-query'; // 👈 Importation de useQuery
 
 import {
     Chart as ChartJS,
@@ -34,8 +35,7 @@ ChartJS.register(
     Filler
 );
 
-/* --- COMPOSANT SKELETON POUR LES GRAPHIQUES --- */
-const ChartSkeleton = ({ title }) => (
+const ChartSkeleton = () => (
     <div className="w-100 placeholder-glow d-flex flex-column justify-content-between" style={{ height: '250px' }}>
         <h5 className="placeholder col-5 bg-secondary rounded mb-4" style={{ height: '20px' }}></h5>
         <div className="d-flex align-items-end justify-content-around w-100 flex-grow-1 px-2 pb-3">
@@ -54,18 +54,24 @@ const ChartSkeleton = ({ title }) => (
 const Dashboard = () => {
     const { theme } = useTheme(); 
     const isDark = theme === 'dark';
-
-    const [stats, setStats] = useState({ total: 0, revenus: 0, depenses: 0 });
-    const [transactions, setTransactions] = useState([]);
-    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
-    const [lineData, setLineData] = useState({ labels: [], datasets: [] });
-    const [doughnutData, setDoughnutData] = useState({ labels: [], datasets: [] });
-    const [barData, setBarData] = useState({ labels: [], datasets: [] });
-    const [polarData, setPolarData] = useState({ labels: [], datasets: [] });
-    const [radarData, setRadarData] = useState({ labels: [], datasets: [] });
+    // --- Remplacement des state/useEffect par le Cache React Query ---
+    const { data: dashboardData, isLoading, isError } = useQuery({
+        queryKey: ['dashboardStats'], // Clé unique pour mettre le dashboard en cache
+        queryFn: async () => {
+            const res = await api.get('/analyse/stats');
+            return res.data;
+        }
+    });
 
+    // Données d'fallback sécurisées si l'API n'a pas encore répondu
+    const stats = dashboardData?.cards || { total: 0, revenus: 0, depenses: 0 };
+    const transactions = dashboardData?.recent || [];
+    const chartRawData = dashboardData?.chart || { revenus: {}, depenses: {} };
+    const repartition = dashboardData?.repartition || [];
+
+    // Configuration dynamique des couleurs selon le thème
     const colors = {
         darkGreen: isDark ? '#198754' : '#0A3B2F',
         red1: '#FF0000',
@@ -82,89 +88,70 @@ const Dashboard = () => {
     const textChartColor = isDark ? '#f8f9fa' : '#212529';
     const gridChartColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
 
-    useEffect(() => {
-        const loadData = async () => {
-            setLoading(true);
-            try {
-                const res = await api.get('/analyse/stats');
-                const data = res.data;
+    // Génération dynamique des structures de graphiques réactifs
+    const charts = useMemo(() => {
+        const moisLabels = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
+        const labelsLine = Object.keys(chartRawData.revenus).map(m => moisLabels[m]);
+        const labelsCat = repartition.map(item => item.label);
+        const valuesCat = repartition.map(item => item.total);
 
-                setStats(data.cards);
-                setTransactions(data.recent);
-
-                const moisLabels = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
-                const labelsLine = Object.keys(data.chart.revenus).map(m => moisLabels[m]);
-                
-                setLineData({
-                    labels: labelsLine,
-                    datasets: [
-                        {
-                            label: 'Revenus',
-                            data: Object.values(data.chart.revenus),
-                            borderColor: colors.successGreen,
-                            backgroundColor: 'rgba(25, 135, 84, 0.1)',
-                            fill: true, tension: 0.4, pointRadius: 4, pointHoverRadius: 12
-                        },
-                        {
-                            label: 'Dépenses',
-                            data: Object.values(data.chart.depenses),
-                            borderColor: colors.red1,
-                            backgroundColor: 'rgba(255, 0, 0, 0.1)',
-                            fill: true, tension: 0.4, pointRadius: 4, pointHoverRadius: 12
-                        }
-                    ]
-                });
-
-                const labelsCat = data.repartition.map(item => item.label);
-                const valuesCat = data.repartition.map(item => item.total);
-
-                setDoughnutData({
-                    labels: labelsCat,
-                    datasets: [{
-                        data: valuesCat,
-                        backgroundColor: colors.chartColors,
-                        borderWidth: isDark ? 1 : 0,
-                        borderColor: isDark ? '#2b3035' : 'transparent'
-                    }]
-                });
-
-                setBarData({
-                    labels: labelsCat,
-                    datasets: [{
-                        label: 'Montant Total',
-                        data: valuesCat,
-                        backgroundColor: colors.orange,
-                        borderRadius: 10,
-                    }]
-                });
-
-                setPolarData({
-                    labels: ['Revenus', 'Dépenses', 'Épargne'],
-                    datasets: [{
-                        data: [data.cards.revenus, data.cards.depenses, (data.cards.revenus - data.cards.depenses)],
-                        backgroundColor: ['rgba(25, 135, 84, 0.7)', 'rgba(233, 114, 35, 0.7)', 'rgba(10, 59, 47, 0.7)'],
-                        borderColor: isDark ? '#2b3035' : '#fff'
-                    }]
-                });
-
-                setRadarData({
-                    labels: ['Alimentation', 'Loyer', 'Loisirs', 'Santé', 'Transport'],
-                    datasets: [{
-                        label: 'Profil',
-                        data: [80, 70, 50, 90, 60],
-                        borderColor: colors.orange,
-                        backgroundColor: 'rgba(233, 114, 35, 0.2)',
-                    }]
-                });
-
-            } catch (err) {
-                console.error("Erreur Dashboard", err);
-            } finally {
-                setLoading(false);
+        return {
+            line: {
+                labels: labelsLine,
+                datasets: [
+                    {
+                        label: 'Revenus',
+                        data: Object.values(chartRawData.revenus),
+                        borderColor: colors.successGreen,
+                        backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                        fill: true, tension: 0.4, pointRadius: 4, pointHoverRadius: 12
+                    },
+                    {
+                        label: 'Dépenses',
+                        data: Object.values(chartRawData.depenses),
+                        borderColor: colors.red1,
+                        backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                        fill: true, tension: 0.4, pointRadius: 4, pointHoverRadius: 12
+                    }
+                ]
+            },
+            doughnut: {
+                labels: labelsCat,
+                datasets: [{
+                    data: valuesCat,
+                    backgroundColor: colors.chartColors,
+                    borderWidth: isDark ? 1 : 0,
+                    borderColor: isDark ? '#2b3035' : 'transparent'
+                }]
+            },
+            bar: {
+                labels: labelsCat,
+                datasets: [{
+                    label: 'Montant Total',
+                    data: valuesCat,
+                    backgroundColor: colors.orange,
+                    borderRadius: 10,
+                }]
+            },
+            polar: {
+                labels: ['Revenus', 'Dépenses', 'Épargne'],
+                datasets: [{
+                    data: [stats.revenus, stats.depenses, (stats.revenus - stats.depenses)],
+                    backgroundColor: ['rgba(25, 135, 84, 0.7)', 'rgba(233, 114, 35, 0.7)', 'rgba(10, 59, 47, 0.7)'],
+                    borderColor: isDark ? '#2b3035' : '#fff'
+                }]
+            },
+            radar: {
+                labels: ['Alimentation', 'Loyer', 'Loisirs', 'Santé', 'Transport'],
+                datasets: [{
+                    label: 'Profil',
+                    data: [80, 70, 50, 90, 60],
+                    borderColor: colors.orange,
+                    backgroundColor: 'rgba(233, 114, 35, 0.2)',
+                }]
             }
         };
-        loadData();
-    }, [isDark]);
+    }, [chartRawData, repartition, stats, isDark]);
 
     const chartOptions = {
         maintainAspectRatio: false,
@@ -187,12 +174,23 @@ const Dashboard = () => {
         }
     };
 
+    // Gestion de l'affichage d'erreur
+    if (isError) {
+        return (
+            <div className="container py-5 text-center">
+                <div className="alert alert-danger" role="alert">
+                    Une erreur est survenue lors de la récupération des statistiques du Dashboard.
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className={`container-fluid px-1 py-4 min-vh-100 ${isDark ? 'bg-dark text-light' : 'bg-light text-dark'}`}>
             
-            {/* --- SYSTEM DE SKELETONS POUR LES CARTES --- */}
+            {/* --- CARTES DE STATS --- */}
             <div className="row g-3 mb-4">
-                {loading ? (
+                {isLoading ? (
                     [1, 2, 3].map((i) => (
                         <div key={i} className="col-12 col-sm-6 col-md-4 placeholder-glow">
                             <div className={`card shadow-sm border-0 p-3 h-100 ${isDark ? 'bg-secondary bg-opacity-10' : 'bg-white'}`} style={{ borderRadius: '15px' }}>
@@ -246,11 +244,11 @@ const Dashboard = () => {
             <div className="row g-4 mb-4">
                 <div className="col-12 col-xl-8">
                     <div className={`card shadow-sm border-0 p-4 h-100 ${isDark ? 'bg-secondary bg-opacity-10 text-white' : 'bg-white'}`} style={{ borderRadius: '15px' }}>
-                        {loading ? <ChartSkeleton /> : (
+                        {isLoading ? <ChartSkeleton /> : (
                             <>
                                 <h5 className="fw-bold mb-4" style={{ color: isDark ? '#4ade80' : colors.darkGreen }}><i className="bi bi-graph-up-arrow me-2"></i> Flux Mensuel</h5>
                                 <div style={{ height: '250px' }}>
-                                    <Line data={lineData} options={chartOptions} />
+                                    <Line data={charts.line} options={chartOptions} />
                                 </div>
                             </>
                         )}
@@ -258,11 +256,11 @@ const Dashboard = () => {
                 </div>
                 <div className="col-12 col-xl-4">
                     <div className={`card shadow-sm border-0 p-4 h-100 ${isDark ? 'bg-secondary bg-opacity-10 text-white' : 'bg-white'}`} style={{ borderRadius: '15px' }}>
-                        {loading ? <ChartSkeleton /> : (
+                        {isLoading ? <ChartSkeleton /> : (
                             <>
                                 <h5 className="fw-bold mb-4" style={{ color: isDark ? '#4ade80' : colors.darkGreen }}><i className="bi bi-pie-chart-fill me-2"></i> Par Catégorie</h5>
                                 <div style={{ height: '250px' }}>
-                                    <Doughnut data={doughnutData} options={chartOptions} />
+                                    <Doughnut data={charts.doughnut} options={chartOptions} />
                                 </div>
                             </>
                         )}
@@ -273,13 +271,13 @@ const Dashboard = () => {
             {/* --- ANALYSE AVANCÉE --- */}
             <div className="row g-4 mb-4">
                 {[
-                    { title: "Volume Comparatif", component: <Bar data={barData} options={chartOptions} /> },
-                    { title: "Analyse des Flux", component: <PolarArea data={polarData} options={chartOptions} /> },
-                    { title: "Équilibre", component: <Radar data={radarData} options={chartOptions} /> }
+                    { title: "Volume Comparatif", component: <Bar data={charts.bar} options={chartOptions} /> },
+                    { title: "Analyse des Flux", component: <PolarArea data={charts.polar} options={chartOptions} /> },
+                    { title: "Équilibre", component: <Radar data={charts.radar} options={chartOptions} /> }
                 ].map((graph, idx) => (
                     <div key={idx} className="col-12 col-md-4">
                         <div className={`card shadow-sm border-0 p-4 h-100 ${isDark ? 'bg-secondary bg-opacity-10 text-white' : 'bg-white'}`} style={{ borderRadius: '15px' }}>
-                            {loading ? <ChartSkeleton /> : (
+                            {isLoading ? <ChartSkeleton /> : (
                                 <>
                                     <h6 className="fw-bold mb-3">{graph.title}</h6>
                                     <div style={{ height: '200px' }}>
@@ -296,7 +294,7 @@ const Dashboard = () => {
             <div className={`card shadow-sm border-0 p-4 mb-5 ${isDark ? 'bg-secondary bg-opacity-10 text-white' : 'bg-white'}`} style={{ borderRadius: '15px' }}>
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h5 className="fw-bold m-0" style={{ color: isDark ? '#4ade80' : colors.darkGreen }}><i className="bi bi-clock-history me-2"></i> Activités Récentes</h5>
-                    {!loading && <button className="btn btn-sm text-white px-3" style={{ backgroundColor: colors.orange, borderRadius: '8px' }} onClick={() => navigate('/transactions')}>Tout voir</button>}
+                    {!isLoading && <button className="btn btn-sm text-white px-3" style={{ backgroundColor: colors.orange, borderRadius: '8px' }} onClick={() => navigate('/transactions')}>Tout voir</button>}
                 </div>
                 <div className="table-responsive">
                     <table className={`table table-hover align-middle ${isDark ? 'table-dark' : ''}`}>
@@ -308,8 +306,8 @@ const Dashboard = () => {
                                 <th className="text-end">Montant</th>
                             </tr>
                         </thead>
-                        <tbody className={loading ? "placeholder-glow" : ""}>
-                            {loading ? (
+                        <tbody>
+                            {isLoading ? (
                                 [1, 2, 3].map((i) => (
                                     <tr key={`t-sk-${i}`}>
                                         <td><span className="placeholder col-6 bg-secondary rounded" style={{ height: '15px' }}></span></td>

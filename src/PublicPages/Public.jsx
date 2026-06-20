@@ -873,7 +873,7 @@ const Features = ({ colors, cardStyle }) => {
                             {/* Le texte se déroule naturellement en dessous */}
                             <h5 className="fw-bold mb-2">{f.title}</h5>
                             <p className="small opacity-75 text-adaptive mb-3">{f.desc}</p>
-                            <Link to={f.link} className="feature-link text-decoration-none fw-bold small" style={{ color: colors.orange }}>
+                            <Link to={f.link} className="feature-link text-decoration-none fw-bold small" style={{ color: colors.orange, border: '1px solid orange', borderRadius:'10px', padding: '4px'}}>
                                 Voir plus <i className="bi bi-chevron-right small ms-1"></i>
                             </Link>
 

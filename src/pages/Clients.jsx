@@ -171,7 +171,7 @@ const Clients = () => {
     const formatPrix = (prix) => new Intl.NumberFormat('fr-FR').format(prix || 0);
 
     return (
-        <div className="py-4 py-md-5 text-start" style={{ backgroundColor: colors.bgLight, minHeight: '100vh' }}>
+        <div className="py-4 py-md-5 text-start" style={{ minHeight: '100vh' }}>
             <div className="container px-3 px-md-4" style={{ maxWidth: '1100px' }}>
                 
                 {status.msg && (
@@ -233,7 +233,7 @@ const Clients = () => {
                                     filteredClients.map(client => (
                                         <tr key={client.id}>
                                             <td className="ps-4 py-3">
-                                                <div className="fw-bold text-dark">{client.nom}</div>
+                                                <div className="fw-bold">{client.nom}</div>
                                                 <div className="text-muted small fst-italic">{client.adresse || 'Sans adresse'}</div>
                                             </td>
                                             <td className="py-3">
@@ -242,13 +242,13 @@ const Clients = () => {
                                             </td>
                                             <td className="text-end pe-4 py-3">
                                                 <div className="btn-group flex-wrap rounded-3 overflow-hidden border">
-                                                    <button className="btn btn-sm btn-white px-3" onClick={() => openDetailsModal(client)} title="Détails">
+                                                    <button className="btn btn-sm px-3" onClick={() => openDetailsModal(client)} title="Détails">
                                                         <i className="bi bi-eye text-success"></i>
                                                     </button>
-                                                    <button className="btn btn-sm btn-white px-3 border-start" onClick={() => openClientModal(client)}>
+                                                    <button className="btn btn-sm px-3 border-start" onClick={() => openClientModal(client)}>
                                                         <i className="bi bi-pencil text-primary"></i>
                                                     </button>
-                                                    <button className="btn btn-sm btn-white px-3 border-start" onClick={() => handleDeleteClient(client.id)}>
+                                                    <button className="btn btn-sm px-3 border" onClick={() => handleDeleteClient(client.id)}>
                                                         <i className="bi bi-trash text-danger"></i>
                                                     </button>
                                                 </div>

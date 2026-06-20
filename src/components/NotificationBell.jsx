@@ -53,7 +53,7 @@ const NotificationBell = ({ variant = 'header' }) => {
                             minWidth: 20,
                             minHeight: 20,
                             padding: '3px 5px',
-                            border: isHeader ? `2px solid ${colors.darkGreen}` : 'none',
+                            border: isHeader ? `1px solid ${colors.darkGreen}` : 'none',
                         }}
                     >
                         {unreadCount > 99 ? '99+' : unreadCount}

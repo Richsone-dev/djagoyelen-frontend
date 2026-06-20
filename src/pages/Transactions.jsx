@@ -215,7 +215,7 @@ const TableContent = ({ loading, data, columns, renderRow }) => {
 };
 
     return (
-        <div className="container-fluid px-2 px-md-4 py-4 mb-5" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+        <div className="container-fluid px-2 px-md-4 py-4 mb-5" style={{ minHeight: '100vh' }}>
             
             {/* MODAL */}
             {showModal && (
@@ -231,7 +231,7 @@ const TableContent = ({ loading, data, columns, renderRow }) => {
                                             <h5 className="fw-bold mb-0">
                                                 <span style={{ color: colors.successGreen }}>Djago</span><span style={{ color: colors.orange }}>Yelen</span>
                                             </h5>
-                                            <small className="text-muted">Solde: <b className="text-dark">{soldeActuel.toLocaleString()} F</b></small>
+                                            <small className="text-muted">Solde: <b className="text-success">{soldeActuel.toLocaleString()} F</b></small>
                                         </div>
                                     </div>
                                     <button className="btn-close shadow-none" onClick={() => setShowModal(false)}></button>
@@ -254,9 +254,9 @@ const TableContent = ({ loading, data, columns, renderRow }) => {
                                             <input type="number" className="form-control rounded-pill" required value={formData.montant} onChange={(e) => setFormData({...formData, montant: e.target.value})} />
                                         </div>
                                         <div className="col-12">
-                                            <label className="form-label small fw-bold text-muted">CATÉGORIE</label>
+                                            <label className="form-label small fw-bold">CATÉGORIE</label>
                                             {!isAddingCategory ? (
-                                                <div className="input-group">
+                                                <div className="input-group text-dark">
                                                     <div style={{ flex: 1 }}>
                                                         <Select
                                                             options={categories.map(c => ({ value: c.id, label: c.nom || c.name }))}
@@ -300,7 +300,7 @@ const TableContent = ({ loading, data, columns, renderRow }) => {
             {/* EN-TÊTE & FILTRES */}
             <div className="row align-items-center mb-4 g-3 text-start">
                 <div className="col-12 col-md-6">
-                    <h4 className="fw-bold mb-0" style={{ color: colors.darkGreen }}><i className="bi bi-receipt me-2"></i>Transactions</h4>
+                    <h4 className="fw-bold mb-0" style={{ color: colors.successGreen }}><i className="bi bi-receipt me-2"></i>Transactions</h4>
                     <p className="small text-muted mb-0">Solde actuel: <span className={soldeActuel <= 0 ? 'text-danger fw-bold' : 'text-success fw-bold'}>{soldeActuel.toLocaleString()} FCFA</span></p>
                 </div>
                 <div className="col-12 col-md-6 text-md-end">
