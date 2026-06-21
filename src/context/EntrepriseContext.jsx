@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import api from '../api/axios';
 
-const EnterpriseContext = createContext();
+const EntrepriseContext = createContext();
 
-export const EnterpriseProvider = ({ children }) => {
+export const EntrepriseProvider = ({ children }) => {
     const [entreprise, setEntreprise] = useState(null);
     const [logoObjectUrl, setLogoObjectUrl] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -41,33 +41,50 @@ export const EnterpriseProvider = ({ children }) => {
         fetchEntreprise();
     }, [fetchEntreprise]);
 
+    // Gestion optimisée et sécurisée du téléchargement du logo binaire
     useEffect(() => {
         if (!entreprise?.logo) {
+            setLogoObjectUrl(null);
             return undefined;
         }
 
-        let objectUrl;
+        let isMounted = true;
+        let objectUrl = null;
+
         api.get('/entreprise/logo', { responseType: 'blob' })
             .then((response) => {
-                objectUrl = URL.createObjectURL(response.data);
-                setLogoObjectUrl(objectUrl);
+                if (isMounted) {
+                    objectUrl = URL.createObjectURL(response.data);
+                    setLogoObjectUrl(objectUrl);
+                }
             })
-            .catch(() => setLogoObjectUrl(null));
+            .catch((err) => {
+                console.error("Erreur lors de la récupération du logo binaire :", err);
+                if (isMounted) setLogoObjectUrl(null);
+            });
 
         return () => {
+            isMounted = false;
             if (objectUrl) {
                 URL.revokeObjectURL(objectUrl);
             }
         };
-    }, [entreprise?.logo]);
+    }, [entreprise?.logo]); // S'exécute uniquement si la chaîne ou le chemin du logo change réellement
 
-    const buildFormData = (payload, logoFile) => {
+    // Générateur automatique de FormData avec support du Method Spoofing pour Laravel
+    const buildFormData = (payload, logoFile, method = null) => {
         const data = new FormData();
+        
+        if (method) {
+            data.append('_method', method);
+        }
+
         Object.entries(payload).forEach(([key, value]) => {
             if (value !== undefined && value !== null) {
                 data.append(key, value);
             }
         });
+
         if (logoFile) {
             data.append('logo', logoFile);
         }
@@ -84,7 +101,8 @@ export const EnterpriseProvider = ({ children }) => {
     }, []);
 
     const updateEntreprise = useCallback(async (payload, logoFile = null) => {
-        const response = await api.put('/entreprise', buildFormData(payload, logoFile), {
+        // Envoi en POST à axios + simulation du PUT avec '_method' pour contourner le problème multipart de PHP
+        const response = await api.post('/entreprise', buildFormData(payload, logoFile, 'PUT'), {
             headers: { 'Content-Type': 'multipart/form-data' },
         });
         const result = response.data.data || response.data;
@@ -113,18 +131,18 @@ export const EnterpriseProvider = ({ children }) => {
     };
 
     return (
-        <EnterpriseContext.Provider value={value}>
+        <EntrepriseContext.Provider value={value}>
             {children}
-        </EnterpriseContext.Provider>
+        </EntrepriseContext.Provider>
     );
 };
 
-export const useEnterprise = () => {
-    const context = useContext(EnterpriseContext);
+export const useEntreprise = () => {
+    const context = useContext(EntrepriseContext);
     if (!context) {
-        throw new Error('useEnterprise doit être utilisé avec EnterpriseProvider');
+        throw new Error('useEntreprise doit être utilisé avec EntrepriseProvider');
     }
     return context;
 };
 
-export default EnterpriseContext;
+export default EntrepriseContext;

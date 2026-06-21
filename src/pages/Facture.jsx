@@ -6,14 +6,14 @@ import 'jspdf-autotable';
 import autoTable from 'jspdf-autotable';
 import Swal from 'sweetalert2';
 import logo from '../assets/djago-logo.jpeg';
-import { useEnterprise } from '../context/EnterpriseContext.jsx';
+import { useEntreprise } from '../context/EntrepriseContext.jsx';
 import { loadEnterpriseLogoAsDataUrl } from '../utils/mediaUrl';
 import { Colors } from 'chart.js';
 import { Link } from 'react-router-dom';
 
 const Facture = () => {
 
-    const { entreprise } = useEnterprise();
+    const { entreprise } = useEntreprise();
 
     const [factures, setFactures] = useState([]);
     const [user, setUser] = useState(null);
@@ -532,24 +532,20 @@ const Facture = () => {
         doc.setFont('helvetica', 'bold');
 
         if (entreprise?.nom) {
-            doc.setTextColor(...primaryColor);
-            doc.text(entreprise.nom, 14, headerY - 4);
+            doc.setTextColor(...accentColor);
+            doc.text(entreprise.nom, 14, headerY - 2);
 
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(0, 0, 0);
-            doc.setFontSize(10);
+            doc.setFontSize(8);
 
-            let subtitleY = headerY + 2;
-            if (entreprise.adresse) {
-                doc.text(entreprise.adresse, 14, subtitleY);
-                subtitleY += 5;
-            }
+            let subtitleY = headerY + 3;
             if (entreprise.telephone) {
                 doc.text(`Tél : ${entreprise.telephone}`, 14, subtitleY);
-                subtitleY += 5;
+                subtitleY += 4;
             }
             if (entreprise.ifu) {
-                doc.text(`N° IFU : ${entreprise.ifu}`, 14, subtitleY);
+                doc.text(`/ N° IFU : ${entreprise.ifu}`, 43, subtitleY-=4);
             }
         } else {
             doc.setTextColor(...primaryColor);
@@ -598,7 +594,7 @@ const Facture = () => {
         }
 
         doc.setDrawColor(...accentColor);
-        doc.setLineWidth(0.3);
+        doc.setLineWidth(0.4);
 
         doc.line(
             14,
@@ -613,14 +609,14 @@ const Facture = () => {
 
         doc.setFont('helvetica', 'bold');
 
-        doc.text('DETAILS DE LA FACTURE', 14, 45);
+        doc.text('DETAILS DE LA FACTURE', 14, 47);
 
         doc.setFont('helvetica', 'normal');
 
         doc.text(
             `Référence : ${numFacture}`,
             14,
-            50
+            52
         );
 
         const date = new Date(
@@ -633,17 +629,17 @@ const Facture = () => {
 
         });
 
-        doc.text(`Date : ${date}`, 14, 55);
+        doc.text(`Date : ${date}`, 14, 57);
 
         if (entreprise?.ifu) {
-            doc.text(`N° IFU : ${entreprise.ifu}`, 14, 60);
+            doc.text(`N° IFU : ${entreprise.ifu}`, 14, 62);
         }
 
         doc.setFont('helvetica', 'bold');
 
-        doc.text('STATUT: Payé', 14, entreprise?.ifu ? 65 : 60);
+        doc.text('STATUT: Payé', 14, entreprise?.ifu ? 67 : 62);
 
-        doc.text('CLIENT', 130, 45);
+        doc.text('CLIENT:', 130, 47);
 
         const nomClient = (
             fullFacture.client_nom ||
@@ -651,20 +647,20 @@ const Facture = () => {
             '---'
         ).toUpperCase();
 
-        doc.text(nomClient, 130, 50);
+        doc.text(nomClient, 130, 52);
 
         doc.setFont('helvetica', 'normal');
 
         doc.text(
             `Tél : ${fullFacture.client?.telephone || '---'}`,
             130,
-            55
+            57
         );
 
         doc.text(
             `Email : ${fullFacture.client?.email || '---'}`,
             130,
-            60
+            62
         );
 
         let items = [];
@@ -834,7 +830,7 @@ Tél: ${téléphone}`;
         const qrImage = await QRCode.toDataURL(qrData);
 
         doc.addImage(
-            qrImage,'PNG',100,37,25,25);
+            qrImage,'PNG',100,40,25,25);
 
         return {
             doc,
@@ -1367,23 +1363,15 @@ Tél: ${téléphone}`;
                                                     {new Date(facture.date_emission).toLocaleDateString('fr-FR')}
                                                 </small>
                                             </div>
-                                            <h6 className="card-title mb-1 text-uppercase fw-semibold">
+                                            <h6 className="card-title mb-1 text-start text-uppercase fw-semibold">
                                                 {facture.client?.nom || facture.client_nom || '---'}
                                             </h6>
-                                            <p className="card-text fw-bold mb-0">
+                                            <p className="card-text text-start fw-bold mb-0">
                                                 Total TTC : <span style={{ color: colors.orange }}>{formatPrix(facture.total_ttc)} F CFA</span>
                                             </p>
                                         </div>
 
-                                        <div className="position-absolute bottom-0 start-0 w-100 d-flex bg-light border-top" style={{ height: '40px' }}>
-                                            <button
-                                                type="button"
-                                                className="btn btn-link flex-grow-1 text-center text-primary border-end p-0 m-0"
-                                                style={{ textDecoration: 'none', borderRadius: '0' }}
-                                                onClick={() => handlePreviewPDF(facture)}
-                                            >
-                                                <i className="bi bi-eye"></i>
-                                            </button>
+                                        <div className="position-absolute bottom-0 start-0 w-100 d-flex border-top" style={{ height: '40px' }}>
                                             <button
                                                 type="button"
                                                 className="btn btn-link flex-grow-1 text-center text-warning border-end p-0 m-0"

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext.jsx';
-import { useEnterprise } from '../context/EnterpriseContext.jsx';
+import { useEntreprise } from '../context/EntrepriseContext.jsx';
 
 const Parametres = () => {
     const { theme, setTheme, colors } = useTheme();
@@ -58,7 +58,7 @@ const Parametres = () => {
                     <div className="col-12 col-md-8 col-lg-9 text-start">
                         <div className="card border-0 shadow-sm rounded-4 p-4 p-md-5" style={{ backgroundColor: colors.cardBg }}>
                             {activeTab === 'general' && <GeneralSettings colors={colors} theme={theme} setTheme={setTheme} language={language} setLanguage={setLanguage} t={t} onSave={showFeedback} />}
-                            {activeTab === 'entreprise' && <EnterpriseSettings colors={colors} t={t} onSave={showFeedback} />}
+                            {activeTab === 'entreprise' && <EnterpriseSettings colors={colors} theme={theme} t={t} onSave={showFeedback} />}
                             {activeTab === 'notifications' && <NotificationSettings colors={colors} t={t} />}
                             {activeTab === 'securite' && <SecuritySettings colors={colors} t={t} onSave={showFeedback} />}
                         </div>
@@ -128,7 +128,8 @@ const GeneralSettings = ({ colors, theme, setTheme, language, setLanguage, t, on
 };
 
 // --- SOUS-COMPOSANT : ENTREPRISE ---
-const EnterpriseSettings = ({ colors, onSave }) => {
+// --- SOUS-COMPOSANT : ENTREPRISE ---
+const EnterpriseSettings = ({ colors, theme, onSave }) => {
     const {
         entreprise,
         logoUrl,
@@ -136,17 +137,60 @@ const EnterpriseSettings = ({ colors, onSave }) => {
         hasEntreprise,
         createEntreprise,
         updateEntreprise,
-        deleteEntreprise,
-    } = useEnterprise();
+    } = useEntreprise();
 
     const emptyInfo = { nom: '', ifu: '', tel: '', adresse: '', couleur_principale: '#198754', couleur_accent: '#E97223' };
     const [info, setInfo] = useState(emptyInfo);
     const [logoFile, setLogoFile] = useState(null);
     const [logoPreview, setLogoPreview] = useState(null);
+    const [isBlobValid, setIsBlobValid] = useState(false);
     const [saving, setSaving] = useState(false);
-    const [deleting, setDeleting] = useState(false);
 
+    // 1. GESTION DE L'AFFICHAGE DU LOGO (useEffect sécurisé)
     useEffect(() => {
+        let isMounted = true;
+
+        const checkAndSetLogo = async () => {
+            if (!logoUrl) {
+                if (isMounted) {
+                    setLogoPreview(null);
+                    setIsBlobValid(false);
+                }
+                return;
+            }
+
+            // Si l'utilisateur vient de choisir un fichier local, on ne l'écrase pas avec l'URL du serveur
+            if (logoFile && logoPreview?.startsWith('blob:')) {
+                return;
+            }
+
+            // Si c'est un blob (ex: suite à un changement d'état externe)
+            if (logoUrl.startsWith('blob:')) {
+                if (isMounted) {
+                    setLogoPreview(logoUrl);
+                    setIsBlobValid(true);
+                }
+                return;
+            }
+
+            // URL distante / Chemin serveur : Affichage immédiat
+            if (isMounted) {
+                setLogoPreview(logoUrl);
+                setIsBlobValid(true);
+            }
+
+            // Vérification HEAD en tâche de fond pour la console
+            try {
+                const response = await fetch(logoUrl, { method: 'HEAD' });
+                if (!response.ok && isMounted && !logoFile) {
+                    setLogoPreview(null);
+                    setIsBlobValid(false);
+                }
+            } catch (error) {
+                // Erreur CORS ou réseau ignorée pour laisser l'image s'afficher
+            }
+        };
+
         if (entreprise) {
             setInfo({
                 nom: entreprise.nom || '',
@@ -156,22 +200,36 @@ const EnterpriseSettings = ({ colors, onSave }) => {
                 couleur_principale: entreprise.couleur_principale || '#198754',
                 couleur_accent: entreprise.couleur_accent || '#E97223',
             });
-            setLogoPreview(logoUrl);
-            setLogoFile(null);
+            checkAndSetLogo();
         } else if (!loading) {
             setInfo(emptyInfo);
             setLogoPreview(null);
+            setIsBlobValid(false);
             setLogoFile(null);
         }
-    }, [entreprise, logoUrl, loading]);
 
+        return () => {
+            isMounted = false;
+        };
+    }, [entreprise, logoUrl, loading]); // Ajout de logoFile retiré pour éviter les boucles de rendu lors de la sélection
+
+    // 2. SÉLECTION D'UN NOUVEAU LOGO
     const handleLogoChange = (event) => {
         const file = event.target.files?.[0];
         if (!file) return;
-        setLogoFile(file);
-        setLogoPreview(URL.createObjectURL(file));
+
+        // Libère la mémoire de l'ancien blob local s'il y en avait un
+        if (logoPreview && logoPreview.startsWith('blob:')) {
+            URL.revokeObjectURL(logoPreview);
+        }
+
+        const newUrl = URL.createObjectURL(file);
+        setLogoFile(file);      // Stocke le fichier réel pour le envoyer au serveur via FormData
+        setLogoPreview(newUrl); // URL temporaire pour l'affichage <img src="..." />
+        setIsBlobValid(true);
     };
 
+    // 3. ENREGISTREMENT ET ENVOI AU BACKEND
     const handleSave = async () => {
         if (!info.nom.trim()) {
             onSave('Le nom de l\'entreprise est obligatoire', 'danger');
@@ -189,36 +247,23 @@ const EnterpriseSettings = ({ colors, onSave }) => {
 
         try {
             setSaving(true);
+            
+            // On passe "logoFile" (qui contient le fichier ou null si inchangé) à ton contexte
             if (hasEntreprise) {
                 await updateEntreprise(payload, logoFile);
-                onSave('Entreprise mise à jour avec succès');
+                onSave('Entreprise et logo mis à jour avec succès !');
             } else {
                 await createEntreprise(payload, logoFile);
-                onSave('Entreprise créée avec succès');
+                onSave('Entreprise créée avec succès !');
             }
+            
+            // On ne réinitialise logoFile qu'APRES le succès total de la requête réseau
             setLogoFile(null);
         } catch (error) {
+            console.error("Erreur complète lors de la sauvegarde :", error);
             onSave(error.response?.data?.message || 'Erreur lors de l\'enregistrement', 'danger');
         } finally {
             setSaving(false);
-        }
-    };
-
-    const handleDelete = async () => {
-        if (!hasEntreprise) return;
-        if (!window.confirm('Supprimer définitivement votre entreprise ?')) return;
-
-        try {
-            setDeleting(true);
-            await deleteEntreprise();
-            setInfo(emptyInfo);
-            setLogoPreview(null);
-            setLogoFile(null);
-            onSave('Entreprise supprimée');
-        } catch (error) {
-            onSave(error.response?.data?.message || 'Erreur lors de la suppression', 'danger');
-        } finally {
-            setDeleting(false);
         }
     };
 
@@ -249,10 +294,22 @@ const EnterpriseSettings = ({ colors, onSave }) => {
                 )}
             </div>
 
+            {/* Zone d'upload du Logo */}
             <div className="text-center mb-4 p-4 border border-dashed rounded-4 bg-opacity-10 bg-secondary position-relative">
                 <div className="mx-auto bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center mb-2 overflow-hidden" style={{ width: '100px', height: '100px', border: `2px dashed ${colors.darkGreen}` }}>
-                    {logoPreview ? (
-                        <img src={logoPreview} alt="Logo entreprise" className="w-100 h-100 object-fit-cover" />
+                    {(logoPreview && isBlobValid) ? (
+                        <img 
+                            src={logoPreview} 
+                            alt="Logo entreprise" 
+                            className="w-100 h-100 object-fit-cover" 
+                            onError={() => {
+                                // Sécurité si le blob expire
+                                if (!logoFile) {
+                                    setIsBlobValid(false);
+                                    setLogoPreview(null);
+                                }
+                            }}
+                        />
                     ) : (
                         <i className="bi bi-building-add text-muted fs-2"></i>
                     )}
@@ -271,7 +328,7 @@ const EnterpriseSettings = ({ colors, onSave }) => {
                         className="form-control py-2"
                         value={info.nom}
                         onChange={(e) => setInfo({ ...info, nom: e.target.value })}
-                        placeholder="Ex: Djago Services SARL"
+                        placeholder="Ex: Mon Entreprise SARL"
                     />
                 </div>
                 <div className="col-md-6">
@@ -304,28 +361,54 @@ const EnterpriseSettings = ({ colors, onSave }) => {
                         placeholder="Ville, quartier, rue..."
                     />
                 </div>
+                
+                {/* Charte Graphique */}
+                <div className="col-12 mt-4">
+                    <label className="form-label fw-bold small text-muted mb-2">Charte graphique de l'entreprise</label>
+                    <div className="alert d-flex align-items-center gap-2 py-2 px-3 rounded-3 mb-0 border-1-danger" 
+                         style={{ backgroundColor: 'rgba(233, 114, 35, 0.1)', color: colors.orange, border: `1px dashed ${colors.orange}` }}>
+                        <i className="bi bi-info-circle-fill"></i>
+                        <small className="fst-italic">
+                            Ces couleurs seront utilisées pour vos factures. Prenez le soin de bien selctionner vos couleurs en fonction de celles de votre logo afin d'obtenir un design plus professionel !
+                        </small>
+                    </div>
+                </div>
+
+                {/* Couleur principale */}
                 <div className="col-md-6">
                     <label className="form-label fw-bold small text-muted">Couleur principale (factures)</label>
-                    <div className="d-flex align-items-center gap-2">
+                    <div className="p-2 rounded-3 d-flex align-items-center gap-3 border" 
+                         style={{ backgroundColor: theme === 'dark' ? '#2b2b2b' : '#f8f9fa', borderColor: theme === 'dark' ? '#3d3d3d' : '#dee2e6' }}>
                         <input
                             type="color"
-                            className="form-control form-control-color"
+                            className="form-control form-control-color border-0 bg-transparent p-0"
+                            style={{ width: '38px', height: '38px', cursor: 'pointer' }}
                             value={info.couleur_principale}
                             onChange={(e) => setInfo({ ...info, couleur_principale: e.target.value })}
                         />
-                        <span className="small text-muted">{info.couleur_principale}</span>
+                        <div>
+                            <span className="fw-semibold small d-block" style={{ color: colors.textColor }}>{info.couleur_principale.toUpperCase()}</span>
+                            <span className="text-muted d-block" style={{ fontSize: '11px' }}>En-têtes et totaux</span>
+                        </div>
                     </div>
                 </div>
+
+                {/* Couleur d'accent */}
                 <div className="col-md-6">
                     <label className="form-label fw-bold small text-muted">Couleur d'accent (factures)</label>
-                    <div className="d-flex align-items-center gap-2">
+                    <div className="p-2 rounded-3 d-flex align-items-center gap-3 border" 
+                         style={{ backgroundColor: theme === 'dark' ? '#2b2b2b' : '#f8f9fa', borderColor: theme === 'dark' ? '#3d3d3d' : '#dee2e6' }}>
                         <input
                             type="color"
-                            className="form-control form-control-color"
+                            className="form-control form-control-color border-0 bg-transparent p-0"
+                            style={{ width: '38px', height: '38px', cursor: 'pointer' }}
                             value={info.couleur_accent}
                             onChange={(e) => setInfo({ ...info, couleur_accent: e.target.value })}
                         />
-                        <span className="small text-muted">{info.couleur_accent}</span>
+                        <div>
+                            <span className="fw-semibold small d-block" style={{ color: colors.textColor }}>{info.couleur_accent.toUpperCase()}</span>
+                            <span className="text-muted d-block" style={{ fontSize: '11px' }}>Bannières et détails</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -339,16 +422,6 @@ const EnterpriseSettings = ({ colors, onSave }) => {
                 >
                     {saving ? 'Enregistrement...' : hasEntreprise ? 'Mettre à jour' : 'Créer mon entreprise'}
                 </button>
-
-                {hasEntreprise && (
-                    <button
-                        className="btn btn-outline-danger px-4 fw-bold"
-                        onClick={handleDelete}
-                        disabled={deleting}
-                    >
-                        {deleting ? 'Suppression...' : 'Supprimer'}
-                    </button>
-                )}
             </div>
         </div>
     );
@@ -377,42 +450,13 @@ const NotificationSettings = ({ colors }) => {
         }
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (typeof Notification !== 'undefined') setPermission(Notification.permission);
     }, []);
 
     return (
         <div className="animate-fade">
             <h4 className="fw-bold mb-3" style={{ color: colors.darkGreen }}>Gestion des Alertes</h4>
-
-            <div className="mb-3 p-3 border rounded-4 shadow-sm d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 className="mb-1 fw-bold">Notifications Système</h6>
-                    <p className="small text-muted mb-0">Permettre aux notifications de votre navigateur d'apparaître quand de nouvelles alertes arrivent.</p>
-                </div>
-                <div className="text-end">
-                    <div className="small text-muted mb-1">Statut: <span className="fw-bold">{permission}</span></div>
-                    {permission !== 'granted' ? (
-                        <button className="btn btn-sm btn-outline-primary" onClick={requestPermission}>Autoriser</button>
-                    ) : (
-                        <button className="btn btn-sm btn-outline-success" disabled>Autorisé</button>
-                    )}
-                </div>
-            </div>
-
-            <div className="d-flex flex-column gap-3">
-                {notifs.map((item) => (
-                    <div key={item.id} className="d-flex justify-content-between align-items-center p-3 border rounded-4 shadow-sm">
-                        <div>
-                            <h6 className="mb-1 fw-bold">{item.title}</h6>
-                            <p className="small text-muted mb-0">{item.desc}</p>
-                        </div>
-                        <div className="form-check form-switch fs-4">
-                            <input className="form-check-input" type="checkbox" checked={item.active} onChange={() => toggle(item.id)} />
-                        </div>
-                    </div>
-                ))}
-            </div>
         </div>
     );
 };
@@ -422,28 +466,6 @@ const SecuritySettings = ({ colors, onSave }) => {
     return (
         <div className="animate-fade text-start">
             <h4 className="fw-bold mb-4" style={{ color: colors.darkGreen }}>Sécurité & Accès</h4>
-            <div className="row g-3">
-                <div className="col-12">
-                    <label className="form-label fw-bold small text-muted">Ancien mot de passe</label>
-                    <input type="password" className="form-control py-2 shadow-none" />
-                </div>
-                <div className="col-md-6">
-                    <label className="form-label fw-bold small text-muted">Nouveau mot de passe</label>
-                    <input type="password" className="form-control py-2 shadow-none" />
-                </div>
-                <div className="col-md-6">
-                    <label className="form-label fw-bold small text-muted">Confirmer</label>
-                    <input type="password" className="form-control py-2 shadow-none" />
-                </div>
-            </div>
-            
-            <div className="mt-5 p-4 border border-danger border-opacity-25 rounded-4 bg-danger bg-opacity-10">
-                <h6 className="text-danger fw-bold"><i className="bi bi-exclamation-triangle-fill me-2"></i>Zone de danger</h6>
-                <p className="small text-muted">La suppression du compte est irréversible.</p>
-                <button className="btn btn-sm btn-danger fw-bold" onClick={() => window.confirm("Supprimer ?")}>Supprimer le compte</button>
-            </div>
-            
-            <button className="btn mt-4 px-4 fw-bold text-white shadow-sm border-0" style={{ backgroundColor: colors.orange }} onClick={() => onSave("Mot de passe modifié")}>Appliquer</button>
         </div>
     );
 };

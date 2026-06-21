@@ -5,7 +5,7 @@ import logo from '../assets/djago-logo.jpeg';
 import NotificationBell from './NotificationBell';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext.jsx';
-import { useEnterprise } from '../context/EnterpriseContext.jsx';
+import { useEntreprise } from '../context/EntrepriseContext.jsx';
 import { getMediaUrl } from '../utils/mediaUrl';
 
 const MainLayout = () => {
@@ -19,7 +19,7 @@ const MainLayout = () => {
 
     const { theme, setTheme, colors: themeColors } = useTheme();
     const { t } = useLanguage();
-    const { entreprise } = useEnterprise();
+    const { entreprise } = useEntreprise();
 
     const profilePhotoUrl = user?.id_photo ? getMediaUrl(user.id_photo) : null;
     const [photoError, setPhotoError] = useState(false);
@@ -157,10 +157,10 @@ const MainLayout = () => {
                                 </h4>
                                 {entreprise?.nom && (
                                     <small
-                                        className="d-block text-truncate text-muted"
-                                        style={{ maxWidth: '160px', fontSize: '0.72rem' }}
+                                        className="d-block text-truncate text-black"
+                                        style={{ maxWidth: '160px', fontSize: '0.60rem' }}
                                     >
-                                        {entreprise.nom}
+                                      {entreprise.nom}
                                     </small>
                                 )}
                             </div>
