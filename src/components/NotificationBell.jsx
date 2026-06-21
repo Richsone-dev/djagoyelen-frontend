@@ -9,7 +9,7 @@ const NotificationBell = ({ variant = 'header' }) => {
         unreadCount,
         markAsRead,
         markAllAsRead,
-    } = useNotifications({ limit: 8, pollInterval: 45000 });
+    } = useNotifications({ limit: 8, pollInterval: 5000, instant: true });
 
     const { t } = useLanguage();
     const { theme } = useTheme();

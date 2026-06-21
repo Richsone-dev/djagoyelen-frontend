@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext.jsx';
-import api from '../api/axios';
+import { useEnterprise } from '../context/EnterpriseContext.jsx';
 
 const Parametres = () => {
     const { theme, setTheme, colors } = useTheme();
@@ -129,34 +129,227 @@ const GeneralSettings = ({ colors, theme, setTheme, language, setLanguage, t, on
 
 // --- SOUS-COMPOSANT : ENTREPRISE ---
 const EnterpriseSettings = ({ colors, onSave }) => {
-    const [info, setInfo] = useState({ nom: 'Mon Entreprise', ifu: '', tel: '+226 ', adresse: 'Bobo-Dioulasso' });
-    const [logo, setLogo] = useState(null);
+    const {
+        entreprise,
+        logoUrl,
+        loading,
+        hasEntreprise,
+        createEntreprise,
+        updateEntreprise,
+        deleteEntreprise,
+    } = useEnterprise();
+
+    const emptyInfo = { nom: '', ifu: '', tel: '', adresse: '', couleur_principale: '#198754', couleur_accent: '#E97223' };
+    const [info, setInfo] = useState(emptyInfo);
+    const [logoFile, setLogoFile] = useState(null);
+    const [logoPreview, setLogoPreview] = useState(null);
+    const [saving, setSaving] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+
+    useEffect(() => {
+        if (entreprise) {
+            setInfo({
+                nom: entreprise.nom || '',
+                ifu: entreprise.ifu || '',
+                tel: entreprise.telephone || '',
+                adresse: entreprise.adresse || '',
+                couleur_principale: entreprise.couleur_principale || '#198754',
+                couleur_accent: entreprise.couleur_accent || '#E97223',
+            });
+            setLogoPreview(logoUrl);
+            setLogoFile(null);
+        } else if (!loading) {
+            setInfo(emptyInfo);
+            setLogoPreview(null);
+            setLogoFile(null);
+        }
+    }, [entreprise, logoUrl, loading]);
+
+    const handleLogoChange = (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        setLogoFile(file);
+        setLogoPreview(URL.createObjectURL(file));
+    };
+
+    const handleSave = async () => {
+        if (!info.nom.trim()) {
+            onSave('Le nom de l\'entreprise est obligatoire', 'danger');
+            return;
+        }
+
+        const payload = {
+            nom: info.nom.trim(),
+            ifu: info.ifu.trim(),
+            telephone: info.tel.trim(),
+            adresse: info.adresse.trim(),
+            couleur_principale: info.couleur_principale,
+            couleur_accent: info.couleur_accent,
+        };
+
+        try {
+            setSaving(true);
+            if (hasEntreprise) {
+                await updateEntreprise(payload, logoFile);
+                onSave('Entreprise mise à jour avec succès');
+            } else {
+                await createEntreprise(payload, logoFile);
+                onSave('Entreprise créée avec succès');
+            }
+            setLogoFile(null);
+        } catch (error) {
+            onSave(error.response?.data?.message || 'Erreur lors de l\'enregistrement', 'danger');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!hasEntreprise) return;
+        if (!window.confirm('Supprimer définitivement votre entreprise ?')) return;
+
+        try {
+            setDeleting(true);
+            await deleteEntreprise();
+            setInfo(emptyInfo);
+            setLogoPreview(null);
+            setLogoFile(null);
+            onSave('Entreprise supprimée');
+        } catch (error) {
+            onSave(error.response?.data?.message || 'Erreur lors de la suppression', 'danger');
+        } finally {
+            setDeleting(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="text-center py-5">
+                <div className="spinner-border text-success" role="status"></div>
+                <p className="text-muted mt-3 mb-0">Chargement de l'entreprise...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="animate-fade">
-            <h4 className="fw-bold mb-4" style={{ color: colors.darkGreen }}>Informations Entreprise</h4>
+            <div className="d-flex justify-content-between align-items-start mb-4 gap-3 flex-wrap">
+                <div>
+                    <h4 className="fw-bold mb-1" style={{ color: colors.darkGreen }}>Informations Entreprise</h4>
+                    <p className="text-muted small mb-0">
+                        {hasEntreprise
+                            ? 'Modifiez les informations affichées sur vos factures et dans l\'application.'
+                            : 'Créez votre entreprise pour personnaliser votre espace et vos documents.'}
+                    </p>
+                </div>
+                {hasEntreprise && (
+                    <span className="badge rounded-pill px-3 py-2" style={{ backgroundColor: 'rgba(25, 135, 84, 0.12)', color: colors.darkGreen }}>
+                        Entreprise active
+                    </span>
+                )}
+            </div>
+
             <div className="text-center mb-4 p-4 border border-dashed rounded-4 bg-opacity-10 bg-secondary position-relative">
                 <div className="mx-auto bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center mb-2 overflow-hidden" style={{ width: '100px', height: '100px', border: `2px dashed ${colors.darkGreen}` }}>
-                    {logo ? <img src={logo} alt="Logo" className="w-100 h-100 object-fit-cover" /> : <i className="bi bi-building-add text-muted fs-2"></i>}
+                    {logoPreview ? (
+                        <img src={logoPreview} alt="Logo entreprise" className="w-100 h-100 object-fit-cover" />
+                    ) : (
+                        <i className="bi bi-building-add text-muted fs-2"></i>
+                    )}
                 </div>
-                <input type="file" id="logoUpload" hidden onChange={(e) => e.target.files[0] && setLogo(URL.createObjectURL(e.target.files[0]))} />
-                <label htmlFor="logoUpload" className="btn btn-sm text-decoration-none fw-bold p-0 mt-2" style={{ color: colors.orange, cursor: 'pointer' }}>{logo ? "Changer le Logo" : "Ajouter un Logo"}</label>
+                <input type="file" id="logoUpload" hidden accept="image/*" onChange={handleLogoChange} />
+                <label htmlFor="logoUpload" className="btn btn-sm text-decoration-none fw-bold p-0 mt-2" style={{ color: colors.orange, cursor: 'pointer' }}>
+                    {logoPreview ? 'Changer le logo' : 'Ajouter un logo'}
+                </label>
             </div>
+
             <div className="row g-3">
                 <div className="col-12">
                     <label className="form-label fw-bold small text-muted">Nom de l'entreprise</label>
-                    <input type="text" className="form-control py-2" value={info.nom} onChange={e => setInfo({...info, nom: e.target.value})} />
+                    <input
+                        type="text"
+                        className="form-control py-2"
+                        value={info.nom}
+                        onChange={(e) => setInfo({ ...info, nom: e.target.value })}
+                        placeholder="Ex: Djago Services SARL"
+                    />
                 </div>
                 <div className="col-md-6">
                     <label className="form-label fw-bold small text-muted">N° IFU</label>
-                    <input type="text" className="form-control py-2" value={info.ifu} onChange={e => setInfo({...info, ifu: e.target.value})} />
+                    <input
+                        type="text"
+                        className="form-control py-2"
+                        value={info.ifu}
+                        onChange={(e) => setInfo({ ...info, ifu: e.target.value })}
+                        placeholder="Identifiant fiscal"
+                    />
                 </div>
                 <div className="col-md-6">
                     <label className="form-label fw-bold small text-muted">Téléphone</label>
-                    <input type="text" className="form-control py-2" value={info.tel} onChange={e => setInfo({...info, tel: e.target.value})} />
+                    <input
+                        type="text"
+                        className="form-control py-2"
+                        value={info.tel}
+                        onChange={(e) => setInfo({ ...info, tel: e.target.value })}
+                        placeholder="+226 XX XX XX XX"
+                    />
+                </div>
+                <div className="col-12">
+                    <label className="form-label fw-bold small text-muted">Adresse</label>
+                    <textarea
+                        className="form-control py-2"
+                        rows="2"
+                        value={info.adresse}
+                        onChange={(e) => setInfo({ ...info, adresse: e.target.value })}
+                        placeholder="Ville, quartier, rue..."
+                    />
+                </div>
+                <div className="col-md-6">
+                    <label className="form-label fw-bold small text-muted">Couleur principale (factures)</label>
+                    <div className="d-flex align-items-center gap-2">
+                        <input
+                            type="color"
+                            className="form-control form-control-color"
+                            value={info.couleur_principale}
+                            onChange={(e) => setInfo({ ...info, couleur_principale: e.target.value })}
+                        />
+                        <span className="small text-muted">{info.couleur_principale}</span>
+                    </div>
+                </div>
+                <div className="col-md-6">
+                    <label className="form-label fw-bold small text-muted">Couleur d'accent (factures)</label>
+                    <div className="d-flex align-items-center gap-2">
+                        <input
+                            type="color"
+                            className="form-control form-control-color"
+                            value={info.couleur_accent}
+                            onChange={(e) => setInfo({ ...info, couleur_accent: e.target.value })}
+                        />
+                        <span className="small text-muted">{info.couleur_accent}</span>
+                    </div>
                 </div>
             </div>
-            <button className="btn mt-4 px-4 fw-bold text-white border-0" style={{ backgroundColor: colors.darkGreen }} onClick={() => onSave("Mise à jour réussie")}>Mettre à jour</button>
+
+            <div className="d-flex flex-wrap gap-2 mt-4">
+                <button
+                    className="btn px-4 fw-bold text-white border-0"
+                    style={{ backgroundColor: colors.darkGreen }}
+                    onClick={handleSave}
+                    disabled={saving}
+                >
+                    {saving ? 'Enregistrement...' : hasEntreprise ? 'Mettre à jour' : 'Créer mon entreprise'}
+                </button>
+
+                {hasEntreprise && (
+                    <button
+                        className="btn btn-outline-danger px-4 fw-bold"
+                        onClick={handleDelete}
+                        disabled={deleting}
+                    >
+                        {deleting ? 'Suppression...' : 'Supprimer'}
+                    </button>
+                )}
+            </div>
         </div>
     );
 };

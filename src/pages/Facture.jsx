@@ -6,10 +6,14 @@ import 'jspdf-autotable';
 import autoTable from 'jspdf-autotable';
 import Swal from 'sweetalert2';
 import logo from '../assets/djago-logo.jpeg';
+import { useEnterprise } from '../context/EnterpriseContext.jsx';
+import { loadEnterpriseLogoAsDataUrl } from '../utils/mediaUrl';
 import { Colors } from 'chart.js';
 import { Link } from 'react-router-dom';
 
 const Facture = () => {
+
+    const { entreprise } = useEnterprise();
 
     const [factures, setFactures] = useState([]);
     const [user, setUser] = useState(null);
@@ -61,7 +65,18 @@ const Facture = () => {
         items: [{ designation: '', quantite: 1, prix_unitaire: 0 }],
         tva_taux: 18,
         total_ht: 0,
-        total_ttc: 0
+        total_ttc: 0,
+    };
+
+    const hexToRgb = (hex, fallback = [25, 135, 84]) => {
+        if (!hex || typeof hex !== 'string') return fallback;
+        const normalized = hex.replace('#', '');
+        if (normalized.length !== 6) return fallback;
+        return [
+            parseInt(normalized.slice(0, 2), 16),
+            parseInt(normalized.slice(2, 4), 16),
+            parseInt(normalized.slice(4, 6), 16),
+        ];
     };
 
     const [formData, setFormData] = useState(initialFormState);
@@ -260,7 +275,7 @@ const Facture = () => {
             tva_taux: Number(formData.tva_taux ?? 0),
             total_ht: Number(formData.total_ht ?? 0),
             total_ttc: Number(formData.total_ttc ?? 0),
-            
+
             items: formData.items.map(item => ({
                 designation: (item.designation || '').trim(),
                 quantite: Number(item.quantite ?? 0),
@@ -432,7 +447,7 @@ const Facture = () => {
             items: items.length > 0 ? items : [{ designation: '', quantite: 1, prix_unitaire: 0 }],
             tva_taux: facture.tva_taux ?? 18,
             total_ht: facture.total_ht ?? 0,
-            total_ttc: facture.total_ttc ?? 0
+            total_ttc: facture.total_ttc ?? 0,
         });
 
         setErrors({});
@@ -499,57 +514,90 @@ const Facture = () => {
             fullFacture.numero_facture ||
             fullFacture.id;
 
-        const successGreen = [25, 135, 84];
-        const orange = [233, 114, 35];
+        let primaryColor = hexToRgb(entreprise?.couleur_principale);
+        let accentColor = hexToRgb(entreprise?.couleur_accent, [233, 114, 35]);
+        let enterpriseLogoDataUrl = null;
+
+        if (entreprise?.logo) {
+            try {
+                enterpriseLogoDataUrl = await loadEnterpriseLogoAsDataUrl();
+            } catch {
+                console.warn('Logo entreprise non chargé, utilisation du logo par défaut');
+            }
+        }
 
         const headerY = 30;
 
         doc.setFontSize(18);
         doc.setFont('helvetica', 'bold');
 
-        doc.setTextColor(...successGreen);
-        doc.text('Djago', 14, headerY - 4);
+        if (entreprise?.nom) {
+            doc.setTextColor(...primaryColor);
+            doc.text(entreprise.nom, 14, headerY - 4);
 
-        const widthDjago = doc.getTextWidth('Djago');
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(10);
 
-        doc.setTextColor(...orange);
+            let subtitleY = headerY + 2;
+            if (entreprise.adresse) {
+                doc.text(entreprise.adresse, 14, subtitleY);
+                subtitleY += 5;
+            }
+            if (entreprise.telephone) {
+                doc.text(`Tél : ${entreprise.telephone}`, 14, subtitleY);
+                subtitleY += 5;
+            }
+            if (entreprise.ifu) {
+                doc.text(`N° IFU : ${entreprise.ifu}`, 14, subtitleY);
+            }
+        } else {
+            doc.setTextColor(...primaryColor);
+            doc.text('Djago', 14, headerY - 4);
 
-        doc.text(
-            'Yelen',
-            14 + widthDjago,
-            headerY - 4
-        );
+            const widthDjago = doc.getTextWidth('Djago');
 
-        doc.setFont('helvetica', 'normal');
+            doc.setTextColor(...accentColor);
 
-        doc.setTextColor(0, 0, 0);
+            doc.text(
+                'Yelen',
+                14 + widthDjago,
+                headerY - 4
+            );
 
-        doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(10);
 
-        doc.text(
-            'Services Numériques & Gestion financière',
-            14,
-            headerY + 2
-        );
+            doc.text(
+                'Services Numériques & Gestion financière',
+                14,
+                headerY + 2
+            );
+        }
+
+        let pdfLogo = logo;
+        let pdfLogoFormat = 'JPEG';
+
+        if (enterpriseLogoDataUrl) {
+            pdfLogo = enterpriseLogoDataUrl;
+            pdfLogoFormat = enterpriseLogoDataUrl.includes('image/png') ? 'PNG' : 'JPEG';
+        }
 
         try {
-
             doc.addImage(
-                logo,
-                'JPEG',
+                pdfLogo,
+                pdfLogoFormat,
                 165,
                 headerY - 22,
                 30,
                 30
             );
-
         } catch {
-
             console.warn('Logo non chargé');
-
         }
 
-        doc.setDrawColor(...orange);
+        doc.setDrawColor(...accentColor);
         doc.setLineWidth(0.3);
 
         doc.line(
@@ -587,9 +635,13 @@ const Facture = () => {
 
         doc.text(`Date : ${date}`, 14, 55);
 
+        if (entreprise?.ifu) {
+            doc.text(`N° IFU : ${entreprise.ifu}`, 14, 60);
+        }
+
         doc.setFont('helvetica', 'bold');
 
-        doc.text('STATUT: Payé', 14, 60);
+        doc.text('STATUT: Payé', 14, entreprise?.ifu ? 65 : 60);
 
         doc.text('CLIENT', 130, 45);
 
@@ -666,7 +718,7 @@ const Facture = () => {
 
         autoTable(doc, {
 
-            startY: 65,
+            startY: entreprise?.ifu ? 72 : 65,
 
             head: [[
                 'Désignation',
@@ -702,7 +754,7 @@ const Facture = () => {
             },
 
             headStyles: {
-                fillColor: successGreen,
+                fillColor: primaryColor,
                 textColor: 255,
                 fontStyle: 'bold',
                 textAlign: 'center',
@@ -711,7 +763,7 @@ const Facture = () => {
 
             footStyles: {
                 lineWidth: 0,
-                fillColor: orange,
+                fillColor: accentColor,
                 textColor: 255,
                 fontStyle: 'bold',
                 textAlign: 'center'
@@ -727,7 +779,7 @@ const Facture = () => {
         doc.setFont('times', 'italic');
 
         doc.text(
-            'Facture générée par DjagoYelen',
+            entreprise?.nom ? `Facture générée par ${entreprise.nom}` : 'Facture générée par DjagoYelen',
             14,
             finalY + 10
         );
@@ -790,7 +842,7 @@ Tél: ${téléphone}`;
             blob: doc.output('blob')
         };
 
-    }, []);
+    }, [entreprise]);
 
     // ─────────────────────────────────────────
     // PREVIEW PDF
@@ -1296,54 +1348,75 @@ Tél: ${téléphone}`;
                             <div className="d-block d-md-none">
                                 {factures.map((facture) => (
                                     <div key={facture.id} className="card mb-3 shadow-sm border-1 border-success outline" style={{ position: 'relative', overflow: 'hidden' }}>
-                                        <button className="btn btn-sm shadow m-2" onClick={() => handlePreviewPDF(facture)} style={{ textAlign: 'left', border: 'none', width: '100%' }}>
-                                            <div className="card-body pb-5">
-                                                <div className="d-flex justify-content-between align-items-center mb-2">
-                                                    <span className="fw-bold text-success">#{facture.numero_facture || facture.id}</span>
-                                                    <small className="text-muted border border-success rounded p-1" style={{ backgroundColor: 'rgba(225, 255, 233, 0.10)', color: 'black' }}>
-                                                        {new Date(facture.date_emission).toLocaleDateString('fr-FR')}
-                                                    </small>
-                                                </div>
-                                                <h6 className="card-title mb-1 text-uppercase fw-semibold">
-                                                    {facture.client?.nom || facture.client_nom || '---'}
-                                                </h6>
-                                                <p className="card-text fw-bold mb-0">
-                                                    Total TTC : <span style={{ color: colors.orange }}>{formatPrix(facture.total_ttc)} F CFA</span>
-                                                </p>
-
-                                                {/* Barre d'action horizontale alignée tout en bas de la carte mobile */}
-                                                <div className="position-absolute bottom-0 start-0 w-100 d-flex bg-light border-top" style={{ height: '40px' }}>
-                                                    <button 
-                                                        className="btn btn-link flex-grow-1 text-center text-warning border-end p-0 m-0" 
-                                                        style={{ textDecoration: 'none', borderRadius: '0' }}
-                                                        onClick={(e) => { e.stopPropagation(); handleEditFacture(facture); }}
-                                                    >
-                                                        <i className="bi bi-pencil-square"></i>
-                                                    </button>
-                                                    <button 
-                                                        className="btn btn-link flex-grow-1 text-center text-success border-end p-0 m-0" 
-                                                        style={{ textDecoration: 'none', borderRadius: '0' }}
-                                                        onClick={(e) => { e.stopPropagation(); handleDownloadPDF(facture); }}
-                                                    >
-                                                        <i className="bi bi-download"></i>
-                                                    </button>
-                                                    <button 
-                                                        className="btn btn-link flex-grow-1 text-center text-secondary border-end p-0 m-0" 
-                                                        style={{ textDecoration: 'none', borderRadius: '0' }}
-                                                        onClick={(e) => { e.stopPropagation(); handleSharePDF(facture); }}
-                                                    >
-                                                        <i className="bi bi-share-fill"></i>
-                                                    </button>
-                                                    <button 
-                                                        className="btn btn-link flex-grow-1 text-center text-danger p-0 m-0" 
-                                                        style={{ textDecoration: 'none', borderRadius: '0' }}
-                                                        onClick={(e) => { e.stopPropagation(); handleDelete(facture.id); }}
-                                                    >
-                                                        <i className="bi bi-trash-fill"></i>
-                                                    </button>
-                                                </div>
+                                        <div
+                                            className="card-body pb-5"
+                                            role="button"
+                                            tabIndex={0}
+                                            onClick={() => handlePreviewPDF(facture)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' || e.key === ' ') {
+                                                    e.preventDefault();
+                                                    handlePreviewPDF(facture);
+                                                }
+                                            }}
+                                            style={{ cursor: 'pointer' }}
+                                        >
+                                            <div className="d-flex justify-content-between align-items-center mb-2">
+                                                <span className="fw-bold text-success">#{facture.numero_facture || facture.id}</span>
+                                                <small className="text-muted border border-success rounded p-1" style={{ backgroundColor: 'rgba(225, 255, 233, 0.10)', color: 'black' }}>
+                                                    {new Date(facture.date_emission).toLocaleDateString('fr-FR')}
+                                                </small>
                                             </div>
-                                        </button>
+                                            <h6 className="card-title mb-1 text-uppercase fw-semibold">
+                                                {facture.client?.nom || facture.client_nom || '---'}
+                                            </h6>
+                                            <p className="card-text fw-bold mb-0">
+                                                Total TTC : <span style={{ color: colors.orange }}>{formatPrix(facture.total_ttc)} F CFA</span>
+                                            </p>
+                                        </div>
+
+                                        <div className="position-absolute bottom-0 start-0 w-100 d-flex bg-light border-top" style={{ height: '40px' }}>
+                                            <button
+                                                type="button"
+                                                className="btn btn-link flex-grow-1 text-center text-primary border-end p-0 m-0"
+                                                style={{ textDecoration: 'none', borderRadius: '0' }}
+                                                onClick={() => handlePreviewPDF(facture)}
+                                            >
+                                                <i className="bi bi-eye"></i>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="btn btn-link flex-grow-1 text-center text-warning border-end p-0 m-0"
+                                                style={{ textDecoration: 'none', borderRadius: '0' }}
+                                                onClick={() => handleEditFacture(facture)}
+                                            >
+                                                <i className="bi bi-pencil-square"></i>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="btn btn-link flex-grow-1 text-center text-success border-end p-0 m-0"
+                                                style={{ textDecoration: 'none', borderRadius: '0' }}
+                                                onClick={() => handleDownloadPDF(facture)}
+                                            >
+                                                <i className="bi bi-download"></i>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="btn btn-link flex-grow-1 text-center text-secondary border-end p-0 m-0"
+                                                style={{ textDecoration: 'none', borderRadius: '0' }}
+                                                onClick={() => handleSharePDF(facture)}
+                                            >
+                                                <i className="bi bi-share-fill"></i>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="btn btn-link flex-grow-1 text-center text-danger p-0 m-0"
+                                                style={{ textDecoration: 'none', borderRadius: '0' }}
+                                                onClick={() => handleDelete(facture.id)}
+                                            >
+                                                <i className="bi bi-trash-fill"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>

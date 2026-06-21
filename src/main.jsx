@@ -6,6 +6,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import ThemeProvider from './context/ThemeContext.jsx';
 import { LanguageProvider } from './context/LanguageContext.jsx';
 import { CategoryProvider } from './context/CategoryContext.jsx';
+import { EnterpriseProvider } from './context/EnterpriseContext.jsx';
 
 // 1. Importation de React Query
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -31,10 +32,12 @@ createRoot(document.getElementById('root')).render(
     <ThemeProvider>
       <LanguageProvider>
         <CategoryProvider>
+          <EnterpriseProvider>
           {/* 3. Enveloppement de l'application avec le Provider de cache */}
           <QueryClientProvider client={queryClient}>
             <App />
           </QueryClientProvider>
+          </EnterpriseProvider>
         </CategoryProvider>
       </LanguageProvider>
     </ThemeProvider>

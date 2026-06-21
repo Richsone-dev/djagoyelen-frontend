@@ -28,7 +28,7 @@ const Login = () => {
             navigate('/dashboard', { replace: true });
             setTimeout(() => { window.location.reload(); }, 100);
         } catch (err) {
-            setError(err.response?.data?.message || 'Email ou mot de passe incorrect.');
+            setError(err.response?.data?.message || 'Veuillez verifier votre connexion ou vos info puis rééssayez !');
         } finally {
             setLoading(false);
         }
@@ -42,7 +42,8 @@ const Login = () => {
 
     return (
         <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center p-3" 
-             style={{ backgroundColor: 'rgba(10, 59, 47, 0.03)' }}> {/* Légère touche de darkGreen en fond */}
+             //style={{ backgroundColor: 'rgba(10, 59, 47, 0.03)' }}
+             > {/* Légère touche de darkGreen en fond */}
             
             <div className="card border-0 p-4 p-md-5 shadow"
                  style={{ maxWidth: '440px', width: '100%', borderRadius: '20px' }}>
@@ -66,7 +67,7 @@ const Login = () => {
 
                 {/* Message d'erreur */}
                 {error && (
-                    <div className="alert alert-danger d-flex align-items-center gap-2 border-0 text-start small py-2.5 px-3 rounded-3 mb-4">
+                    <div className="alert alert-danger d-flex align-items-center gap-2 border-danger text-start small py-2.5 px-3 rounded-3 mb-4">
                         <i className="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
                         <div>{error}</div>
                     </div>

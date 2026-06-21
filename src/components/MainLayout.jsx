@@ -5,6 +5,8 @@ import logo from '../assets/djago-logo.jpeg';
 import NotificationBell from './NotificationBell';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { useEnterprise } from '../context/EnterpriseContext.jsx';
+import { getMediaUrl } from '../utils/mediaUrl';
 
 const MainLayout = () => {
     const navigate = useNavigate();
@@ -17,6 +19,14 @@ const MainLayout = () => {
 
     const { theme, setTheme, colors: themeColors } = useTheme();
     const { t } = useLanguage();
+    const { entreprise } = useEnterprise();
+
+    const profilePhotoUrl = user?.id_photo ? getMediaUrl(user.id_photo) : null;
+    const [photoError, setPhotoError] = useState(false);
+
+    useEffect(() => {
+        setPhotoError(false);
+    }, [profilePhotoUrl]);
 
     const colors = {
         darkGreen: '#0A3B2F',
@@ -138,11 +148,22 @@ const MainLayout = () => {
             >
                 <div className={`d-flex ${isCollapsed && !isMobile ? 'justify-content-center' : 'justify-content-between'} align-items-center mb-4`} style={{backgroundColor: colors.white, borderRadius: '10px', padding: '5px'}}>
                     <div className="d-flex align-items-center" onClick={() => !isMobile && setIsCollapsed(!isCollapsed)} style={{ cursor: 'pointer' }}>
-                        <img src={logo} alt="Logo" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} />
+                        <img src={logo} alt="Logo DjagoYelen" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} />
                         {(!isCollapsed || isMobile) && (
-                            <h4 className="fw-bold mb-0 ms-2" style={{ fontSize: '1.1rem', whiteSpace: 'nowrap' }}>
-                                <span style={{ color: colors.successGreen }}>Djago</span><span style={{ color: colors.orange }}>Yelen</span>
-                            </h4>
+                            <div className="ms-2" style={{ minWidth: 0 }}>
+                                <h4 className="fw-bold mb-0" style={{ fontSize: '1.1rem', whiteSpace: 'nowrap', lineHeight: 1.2 }}>
+                                    <span style={{ color: colors.successGreen }}>Djago</span>
+                                    <span style={{ color: colors.orange }}>Yelen</span>
+                                </h4>
+                                {entreprise?.nom && (
+                                    <small
+                                        className="d-block text-truncate text-muted"
+                                        style={{ maxWidth: '160px', fontSize: '0.72rem' }}
+                                    >
+                                        {entreprise.nom}
+                                    </small>
+                                )}
+                            </div>
                         )}
                     </div>
                     {isMobile && (
@@ -275,9 +296,19 @@ const MainLayout = () => {
                             </button>
 
                             <Link to="/profil" className="text-decoration-none d-flex align-items-center p-1 pe-2 pe-md-3 rounded-pill border-0" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
-                                <div className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-md-2" style={{ width: '32px', height: '32px', backgroundColor: colors.orange }}>
-                                    {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                                </div>
+                                {profilePhotoUrl && !photoError ? (
+                                    <img
+                                        src={profilePhotoUrl}
+                                        alt={user?.name || 'Profil'}
+                                        className="rounded-circle me-md-2"
+                                        style={{ width: '32px', height: '32px', objectFit: 'cover' }}
+                                        onError={() => setPhotoError(true)}
+                                    />
+                                ) : (
+                                    <div className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-md-2" style={{ width: '32px', height: '32px', backgroundColor: colors.orange }}>
+                                        {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                                    </div>
+                                )}
                                 <span className="small d-none d-sm-block fw-bold text-white">{user?.name || 'Profil'}</span>
                             </Link>
                         </div>

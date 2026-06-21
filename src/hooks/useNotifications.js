@@ -26,9 +26,9 @@ const showBrowserNotification = (notification) => {
     try {
         new Notification(notification.title || 'DjagoYelen', {
             body: notification.message || '',
-            icon: '/favicon.ico',
+            icon: '/src/assets/djago-logo.jpeg',
             tag: `djagoyelen-notification-${notification.id}`,
-            renotify: false,
+            renotify: true,
             data: {
                 id: notification.id,
             },
@@ -38,12 +38,26 @@ const showBrowserNotification = (notification) => {
     }
 };
 
-export function useNotifications({ autoRefresh = true, pollInterval = 60000, limit = 20 } = {}) {
+export function useNotifications({
+    autoRefresh = true,
+    pollInterval = 60000,
+    instant = false,
+    limit = 20,
+} = {}) {
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(true);
     const seenIdsRef = useRef(new Set());
+    const latestIdRef = useRef(0);
     const initializedRef = useRef(false);
+
+    const notifyNewItems = useCallback((items) => {
+        if (!initializedRef.current) return;
+
+        items
+            .filter((notification) => !seenIdsRef.current.has(notification.id) && !notification.is_read)
+            .forEach(showBrowserNotification);
+    }, []);
 
     const fetchNotifications = useCallback(async () => {
         try {
@@ -53,42 +67,94 @@ export function useNotifications({ autoRefresh = true, pollInterval = 60000, lim
             ]);
 
             const fetchedNotifications = Array.isArray(listRes.data) ? listRes.data : [];
+            notifyNewItems(fetchedNotifications);
             setNotifications(fetchedNotifications);
             setUnreadCount(countRes.data?.count ?? 0);
 
-            if (initializedRef.current) {
-                const newNotifications = fetchedNotifications.filter(
-                    (notification) =>
-                        !seenIdsRef.current.has(notification.id) &&
-                        !notification.is_read
-                );
-                newNotifications.slice(0, 3).forEach(showBrowserNotification);
-            }
-
             seenIdsRef.current = new Set(fetchedNotifications.map((n) => n.id));
+            latestIdRef.current = fetchedNotifications.reduce(
+                (max, notification) => Math.max(max, notification.id),
+                latestIdRef.current
+            );
             initializedRef.current = true;
         } catch (error) {
             console.error('Erreur notifications:', error);
         } finally {
             setLoading(false);
         }
-    }, [limit]);
+    }, [limit, notifyNewItems]);
+
+    const pollSince = useCallback(async () => {
+        try {
+            const response = await api.get('/notifications/since', {
+                params: { since_id: latestIdRef.current },
+            });
+
+            const incoming = response.data?.notifications || [];
+            const latestId = response.data?.latest_id ?? latestIdRef.current;
+
+            if (incoming.length > 0) {
+                notifyNewItems(incoming);
+                setNotifications((prev) => {
+                    const merged = [...incoming, ...prev];
+                    const unique = [];
+                    const ids = new Set();
+                    merged.forEach((item) => {
+                        if (!ids.has(item.id)) {
+                            ids.add(item.id);
+                            unique.push(item);
+                        }
+                    });
+                    return unique.slice(0, limit);
+                });
+                incoming.forEach((item) => seenIdsRef.current.add(item.id));
+                dispatchNotificationsUpdated();
+            }
+
+            latestIdRef.current = Math.max(latestIdRef.current, latestId);
+
+            const countRes = await api.get('/notifications/unread-count');
+            setUnreadCount(countRes.data?.count ?? 0);
+            initializedRef.current = true;
+        } catch (error) {
+            console.error('Erreur polling notifications:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, [limit, notifyNewItems]);
 
     useEffect(() => {
         requestBrowserPermission();
-        fetchNotifications();
+
+        const bootstrap = async () => {
+            await fetchNotifications();
+            if (instant) {
+                await pollSince();
+            }
+        };
+
+        bootstrap();
 
         if (!autoRefresh) return undefined;
 
-        const interval = setInterval(fetchNotifications, pollInterval);
-        const onUpdate = () => fetchNotifications();
+        const refresh = instant ? pollSince : fetchNotifications;
+        const interval = setInterval(refresh, pollInterval);
+        const onUpdate = () => refresh();
+        const onVisible = () => {
+            if (document.visibilityState === 'visible') {
+                refresh();
+            }
+        };
+
         window.addEventListener(NOTIFICATIONS_UPDATED, onUpdate);
+        document.addEventListener('visibilitychange', onVisible);
 
         return () => {
             clearInterval(interval);
             window.removeEventListener(NOTIFICATIONS_UPDATED, onUpdate);
+            document.removeEventListener('visibilitychange', onVisible);
         };
-    }, [fetchNotifications, autoRefresh, pollInterval]);
+    }, [fetchNotifications, pollSince, autoRefresh, pollInterval, instant]);
 
     const markAsRead = async (id) => {
         await api.put(`/notifications/${id}/read`);
