@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../api/axios';
 
-const FinancialReports = () => {
+const Reports = () => {
     const [reports, setReports] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -121,4 +121,4 @@ const FinancialReports = () => {
     );
 };
 
-export default FinancialReports;
+export default Reports;

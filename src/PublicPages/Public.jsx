@@ -602,7 +602,7 @@ const Public = () => {
                                 La solution numérique de gestion financière pensée pour propulser les entreprises et PME au bout de l'excellence. Suivez vos flux, maîtrisez vos budgets.
                             </p>
                             <div className="d-flex gap-3 mt-3">
-                                <a href="#" target="_blank" rel="noopener noreferrer" className="text-white text-white-50-hover fs-5"><i className="bi bi-facebook"></i></a>
+                                <a href="#" target="_blank" rel="noopener noreferrer" className="text-white text-white-50-hover fs-5 desabled"><i className="bi bi-facebook"></i></a>
                                 <a href="#" target="_blank" rel="noopener noreferrer" className="text-white text-white-50-hover fs-5"><i className="bi bi-linkedin"></i></a>
                                 <a href="#" target="_blank" rel="noopener noreferrer" className="text-white text-white-50-hover fs-5"><i className="bi bi-github"></i></a>
                                 <a href="https://api.whatsapp.com/send?phone=+22665395514&text=Salut%2C%20puis-je%20savoir%20un%20peu%20plus%20sur%20l'application%20DjagoYelen%20%3F" target="_blank" rel="noopener noreferrer" className="text-white text-white-50-hover fs-5"><i className="bi bi-whatsapp"></i></a>
@@ -826,7 +826,7 @@ const ProblemSolution = ({ colors, cardStyle }) => {
                 <div className="col-md-6">
                     <div className="p-4 rounded-4 shadow-sm h-100 premium-card border-start border-4 border-success" style={cardStyle}>
                         <div className="d-flex flex-column flex-sm-row justify-content-center justify-content-center gap-3 mb-3">
-                            <img src={solution1} alt="Icône Solution" style={{ maxWidth: '30%', maxHeight: '30%', objectFit: 'contain' }} />
+                            <img src={solution1} alt="Icône Solution" style={{ maxWidth: '30%',borderRadius:'18px', maxHeight: '30%', objectFit: 'contain' }} />
                         </div>
                         <h5 className="text-success fw-bold mb-2">La solution DjagoYelen</h5>
                         <ul className="mb-0 ps-3 opacity-75 text-adaptive" style={{ lineHeight: 1.7 }}>

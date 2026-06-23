@@ -306,7 +306,6 @@ const Rapports = () => {
     return (
         <div
             style={{
-                backgroundColor: colors.lightGray,
                 minHeight: '100vh',
             }}
         >
@@ -417,7 +416,7 @@ const Rapports = () => {
                                                             key={
                                                                 idx
                                                             }
-                                                            className="d-flex justify-content-between align-items-center bg-light rounded-4 p-3 mb-3"
+                                                            className="d-flex justify-content-between align-items-center border rounded-4 p-3 mb-3"
                                                         >
                                                             <div>
                                                                 <div
@@ -527,7 +526,7 @@ const Rapports = () => {
                                             `${item.color}10`,
                                     }}
                                 >
-                                    <div className="text-muted small mb-2">
+                                    <div className=" small mb-2">
                                         {item.title}
                                     </div>
 
@@ -574,7 +573,7 @@ const Rapports = () => {
                             >
                                 {/* HEADER */}
                                 <div
-                                    className="modal-header border-0 text-white p-4"
+                                    className="modal-header border-0 p-4"
                                     style={{
                                         backgroundColor:
                                             colors.darkGreen,
@@ -711,7 +710,7 @@ const Rapports = () => {
                                     {/* TABLE */}
                                     <div className="table-responsive">
                                         <table className="table align-middle">
-                                            <thead>
+                                            <thead className=''>
                                                 <tr>
                                                     <th>
                                                         Date
@@ -826,7 +825,7 @@ const Rapports = () => {
                                 </div>
 
                                 {/* FOOTER */}
-                                <div className="modal-footer border-0 p-4 bg-light">
+                                <div className="modal-footer border-0 p-4">
                                     <div className="d-flex flex-wrap gap-2 w-100 justify-content-between">
                                         <button
                                             className="btn btn-outline-secondary rounded-pill px-4"

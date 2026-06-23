@@ -1006,121 +1006,116 @@ Tél: ${téléphone}`;
     };
 
     return (
+    <div className="container p-1 mb-5">
 
-        <div className="container p-1 mb-5">
+        {/* ───────────────────────────── */}
+        {/* PREVIEW PDF COMPATIBLE ANDROID */}
+        {/* ───────────────────────────── */}
 
-            {/* ───────────────────────────── */}
-            {/* PREVIEW PDF */}
-            {/* ───────────────────────────── */}
-
-            {showPreview && (
-
+        {showPreview && (
+            <div
+                className="position-fixed top-0 start-0 w-100 h-100 d-flex flex-column"
+                style={{
+                    zIndex: 9999,
+                    overflow: 'hidden',
+                    //backgroundColor: '#0A3B2F',
+                    backgroundColor: '#198754'
+                }}
+            >
+                {/* HEADER */}
                 <div
-                    className="position-fixed top-0 start-0 w-100 h-100 bg-light pb-5"
-                    style={{
-                        zIndex: 9999,
-                        overflow: 'hidden'
-                    }}
+                    className="border-bottom d-flex justify-content-between align-items-center p-3" 
+                    style={{ backgroundColor: Colors.successGreen, color: 'white' }}
                 >
+                    <h5 className="mb-0 text-truncate me-2">
+                        Facture #{previewFacture.numero_facture || previewFacture.id}
+                    </h5>
 
-                    {/* HEADER */}
-                    <div
-                        className=" bg-success border-bottom d-flex justify-content-between align-items-center p-3" style={{backgroundColor: Colors.successGreen, color: 'white'}}
-                    >
-
-                        <h5 className="mb-0">
-                            facture #{previewFacture.numero_facture || previewFacture.id}
-                        </h5>
-
-                        <button
-                            className="btn-close" style={{color: 'white'}}
-                            onClick={() => {
-
-                                setShowPreview(false);
-
-                                if (previewUrl) {
-                                    URL.revokeObjectURL(previewUrl);
-                                }
-
-                                setPreviewUrl(null);
-
-                            }}
-                        />
-
-                    </div>
-                            {/* FOOTER */}
-                            <div
-                                className="bg-white border-top p-2 d-flex gap-2 justify-content-center flex-wrap"
-                            >
-        
-                                <button
-                                    className="btn btn-secondary"
-                                    onClick={() => {
-        
-                                        setShowPreview(false);
-        
-                                        if (previewUrl) {
-                                            URL.revokeObjectURL(previewUrl);
-                                        }
-        
-                                        setPreviewUrl(null);
-        
-                                    }}
-                                >
-                                        <i className="bi bi-chevron-left"></i>
-        
-                                     Retour
-        
-                                </button>
-        
-                                <button
-                                    className="btn btn-success"
-                                    onClick={() =>
-                                        handleDownloadPDF(previewFacture)
-                                    }
-                                >
-                                    <i className="bi bi-download-fill"></i>
-        
-                                    Télécharger
-        
-                                </button>
-        
-                                <button
-                                    className="btn btn-success"
-                                    onClick={() =>
-                                        handleSharePDF(previewFacture)
-                                    }
-                                >
-                                    <i className="bi bi-share-fill"></i>
-                                    Partager
-        
-                                </button>
-        
-                            </div>
-
-                    {/* PDF */}
-                    <div
-                        style={{
-                            height: 'calc(100vh - 130px)',
-                            background: '#1e1e1e'
+                    <button
+                        type="button"
+                        className="btn-close btn-close-white" 
+                        aria-label="Close"
+                        onClick={() => {
+                            setShowPreview(false);
+                            if (previewUrl) {
+                                URL.revokeObjectURL(previewUrl);
+                            }
+                            setPreviewUrl(null);
                         }}
-                    >
-
-                        <iframe
-                            title="PDF Preview"
-                            src={previewUrl}
-                            width="100%"
-                            height="100%"
-                            style={{
-                                border: 'none'
-                            }}
-                        />
-
-                    </div>
-
+                    />
                 </div>
 
-            )}
+                {/* PDF VIEWPORT COMPATIBLE ANDROID */}
+                <div
+                    className="flex-grow-1 position-relative"
+                    style={{
+                        background: '#1e1e1e',
+                        overflowY: 'auto',
+                        WebkitOverflowScrolling: 'touch' // Améliore le défilement tactile sur mobile
+                    }}
+                >
+                    {/* Utilisation de <object> à la place de <iframe> : mieux géré par Chrome Android */}
+                    <object
+                        data={previewUrl}
+                        type="application/pdf"
+                        width="100%"
+                        height="100%"
+                        style={{ border: 'none', display: 'block' }}
+                    >
+                        {/* Alternative d'affichage si Android refuse catégoriquement le rendu en ligne */}
+                        <div className="p-4 text-center text-white h-100 d-flex flex-column justify-content-center align-items-center gap-3">
+                            <i className="bi bi-file-earmark-pdf text-danger display-1"></i>
+                            <h5>Le prévisualisateur n'est pas supporté sur cet appareil</h5>
+                            <p className="small text-muted px-3">
+                                Pour consulter la facture #{previewFacture.numero_facture || previewFacture.id}, veuillez la télécharger ci-dessous.
+                            </p>
+                            <button 
+                                className="btn btn-outline-light btn-sm px-4"
+                                onClick={() => handleDownloadPDF(previewFacture)}
+                            >
+                                <i className="bi bi-download me-2"></i> Ouvrir le PDF
+                            </button>
+                        </div>
+                    </object>
+                </div>
+
+                {/* FOOTER BAR FIXED (Idéal pour l'accessibilité au pouce sur mobile) */}
+                <div
+                    className=" bg-light border-top p-3 d-flex gap-2 justify-content-center flex-wrap shadow-lg"
+                    style={{ zIndex: 10000 }}
+                >
+                    <button
+                        type="button"
+                        className="btn btn-secondary px-3"
+                        onClick={() => {
+                            setShowPreview(false);
+                            if (previewUrl) {
+                                URL.revokeObjectURL(previewUrl);
+                            }
+                            setPreviewUrl(null);
+                        }}
+                    >
+                        <i className="bi bi-chevron-left me-1"></i> Retour
+                    </button>
+
+                    <button
+                        type="button"
+                        className="btn btn-success px-3"
+                        onClick={() => handleDownloadPDF(previewFacture)}
+                    >
+                        <i className="bi bi-download-fill me-1"></i> Télécharger
+                    </button>
+
+                    <button
+                        type="button"
+                        className="btn btn-success px-3"
+                        onClick={() => handleSharePDF(previewFacture)}
+                    >
+                        <i className="bi bi-share-fill me-1"></i> Partager
+                    </button>
+                </div>
+            </div>
+        )}
 
             {/* ───────────────────────────── */}
             {/* MODAL CLIENT */}
@@ -1129,7 +1124,7 @@ Tél: ${téléphone}`;
             {showClientModal && (
 
                 <div
-                    className="modal show d-block"
+                    className="modal show d-block text-start"
                     style={{
                         background: 'rgba(0,0,0,0.5)'
                     }}
@@ -1277,7 +1272,7 @@ Tél: ${téléphone}`;
 
                             {/* Skeleton pour version Mobile */}
                             <div className="d-block d-md-none placeholder-glow">
-                                {[1, 2].map((i) => (
+                                {[1, 2, 3, 4, 5,6, 7].map((i) => (
                                     <div key={`skeleton-card-${i}`} className="card mb-3 shadow-sm p-3" style={{ borderRadius: '12px', height: '140px' }}>
                                         <div className="d-flex justify-content-between mb-3">
                                             <span className="placeholder col-3 rounded" style={{ height: '18px' }}></span>
@@ -1578,7 +1573,7 @@ Tél: ${téléphone}`;
 
                         <div
                             key={i}
-                            className="border rounded p-3 mb-2 bg-light"
+                            className="border rounded p-3 mb-2"
                         >
 
                             <div className="row g-2 align-items-center">

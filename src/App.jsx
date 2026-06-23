@@ -22,6 +22,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminUserDetail from './pages/admin/AdminUserDetail';
 import Public from './PublicPages/Public';
+import Reports from './pages/Raports';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
@@ -82,6 +83,7 @@ function App() {
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/budgets" element={<Budgets />} />
           <Route path="/rapports" element={<Rapports />} />
+          {/*<Route path="/raports" element={<Raports/>} />*/}
           <Route path="/profil" element={<Profil />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/apropos" element={<Apropos />} />
