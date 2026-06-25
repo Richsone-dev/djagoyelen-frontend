@@ -817,26 +817,36 @@ const Facture = () => {
         doc.text(téléphone, 130, finalY + 30);
 
         const qrData = `
-            DjagoYelen FACTURATION
-Facture: ${numFacture}
-Client: ${fullFacture.client?.nom}
-Tél: ${fullFacture.client?.telephone || '---'}
-Email: ${fullFacture.client?.email || '---'}
-Total TTC: ${formatPrix(fullFacture.total_ttc)} F CFA
-Date: ${date}
-Responsable: ${userName}
-Tél: ${téléphone}`;
+                    DjagoYelen FACTURATION
+        Facture: ${numFacture}
+        Client: ${fullFacture.client?.nom}
+        Tél: ${fullFacture.client?.telephone || '---'}
+        Email: ${fullFacture.client?.email || '---'}
+        Total TTC: ${formatPrix(fullFacture.total_ttc)} F CFA
+        Date: ${date}
+        Responsable: ${userName}
+        Tél: ${téléphone}
+        N° IFU: ${entreprise.ifu || '---'}`;
 
-        const qrImage = await QRCode.toDataURL(qrData);
+const qrImage = await QRCode.toDataURL(qrData);
 
-        doc.addImage(
-            qrImage,'PNG',100,40,25,25);
+// 1. Sauvegarder la page actuelle (au cas où le tableau a créé d'autres pages)
+const currentPage = doc.internal.getNumberOfPages();
 
-        return {
-            doc,
-            fullFacture,
-            blob: doc.output('blob')
-        };
+// 2. Se positionner impérativement sur la PREMIÈRE page
+doc.setPage(1);
+
+// 3. Dessiner le QR code (il se placera au bon endroit sur la page 1)
+doc.addImage(qrImage, 'PNG', 100, 40, 25, 25);
+
+// 4. Revenir à la dernière page pour que jsPDF puisse finaliser correctement le document
+doc.setPage(currentPage);
+
+return {
+    doc,
+    fullFacture,
+    blob: doc.output('blob')
+};
 
     }, [entreprise]);
 
@@ -872,7 +882,7 @@ Tél: ${téléphone}`;
 
             Swal.fire(
                 'Erreur',
-                'Impossible de générer le PDF',
+                'Erreur de généreration de PDF',
                 'error'
             );
         }

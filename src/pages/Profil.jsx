@@ -1207,6 +1207,304 @@ const Profil = () => {
             `}</style>
         </div>
     );
+
+    const EnterpriseSettings = ({ colors, theme, onSave }) => {
+    const {
+        entreprise,
+        logoUrl,
+        loading,
+        hasEntreprise,
+        createEntreprise,
+        updateEntreprise,
+    } = useEntreprise();
+
+    const emptyInfo = { nom: '', ifu: '', tel: '', adresse: '', couleur_principale: '#198754', couleur_accent: '#E97223' };
+    const [info, setInfo] = useState(emptyInfo);
+    const [logoFile, setLogoFile] = useState(null);
+    const [logoPreview, setLogoPreview] = useState(null);
+    const [isBlobValid, setIsBlobValid] = useState(false);
+    const [saving, setSaving] = useState(false);
+
+    // 1. GESTION DE L'AFFICHAGE DU LOGO (useEffect sécurisé)
+    useEffect(() => {
+        let isMounted = true;
+
+        const checkAndSetLogo = async () => {
+            if (!logoUrl) {
+                if (isMounted) {
+                    setLogoPreview(null);
+                    setIsBlobValid(false);
+                }
+                return;
+            }
+
+            // Si l'utilisateur vient de choisir un fichier local, on ne l'écrase pas avec l'URL du serveur
+            if (logoFile && logoPreview?.startsWith('blob:')) {
+                return;
+            }
+
+            // Si c'est un blob (ex: suite à un changement d'état externe)
+            if (logoUrl.startsWith('blob:')) {
+                if (isMounted) {
+                    setLogoPreview(logoUrl);
+                    setIsBlobValid(true);
+                }
+                return;
+            }
+
+            // URL distante / Chemin serveur : Affichage immédiat
+            if (isMounted) {
+                setLogoPreview(logoUrl);
+                setIsBlobValid(true);
+            }
+
+            // Vérification HEAD en tâche de fond pour la console
+            try {
+                const response = await fetch(logoUrl, { method: 'HEAD' });
+                if (!response.ok && isMounted && !logoFile) {
+                    setLogoPreview(null);
+                    setIsBlobValid(false);
+                }
+            } catch (error) {
+                // Erreur CORS ou réseau ignorée pour laisser l'image s'afficher
+            }
+        };
+
+        if (entreprise) {
+            setInfo({
+                nom: entreprise.nom || '',
+                ifu: entreprise.ifu || '',
+                tel: entreprise.telephone || '',
+                adresse: entreprise.adresse || '',
+                couleur_principale: entreprise.couleur_principale || '#198754',
+                couleur_accent: entreprise.couleur_accent || '#E97223',
+            });
+            checkAndSetLogo();
+        } else if (!loading) {
+            setInfo(emptyInfo);
+            setLogoPreview(null);
+            setIsBlobValid(false);
+            setLogoFile(null);
+        }
+
+        return () => {
+            isMounted = false;
+        };
+    }, [entreprise, logoUrl, loading]);
+
+    // 2. SÉLECTION D'UN NOUVEAU LOGO
+    const handleLogoChange = (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // Libère la mémoire de l'ancien blob local s'il y en avait un
+        if (logoPreview && logoPreview.startsWith('blob:')) {
+            URL.revokeObjectURL(logoPreview);
+        }
+
+        const newUrl = URL.createObjectURL(file);
+        setLogoFile(file);      // Stocke le fichier réel pour l'envoyer au serveur via FormData
+        setLogoPreview(newUrl); // URL temporaire pour l'affichage <img src="..." />
+        setIsBlobValid(true);
+    };
+
+    // 3. ENREGISTREMENT ET ENVOI AU BACKEND
+    const handleSave = async () => {
+        if (!info.nom.trim()) {
+            onSave("Le nom de l'entreprise est obligatoire", 'danger');
+            return;
+        }
+
+        const payload = {
+            nom: info.nom.trim(),
+            ifu: info.ifu.trim(),
+            telephone: info.tel.trim(),
+            adresse: info.adresse.trim(),
+            couleur_principale: info.couleur_principale,
+            couleur_accent: info.couleur_accent,
+        };
+
+        try {
+            setSaving(true);
+            
+            // On passe "logoFile" (qui contient le fichier ou null si inchangé) au contexte
+            if (hasEntreprise) {
+                await updateEntreprise(payload, logoFile);
+                onSave('Entreprise et logo mis à jour avec succès !');
+            } else {
+                await createEntreprise(payload, logoFile);
+                onSave('Entreprise créée avec succès !');
+            }
+            
+            // On ne réinitialise logoFile qu'APRÈS le succès total de la requête réseau
+            setLogoFile(null);
+        } catch (error) {
+            console.error("Erreur complète lors de la sauvegarde :", error);
+            onSave(error.response?.data?.message || "Erreur lors de l'enregistrement", 'danger');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="text-center py-5">
+                <div className="spinner-border text-success" role="status"></div>
+                <p className="text-muted mt-3 mb-0">Chargement de l'entreprise...</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="animate-fade">
+            <div className="d-flex justify-content-between align-items-start mb-4 gap-3 flex-wrap">
+                <div>
+                    <h4 className="fw-bold mb-1" style={{ color: colors.darkGreen }}>Informations Entreprise</h4>
+                    <p className="text-muted small mb-0">
+                        {hasEntreprise
+                            ? "Modifiez les informations affichées sur vos factures et dans l'application."
+                            : "Créez votre entreprise pour personnaliser votre espace et vos documents."}
+                    </p>
+                </div>
+                {hasEntreprise && (
+                    <span className="badge rounded-pill px-3 py-2" style={{ backgroundColor: 'rgba(25, 135, 84, 0.12)', color: colors.darkGreen }}>
+                        Entreprise active
+                    </span>
+                )}
+            </div>
+
+            {/* Zone d'upload du Logo */}
+            <div className="text-center mb-4 p-4 border border-dashed rounded-4 bg-opacity-10 bg-secondary position-relative">
+                <div className="mx-auto bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center mb-2 overflow-hidden" style={{ width: '100px', height: '100px', border: `2px dashed ${colors.darkGreen}` }}>
+                    {(logoPreview && isBlobValid) ? (
+                        <img 
+                            src={logoPreview} 
+                            alt="Logo entreprise" 
+                            className="w-100 h-100 object-fit-cover" 
+                            onError={() => {
+                                // Sécurité si le blob expire
+                                if (!logoFile) {
+                                    setIsBlobValid(false);
+                                    setLogoPreview(null);
+                                }
+                            }}
+                        />
+                    ) : (
+                        <i className="bi bi-building-add text-muted fs-2"></i>
+                    )}
+                </div>
+                <input type="file" id="logoUpload" hidden accept="image/*" onChange={handleLogoChange} />
+                <label htmlFor="logoUpload" className="btn btn-sm text-decoration-none fw-bold p-0 mt-2" style={{ color: colors.orange, cursor: 'pointer' }}>
+                    {logoPreview ? 'Changer le logo' : 'Ajouter un logo'}
+                </label>
+            </div>
+
+            <div className="row g-3">
+                <div className="col-12">
+                    <label className="form-label fw-bold small text-muted">Nom de l'entreprise</label>
+                    <input
+                        type="text"
+                        className="form-control py-2"
+                        value={info.nom}
+                        onChange={(e) => setInfo({ ...info, nom: e.target.value })}
+                        placeholder="Ex: Mon Entreprise SARL"
+                    />
+                </div>
+                <div className="col-md-6">
+                    <label className="form-label fw-bold small text-muted">N° IFU</label>
+                    <input
+                        type="text"
+                        className="form-control py-2"
+                        value={info.ifu}
+                        onChange={(e) => setInfo({ ...info, ifu: e.target.value })}
+                        placeholder="Identifiant fiscal"
+                    />
+                </div>
+                <div className="col-md-6">
+                    <label className="form-label fw-bold small text-muted">Téléphone</label>
+                    <input
+                        type="text"
+                        className="form-control py-2"
+                        value={info.tel}
+                        onChange={(e) => setInfo({ ...info, tel: e.target.value })}
+                        placeholder="+226 XX XX XX XX"
+                    />
+                </div>
+                <div className="col-12">
+                    <label className="form-label fw-bold small text-muted">Adresse</label>
+                    <textarea
+                        className="form-control py-2"
+                        rows="2"
+                        value={info.adresse}
+                        onChange={(e) => setInfo({ ...info, adresse: e.target.value })}
+                        placeholder="Ville, quartier, rue..."
+                    />
+                </div>
+                
+                {/* Charte Graphique */}
+                <div className="col-12 mt-4">
+                    <label className="form-label fw-bold small text-muted mb-2">Charte graphique de l'entreprise</label>
+                    <div className="alert d-flex align-items-center gap-2 py-2 px-3 rounded-3 mb-0" 
+                         style={{ backgroundColor: 'rgba(233, 114, 35, 0.1)', color: colors.orange, border: `1px dashed ${colors.orange}` }}>
+                        <i className="bi bi-info-circle-fill"></i>
+                        <small className="fst-italic">
+                            Ces couleurs seront utilisées pour vos factures. Prenez le soin de bien sélectionner vos couleurs en fonction de celles de votre logo afin d'obtenir un design plus professionnel !
+                        </small>
+                    </div>
+                </div>
+
+                {/* Couleur principale */}
+                <div className="col-md-6">
+                    <label className="form-label fw-bold small text-muted">Couleur principale (factures)</label>
+                    <div className="p-2 rounded-3 d-flex align-items-center gap-3 border" 
+                         style={{ backgroundColor: theme === 'dark' ? '#2b2b2b' : '#f8f9fa', borderColor: theme === 'dark' ? '#3d3d3d' : '#dee2e6' }}>
+                        <input
+                            type="color"
+                            className="form-control form-control-color border-0 bg-transparent p-0"
+                            style={{ width: '38px', height: '38px', cursor: 'pointer' }}
+                            value={info.couleur_principale}
+                            onChange={(e) => setInfo({ ...info, couleur_principale: e.target.value })}
+                        />
+                        <div>
+                            <span className="fw-semibold small d-block" style={{ color: colors.textColor }}>{info.couleur_principale.toUpperCase()}</span>
+                            <span className="text-muted d-block" style={{ fontSize: '11px' }}>En-têtes et totaux</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Couleur d'accent */}
+                <div className="col-md-6">
+                    <label className="form-label fw-bold small text-muted">Couleur d'accent (factures)</label>
+                    <div className="p-2 rounded-3 d-flex align-items-center gap-3 border" 
+                         style={{ backgroundColor: theme === 'dark' ? '#2b2b2b' : '#f8f9fa', borderColor: theme === 'dark' ? '#3d3d3d' : '#dee2e6' }}>
+                        <input
+                            type="color"
+                            className="form-control form-control-color border-0 bg-transparent p-0"
+                            style={{ width: '38px', height: '38px', cursor: 'pointer' }}
+                            value={info.couleur_accent}
+                            onChange={(e) => setInfo({ ...info, couleur_accent: e.target.value })}
+                        />
+                        <div>
+                            <span className="fw-semibold small d-block" style={{ color: colors.textColor }}>{info.couleur_accent.toUpperCase()}</span>
+                            <span className="text-muted d-block" style={{ fontSize: '11px' }}>Bannières et détails</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="d-flex flex-wrap gap-2 mt-4">
+                <button
+                    className="btn px-4 fw-bold text-white border-0"
+                    style={{ backgroundColor: colors.darkGreen }}
+                    onClick={handleSave}
+                    disabled={saving}
+                >
+                    {saving ? 'Enregistrement...' : hasEntreprise ? 'Mettre à jour' : 'Créer mon entreprise'}
+                </button>
+            </div>
+        </div>
+    );
+};
 };
 
 export default Profil;
